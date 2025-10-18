@@ -336,8 +336,8 @@ class DJRehabAPITester:
         return passed == total
 
 def main():
-    # Use local backend URL since external URL has routing issues
-    backend_url = "http://localhost:8001"
+    # Use the external backend URL from frontend .env
+    backend_url = "https://djrehab-player.preview.emergentagent.com"
     
     print(f"Testing backend at: {backend_url}")
     
