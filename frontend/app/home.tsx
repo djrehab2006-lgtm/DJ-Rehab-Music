@@ -218,11 +218,7 @@ export default function HomeScreen() {
                   }}
                 >
                   <View style={styles.albumCover}>
-                    {folder.cover_image ? (
-                      <Image source={{ uri: folder.cover_image }} style={styles.albumImage} />
-                    ) : (
-                      <Ionicons name="folder-open" size={48} color="#A855F7" />
-                    )}
+                    <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.albumImage} />
                   </View>
                   <Text style={styles.albumName} numberOfLines={1}>{folder.name}</Text>
                 </TouchableOpacity>
