@@ -1,10 +1,8 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Platform } from 'react-native';
 
 export default function TabLayout() {
-  const insets = useSafeAreaInsets();
-  
   return (
     <Tabs
       screenOptions={{
@@ -14,18 +12,15 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: '#0F172A',
           borderTopColor: '#1E293B',
-          height: 85 + insets.bottom,
-          paddingBottom: insets.bottom + 15,
-          paddingTop: 12,
+          borderTopWidth: 1,
+          height: Platform.OS === 'ios' ? 88 : 65,
+          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+          paddingTop: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: '600',
-          marginBottom: 5,
-          marginTop: 2,
-        },
-        tabBarIconStyle: {
-          marginTop: 4,
+          paddingBottom: 4,
         },
       }}
     >
@@ -34,7 +29,7 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+            <Ionicons name="home" size={24} color={color} />
           ),
         }}
       />
@@ -43,7 +38,7 @@ export default function TabLayout() {
         options={{
           title: 'Search',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="search" size={size} color={color} />
+            <Ionicons name="search" size={24} color={color} />
           ),
         }}
       />
@@ -52,7 +47,7 @@ export default function TabLayout() {
         options={{
           title: 'Library',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="library" size={size} color={color} />
+            <Ionicons name="library" size={24} color={color} />
           ),
         }}
       />
@@ -61,7 +56,7 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+            <Ionicons name="person" size={24} color={color} />
           ),
         }}
       />
@@ -70,7 +65,7 @@ export default function TabLayout() {
         options={{
           title: 'Admin',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings" size={size} color={color} />
+            <Ionicons name="settings" size={24} color={color} />
           ),
         }}
       />
