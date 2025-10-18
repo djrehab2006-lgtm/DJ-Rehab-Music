@@ -19,6 +19,7 @@ interface Track {
 }
 
 export default function HomeScreen() {
+  const router = useRouter();
   const [folders, setFolders] = useState<Folder[]>([]);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
