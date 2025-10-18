@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Slot } from 'expo-router';
 import { useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -13,10 +13,5 @@ export default function RootLayout() {
     }, 1000);
   }, []);
 
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="player" options={{ headerShown: false, presentation: 'modal' }} />
-    </Stack>
-  );
+  return <Slot />;
 }
