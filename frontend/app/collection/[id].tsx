@@ -7,10 +7,14 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  Modal,
+  TextInput,
+  Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DEFAULT_FOLDER_ICON } from '../constants/defaultFolderIcon';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
@@ -38,10 +42,30 @@ export default function CollectionScreen() {
   const [folder, setFolder] = useState<Folder | null>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showAddTrack, setShowAddTrack] = useState(false);
 
   useEffect(() => {
+    checkAuth();
     loadData();
   }, [folderId]);
+
+  const checkAuth = async () => {
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      if (token) {
+        const url = BACKEND_URL + '/api/auth/verify';
+        const response = await fetch(url, {
+          headers: { 'Authorization': 'Bearer ' + token },
+        });
+        if (response.ok) {
+          setIsLoggedIn(true);
+        }
+      }
+    } catch (error) {
+      console.log('Auth check failed');
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -105,7 +129,13 @@ export default function CollectionScreen() {
           <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{folder.name}</Text>
-        <View style={{ width: 28 }} />
+        {isLoggedIn ? (
+          <TouchableOpacity onPress={() => setShowAddTrack(true)}>
+            <Ionicons name="add-circle" size={28} color="#10B981" />
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 28 }} />
+        )}
       </View>
 
       <ScrollView style={styles.scrollView}>
@@ -122,7 +152,11 @@ export default function CollectionScreen() {
             <View style={styles.emptyState}>
               <Ionicons name="musical-notes-outline" size={64} color="#64748B" />
               <Text style={styles.emptyText}>No tracks in this collection</Text>
-              <Text style={styles.emptySubtext}>Ask admin to add some tracks</Text>
+              {isLoggedIn ? (
+                <Text style={styles.emptySubtext}>Tap + to add tracks</Text>
+              ) : (
+                <Text style={styles.emptySubtext}>Ask admin to add some tracks</Text>
+              )}
             </View>
           ) : (
             tracks.map((track, index) => (
@@ -156,7 +190,143 @@ export default function CollectionScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Add Track Modal */}
+      <AddTrackModal
+        visible={showAddTrack}
+        folderId={folderId}
+        folderName={folder.name}
+        onClose={() => setShowAddTrack(false)}
+        onSuccess={loadData}
+      />
     </SafeAreaView>
+  );
+}
+
+// Add Track Modal Component
+function AddTrackModal({ visible, folderId, folderName, onClose, onSuccess }: any) {
+  const [title, setTitle] = useState('');
+  const [artist, setArtist] = useState('');
+  const [cdnUrl, setCdnUrl] = useState('');
+  const [duration, setDuration] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSave = async () => {
+    if (!title.trim() || !artist.trim() || !cdnUrl.trim()) {
+      Alert.alert('Error', 'Please fill in title, artist, and CDN URL');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      const headers = {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json',
+      };
+
+      const url = BACKEND_URL + '/api/tracks';
+      
+      const body = {
+        title,
+        artist,
+        cdn_url: cdnUrl,
+        duration: parseInt(duration) || 0,
+        folder_id: folderId,
+      };
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        setTitle('');
+        setArtist('');
+        setCdnUrl('');
+        setDuration('');
+        onSuccess();
+        onClose();
+      } else {
+        throw new Error('Failed to save track');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save track');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="slide">
+      <View style={styles.modalOverlay}>
+        <ScrollView contentContainerStyle={styles.modalScrollContent}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add Track to {folderName}</Text>
+            
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Track title"
+              placeholderTextColor="#64748B"
+              value={title}
+              onChangeText={setTitle}
+              editable={!loading}
+            />
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Artist name"
+              placeholderTextColor="#64748B"
+              value={artist}
+              onChangeText={setArtist}
+              editable={!loading}
+            />
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="CDN URL (streaming link)"
+              placeholderTextColor="#64748B"
+              value={cdnUrl}
+              onChangeText={setCdnUrl}
+              editable={!loading}
+              autoCapitalize="none"
+            />
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Duration (seconds)"
+              placeholderTextColor="#64748B"
+              value={duration}
+              onChangeText={setDuration}
+              keyboardType="numeric"
+              editable={!loading}
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonCancel]}
+                onPress={onClose}
+                disabled={loading}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonSave]}
+                onPress={handleSave}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={[styles.modalButtonText, { color: '#FFFFFF' }]}>Add Track</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
+    </Modal>
   );
 }
 
