@@ -7,9 +7,9 @@ DJ Rehab Music is a professional Android music streaming app with full admin con
 
 ### Admin Authentication
 - Simple login system
-- **Default Credentials:**
-  - Username: `admin`
-  - Password: `admin123`
+- **Login Credentials:**
+  - Username: `djrehab2006`
+  - Password: `Helena@1810`
 
 ### Album (Folder) Management
 - ✅ Create albums/folders to organize your music
