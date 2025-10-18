@@ -15,7 +15,8 @@ DJ Rehab Music is a professional Android music streaming app with full admin con
 - ✅ Create albums/folders to organize your music
 - ✅ Rename albums
 - ✅ Delete albums (also deletes all tracks within)
-- ✅ Beautiful grid view with cover art support
+- ✅ Beautiful grid view with DJ Rehab branded folder icons
+- ✅ Automatic DJ Rehab logo displayed for all folders
 
 ### Track Management
 - ✅ Add tracks with CDN streaming URLs
