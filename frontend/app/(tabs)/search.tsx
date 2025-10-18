@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   emptySubtext: { fontSize: 14, color: '#64748B' },
   trackCard: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, backgroundColor: '#1E293B', marginHorizontal: 16, marginVertical: 4, borderRadius: 12 },
   trackCover: { width: 56, height: 56, borderRadius: 8, backgroundColor: '#334155', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  trackImage: { width: '100%', height: '100%', borderRadius: 8' },
+  trackImage: { width: '100%', height: '100%', borderRadius: 8 },
   trackInfo: { flex: 1, marginRight: 12 },
   trackTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '600', marginBottom: 4 },
   trackArtist: { color: '#94A3B8', fontSize: 14 },
