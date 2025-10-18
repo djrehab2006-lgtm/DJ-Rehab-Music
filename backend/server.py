@@ -99,15 +99,15 @@ def serialize_doc(doc):
 # Startup - Create default admin if not exists
 @app.on_event("startup")
 async def startup_event():
-    admin = await db.admins.find_one({"username": "admin"})
+    admin = await db.admins.find_one({"username": "djrehab2006"})
     if not admin:
-        hashed = bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt())
+        hashed = bcrypt.hashpw("Helena@1810".encode('utf-8'), bcrypt.gensalt())
         await db.admins.insert_one({
-            "username": "admin",
+            "username": "djrehab2006",
             "password_hash": hashed.decode('utf-8'),
             "created_at": datetime.utcnow()
         })
-        print("Default admin created: username=admin, password=admin123")
+        print("Default admin created: username=djrehab2006, password=Helena@1810")
 
 # Auth Endpoints
 @app.post("/api/auth/login", response_model=Token)
