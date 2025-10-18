@@ -1,9 +1,29 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Linking, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
+  const [showContactModal, setShowContactModal] = useState(false);
+
+  const handleShare = async () => {
+    const appUrl = 'https://apps.apple.com/us/app/dj-rehab-music/id6752807769';
+    try {
+      const canOpen = await Linking.canOpenURL(appUrl);
+      if (canOpen) {
+        await Linking.openURL(appUrl);
+      } else {
+        Alert.alert('Error', 'Unable to open App Store link');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to open link');
+    }
+  };
+
+  const handleEmailPress = () => {
+    Linking.openURL('mailto:djrehab2006@gmail.com');
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
@@ -19,6 +39,19 @@ export default function ProfileScreen() {
           </View>
           <Text style={styles.appName}>DJ REHAB MUSIC</Text>
           <Text style={styles.appVersion}>Version 1.0.0</Text>
+        </View>
+
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => setShowContactModal(true)}>
+            <Ionicons name="mail-outline" size={24} color="#10B981" />
+            <Text style={styles.actionButtonText}>Contact</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+            <Ionicons name="share-social-outline" size={24} color="#10B981" />
+            <Text style={styles.actionButtonText}>Share App</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.infoSection}>
@@ -49,6 +82,26 @@ export default function ProfileScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Contact Modal */}
+      <Modal visible={showContactModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Ionicons name="mail" size={48} color="#10B981" style={styles.modalIcon} />
+            <Text style={styles.modalTitle}>Booking Inquiries</Text>
+            <Text style={styles.modalText}>For booking inquiries, email:</Text>
+            <TouchableOpacity onPress={handleEmailPress} style={styles.emailButton}>
+              <Text style={styles.emailText}>djrehab2006@gmail.com</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowContactModal(false)}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
