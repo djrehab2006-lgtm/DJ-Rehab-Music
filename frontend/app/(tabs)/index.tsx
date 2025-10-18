@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ImageBackground, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ImageBackground, ActivityIndicator, Modal, TextInput, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DEFAULT_FOLDER_ICON } from '../constants/defaultFolderIcon';
 import { HERO_BACKGROUND } from '../constants/heroBackground';
 
@@ -23,6 +24,30 @@ export default function HomeScreen() {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showAddFolder, setShowAddFolder] = useState(false);
+
+  useEffect(() => {
+    checkAuth();
+    loadData();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      if (token) {
+        const url = BACKEND_URL + '/api/auth/verify';
+        const response = await fetch(url, {
+          headers: { 'Authorization': 'Bearer ' + token },
+        });
+        if (response.ok) {
+          setIsLoggedIn(true);
+        }
+      }
+    } catch (error) {
+      console.log('Auth check failed');
+    }
+  };
 
   useEffect(() => {
     loadData();
