@@ -35,7 +35,7 @@ DJ Rehab Music is a professional Android music streaming app with full admin con
 ## 🎯 How to Use
 
 ### Adding an Album
-1. Login with admin credentials
+1. Login with djrehab2006 / Helena@1810
 2. Tap the **+ icon** next to "Albums"
 3. Enter album name
 4. Tap "Save"
