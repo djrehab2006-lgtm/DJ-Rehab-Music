@@ -85,7 +85,11 @@ export default function HomeScreen() {
           ) : (
             <View style={styles.collectionsGrid}>
               {folders.map((folder) => (
-                <TouchableOpacity key={folder.id} style={styles.collectionCard}>
+                <TouchableOpacity 
+                  key={folder.id} 
+                  style={styles.collectionCard}
+                  onPress={() => router.push('/collection/' + folder.id)}
+                >
                   <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.collectionImage} />
                   <View style={styles.collectionInfo}>
                     <Text style={styles.collectionName} numberOfLines={1}>{folder.name}</Text>
