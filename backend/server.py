@@ -128,7 +128,7 @@ async def verify(payload: dict = Depends(verify_token)):
 
 # Folder Endpoints
 @app.get("/api/folders")
-async def get_folders(payload: dict = Depends(verify_token)):
+async def get_folders():
     folders = await db.folders.find().sort("created_at", -1).to_list(100)
     return [serialize_doc(f) for f in folders]
 
