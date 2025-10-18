@@ -143,7 +143,7 @@ export default function LoginScreen() {
             )}
           </TouchableOpacity>
 
-          <Text style={styles.hint}>Default: admin / admin123</Text>
+          <Text style={styles.hint}>Login: djrehab2006 / Helena@1810</Text>
         </View>
       </View>
     </KeyboardAvoidingView>
