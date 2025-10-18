@@ -99,7 +99,14 @@ export default function HomeScreen() {
         </ImageBackground>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Collections</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Collections</Text>
+            {isLoggedIn && (
+              <TouchableOpacity onPress={() => setShowAddFolder(true)}>
+                <Ionicons name="add-circle" size={32} color="#10B981" />
+              </TouchableOpacity>
+            )}
+          </View>
           
           {folders.length === 0 ? (
             <View style={styles.emptyState}>
