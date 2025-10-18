@@ -171,7 +171,7 @@ async def delete_folder(folder_id: str, payload: dict = Depends(verify_token)):
 
 # Track Endpoints
 @app.get("/api/tracks")
-async def get_tracks(folder_id: Optional[str] = None, payload: dict = Depends(verify_token)):
+async def get_tracks(folder_id: Optional[str] = None):
     query = {}
     if folder_id:
         query["folder_id"] = folder_id
