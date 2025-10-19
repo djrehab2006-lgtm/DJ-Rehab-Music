@@ -39,6 +39,7 @@ export default function CollectionScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const folderId = params.id as string;
+  const { playTrack, currentTrack } = useAudioPlayer();
 
   const [folder, setFolder] = useState<Folder | null>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
