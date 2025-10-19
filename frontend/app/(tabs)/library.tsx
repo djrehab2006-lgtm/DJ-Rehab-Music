@@ -70,26 +70,33 @@ export default function LibraryScreen() {
             <Text style={styles.emptySubtext}>Ask admin to add some music</Text>
           </View>
         ) : (
-          tracks.map((track, index) => (
-            <TouchableOpacity key={track.id} style={styles.trackCard} onPress={() => router.push('/player?trackId=' + track.id)}>
-              <View style={styles.trackNumber}>
-                <Text style={styles.trackNumberText}>{index + 1}</Text>
-              </View>
-              <View style={styles.trackCover}>
-                {track.cover_art ? (
-                  <Image source={{ uri: track.cover_art }} style={styles.trackImage} />
-                ) : (
-                  <Ionicons name="musical-note" size={20} color="#10B981" />
-                )}
-              </View>
-              <View style={styles.trackInfo}>
-                <Text style={styles.trackTitle} numberOfLines={1}>{track.title}</Text>
-                <Text style={styles.trackArtist} numberOfLines={1}>{track.artist}</Text>
-              </View>
-              <Text style={styles.trackDuration}>{formatDuration(track.duration)}</Text>
-              <Ionicons name="play-circle" size={28} color="#10B981" />
-            </TouchableOpacity>
-          ))
+          tracks.map((track, index) => {
+            const isPlaying = currentTrack?.id === track.id;
+            return (
+              <TouchableOpacity 
+                key={track.id} 
+                style={[styles.trackCard, isPlaying && styles.trackCardPlaying]} 
+                onPress={() => playTrack(track)}
+              >
+                <View style={styles.trackNumber}>
+                  <Text style={styles.trackNumberText}>{index + 1}</Text>
+                </View>
+                <View style={styles.trackCover}>
+                  {track.cover_art ? (
+                    <Image source={{ uri: track.cover_art }} style={styles.trackImage} />
+                  ) : (
+                    <Ionicons name="musical-note" size={20} color="#10B981" />
+                  )}
+                </View>
+                <View style={styles.trackInfo}>
+                  <Text style={styles.trackTitle} numberOfLines={1}>{track.title}</Text>
+                  <Text style={styles.trackArtist} numberOfLines={1}>{track.artist}</Text>
+                </View>
+                <Text style={styles.trackDuration}>{formatDuration(track.duration)}</Text>
+                <Ionicons name="play-circle" size={28} color={isPlaying ? "#10B981" : "#64748B"} />
+              </TouchableOpacity>
+            );
+          })
         )}
       </ScrollView>
     </SafeAreaView>
