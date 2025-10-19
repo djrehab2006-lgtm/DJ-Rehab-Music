@@ -546,11 +546,19 @@ const styles = StyleSheet.create({
     borderBottomColor: '#1E293B',
   },
   headerTitle: {
+    flex: 1,
     fontSize: 18,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    flex: 1,
     textAlign: 'center',
+    marginHorizontal: 8,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  headerButton: {
+    padding: 4,
   },
   scrollView: {
     flex: 1,
