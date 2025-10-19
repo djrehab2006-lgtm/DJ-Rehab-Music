@@ -261,9 +261,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Authentication System"
-    - "Folder Management API"
-    - "Track Management API"
+    - "Global Audio Player Context"
+    - "Mini Player Component"
+    - "Audio Player Integration - Collection Screen"
+    - "Audio Player Integration - Library Screen"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -271,3 +272,5 @@ test_plan:
 agent_communication:
     - agent: "testing"
       message: "Completed comprehensive backend API testing. All endpoints working correctly after resolving anyio dependency issue. Backend is fully functional for DJ Rehab Music app with authentication, folder management, and track management features."
+    - agent: "main"
+      message: "Implemented persistent music player feature with global audio context. Key features: 1) Only one track plays at a time (previous track stops automatically), 2) Persistent mini-player above tab bar with track info, play/pause, scrubbing slider, time display, and favorite button, 3) Integrated into collection and library screens with visual indicators for currently playing track, 4) Background playback configured. Ready for testing."
