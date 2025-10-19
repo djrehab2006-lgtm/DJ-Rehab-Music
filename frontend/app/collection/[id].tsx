@@ -184,7 +184,16 @@ export default function CollectionScreen() {
                   </Text>
                 </View>
                 <Text style={styles.trackDuration}>{formatDuration(track.duration)}</Text>
-                <Ionicons name="play-circle" size={28} color="#10B981" />
+                {isLoggedIn ? (
+                  <TouchableOpacity
+                    onPress={() => handleDeleteTrack(track.id, track.title)}
+                    style={styles.deleteButton}
+                  >
+                    <Ionicons name="trash-outline" size={24} color="#EF4444" />
+                  </TouchableOpacity>
+                ) : (
+                  <Ionicons name="play-circle" size={28} color="#10B981" />
+                )}
               </TouchableOpacity>
             ))
           )}
