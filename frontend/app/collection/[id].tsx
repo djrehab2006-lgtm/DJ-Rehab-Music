@@ -498,6 +498,9 @@ const styles = StyleSheet.create({
     marginRight: 12,
     minWidth: 40,
   },
+  deleteButton: {
+    padding: 8,
+  },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
