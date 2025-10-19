@@ -166,13 +166,18 @@ export default function CollectionScreen() {
           <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{folder.name}</Text>
-        {isLoggedIn ? (
-          <TouchableOpacity onPress={() => setShowAddTrack(true)}>
-            <Ionicons name="add-circle" size={28} color="#10B981" />
-          </TouchableOpacity>
-        ) : (
-          <View style={{ width: 28 }} />
-        )}
+        <View style={styles.headerActions}>
+          {isLoggedIn && (
+            <>
+              <TouchableOpacity onPress={() => setShowEditFolder(true)} style={styles.headerButton}>
+                <Ionicons name="create-outline" size={24} color="#10B981" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setShowAddTrack(true)} style={styles.headerButton}>
+                <Ionicons name="add-circle" size={28} color="#10B981" />
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
       </View>
 
       <ScrollView style={styles.scrollView}>
