@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIn
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
@@ -11,11 +12,13 @@ interface Track {
   title: string;
   artist: string;
   duration: number;
+  cdn_url: string;
   cover_art?: string;
 }
 
 export default function LibraryScreen() {
   const router = useRouter();
+  const { playTrack, currentTrack } = useAudioPlayer();
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
 
