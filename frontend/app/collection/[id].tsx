@@ -620,6 +620,11 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     borderRadius: 12,
   },
+  trackCardPlaying: {
+    backgroundColor: '#334155',
+    borderWidth: 1,
+    borderColor: '#10B981',
+  },
   trackNumber: {
     width: 32,
     alignItems: 'center',
