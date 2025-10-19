@@ -250,7 +250,151 @@ export default function CollectionScreen() {
         onClose={() => setShowAddTrack(false)}
         onSuccess={loadData}
       />
+
+      {/* Edit Folder Modal */}
+      <EditFolderModal
+        visible={showEditFolder}
+        folder={folder}
+        onClose={() => setShowEditFolder(false)}
+        onSuccess={() => {
+          loadData();
+          router.back();
+        }}
+      />
     </SafeAreaView>
+  );
+}
+
+// Edit Folder Modal Component
+function EditFolderModal({ visible, folder, onClose, onSuccess }: any) {
+  const [name, setName] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (folder) {
+      setName(folder.name);
+    }
+  }, [folder]);
+
+  const handleSave = async () => {
+    if (!name.trim()) {
+      Alert.alert('Error', 'Please enter a collection name');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      const headers = {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json',
+      };
+
+      const url = BACKEND_URL + '/api/folders/' + folder.id;
+      
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ name }),
+      });
+
+      if (response.ok) {
+        onSuccess();
+        onClose();
+      } else {
+        throw new Error('Failed to update collection');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update collection');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    Alert.alert(
+      'Delete Collection',
+      `Are you sure you want to delete "${folder.name}"? This will also delete all tracks inside.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem('auth_token');
+              const headers = {
+                'Authorization': 'Bearer ' + token,
+              };
+
+              const response = await fetch(BACKEND_URL + '/api/folders/' + folder.id, {
+                method: 'DELETE',
+                headers,
+              });
+
+              if (response.ok) {
+                Alert.alert('Success', 'Collection deleted successfully');
+                onSuccess();
+                onClose();
+              } else {
+                throw new Error('Failed to delete collection');
+              }
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete collection');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="slide">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Edit Collection</Text>
+          
+          <TextInput
+            style={styles.modalInput}
+            placeholder="Collection name"
+            placeholderTextColor="#64748B"
+            value={name}
+            onChangeText={setName}
+            editable={!loading}
+          />
+
+          <View style={styles.modalButtons}>
+            <TouchableOpacity
+              style={[styles.modalButton, styles.modalButtonCancel]}
+              onPress={onClose}
+              disabled={loading}
+            >
+              <Text style={styles.modalButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.modalButton, styles.modalButtonSave]}
+              onPress={handleSave}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={[styles.modalButtonText, { color: '#FFFFFF' }]}>Save</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            style={styles.deleteCollectionButton}
+            onPress={handleDelete}
+            disabled={loading}
+          >
+            <Ionicons name="trash-outline" size={20} color="#EF4444" />
+            <Text style={styles.deleteCollectionText}>Delete Collection</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
