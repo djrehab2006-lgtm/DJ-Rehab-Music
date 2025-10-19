@@ -1,6 +1,8 @@
+import React from 'react';
 import { Slot } from 'expo-router';
 import { useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
+import { AudioPlayerProvider } from './contexts/AudioPlayerContext';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -13,5 +15,9 @@ export default function RootLayout() {
     }, 1000);
   }, []);
 
-  return <Slot />;
+  return (
+    <AudioPlayerProvider>
+      <Slot />
+    </AudioPlayerProvider>
+  );
 }
