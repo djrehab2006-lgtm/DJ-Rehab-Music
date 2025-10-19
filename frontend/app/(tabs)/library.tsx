@@ -114,6 +114,7 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 18, color: '#94A3B8', marginTop: 16, marginBottom: 8 },
   emptySubtext: { fontSize: 14, color: '#64748B' },
   trackCard: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, backgroundColor: '#1E293B', marginHorizontal: 16, marginVertical: 4, borderRadius: 12 },
+  trackCardPlaying: { backgroundColor: '#334155', borderWidth: 1, borderColor: '#10B981' },
   trackNumber: { width: 32, alignItems: 'center', marginRight: 12 },
   trackNumberText: { color: '#64748B', fontSize: 16, fontWeight: '600' },
   trackCover: { width: 48, height: 48, borderRadius: 8, backgroundColor: '#334155', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
