@@ -337,7 +337,7 @@ class DJRehabAPITester:
 
 def main():
     # Use the external backend URL from frontend .env
-    backend_url = "https://djrehab-player.preview.emergentagent.com"
+    backend_url = "https://music-streaming-app-4.preview.emergentagent.com"
     
     print(f"Testing backend at: {backend_url}")
     
