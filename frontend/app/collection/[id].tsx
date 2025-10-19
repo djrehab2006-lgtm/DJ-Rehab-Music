@@ -98,6 +98,42 @@ export default function CollectionScreen() {
     return mins + ':' + secs.toString().padStart(2, '0');
   };
 
+  const handleDeleteTrack = async (trackId: string, trackTitle: string) => {
+    Alert.alert(
+      'Delete Track',
+      `Are you sure you want to delete "${trackTitle}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem('auth_token');
+              const headers = {
+                'Authorization': 'Bearer ' + token,
+              };
+
+              const response = await fetch(BACKEND_URL + '/api/tracks/' + trackId, {
+                method: 'DELETE',
+                headers,
+              });
+
+              if (response.ok) {
+                loadData();
+                Alert.alert('Success', 'Track deleted successfully');
+              } else {
+                throw new Error('Failed to delete track');
+              }
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete track');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
