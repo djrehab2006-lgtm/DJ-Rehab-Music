@@ -691,8 +691,10 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   deleteButtonContainer: {
-    padding: 8,
-    marginRight: 4,
+    padding: 12,
+    marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   errorContainer: {
     flex: 1,
