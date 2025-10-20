@@ -701,6 +701,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 10,
+    elevation: 10,
   },
   errorContainer: {
     flex: 1,
