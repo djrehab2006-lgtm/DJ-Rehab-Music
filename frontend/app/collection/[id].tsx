@@ -275,8 +275,7 @@ export default function CollectionScreen() {
           router.back();
         }}
       />
-      </SafeAreaView>
-    </GestureHandlerRootView>
+    </SafeAreaView>
   );
 }
 
