@@ -264,32 +264,37 @@ export default function CollectionScreen() {
           </View>
         </View>
 
-        <DraggableFlatList
-          data={tracks}
-          renderItem={renderTrackItem}
-          keyExtractor={(item) => item.id}
-          onDragEnd={handleDragEnd}
-          ListHeaderComponent={
-            <View style={styles.collectionHeader}>
-              <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.collectionImage} />
-              <Text style={styles.collectionName}>{folder.name}</Text>
-              <Text style={styles.collectionCount}>{tracks.length} tracks</Text>
-            </View>
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyState}>
-              <Ionicons name="musical-notes-outline" size={64} color="#64748B" />
-              <Text style={styles.emptyText}>No tracks in this collection</Text>
-              {isLoggedIn ? (
-                <Text style={styles.emptySubtext}>Tap + to add tracks</Text>
-              ) : (
-                <Text style={styles.emptySubtext}>Ask admin to add some tracks</Text>
-              )}
-            </View>
-          }
-          contentContainerStyle={styles.tracksContainer}
-          style={{ flex: 1 }}
-        />
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          {/* Collection Header */}
+          <View style={styles.collectionHeader}>
+            <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.collectionImage} />
+            <Text style={styles.collectionName}>{folder.name}</Text>
+            <Text style={styles.collectionCount}>{tracks.length} tracks</Text>
+          </View>
+
+          {/* Tracks List */}
+          <View style={styles.tracksContainer}>
+            {tracks.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Ionicons name="musical-notes-outline" size={64} color="#64748B" />
+                <Text style={styles.emptyText}>No tracks in this collection</Text>
+                {isLoggedIn ? (
+                  <Text style={styles.emptySubtext}>Tap + to add tracks</Text>
+                ) : (
+                  <Text style={styles.emptySubtext}>Ask admin to add some tracks</Text>
+                )}
+              </View>
+            ) : (
+              <DraggableFlatList
+                data={tracks}
+                renderItem={renderTrackItem}
+                keyExtractor={(item) => item.id}
+                onDragEnd={handleDragEnd}
+                scrollEnabled={false}
+              />
+            )}
+          </View>
+        </ScrollView>
 
       {/* Add Track Modal */}
       <AddTrackModal
