@@ -300,6 +300,7 @@ export default function CollectionScreen() {
               </View>
             }
             contentContainerStyle={styles.tracksContainer}
+            showsVerticalScrollIndicator={true}
           />
         )}
 
