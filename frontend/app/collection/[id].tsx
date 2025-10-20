@@ -650,7 +650,7 @@ const styles = StyleSheet.create({
   },
   tracksContainer: {
     paddingHorizontal: 16,
-    paddingBottom: 32,
+    paddingBottom: 120,
   },
   emptyState: {
     alignItems: 'center',
