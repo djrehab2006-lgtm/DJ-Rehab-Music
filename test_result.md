@@ -300,6 +300,8 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Delete Track Functionality"
+    - "Audio Player Integration - Collection Screen"
     - "Drag and Drop Folder Reordering"
     - "Folder Reordering API"
     - "Global Audio Player Context"
