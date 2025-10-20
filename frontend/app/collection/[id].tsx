@@ -143,41 +143,45 @@ export default function CollectionScreen() {
     const isPlaying = currentTrack?.id === item.id;
     
     return (
-      <TouchableOpacity
-        style={[styles.trackCard, isPlaying && styles.trackCardPlaying]}
-        onPress={() => playTrack(item, tracks)}
-      >
-        <View style={styles.trackNumber}>
-          <Text style={styles.trackNumberText}>{index + 1}</Text>
-        </View>
-        <View style={styles.trackCover}>
-          {item.cover_art ? (
-            <Image source={{ uri: item.cover_art}} style={styles.trackImage} />
-          ) : (
-            <Ionicons name="musical-note" size={20} color="#10B981" />
-          )}
-        </View>
-        <View style={styles.trackInfo}>
-          <Text style={styles.trackTitle} numberOfLines={1}>
-            {item.title}
-          </Text>
-          <Text style={styles.trackArtist} numberOfLines={1}>
-            {item.artist}
-          </Text>
-        </View>
-        <Text style={styles.trackDuration}>{formatDuration(item.duration)}</Text>
+      <View style={[styles.trackCard, isPlaying && styles.trackCardPlaying]}>
+        <Pressable
+          style={styles.trackPressable}
+          onPress={() => playTrack(item, tracks)}
+        >
+          <View style={styles.trackNumber}>
+            <Text style={styles.trackNumberText}>{index + 1}</Text>
+          </View>
+          <View style={styles.trackCover}>
+            {item.cover_art ? (
+              <Image source={{ uri: item.cover_art}} style={styles.trackImage} />
+            ) : (
+              <Ionicons name="musical-note" size={20} color="#10B981" />
+            )}
+          </View>
+          <View style={styles.trackInfo}>
+            <Text style={styles.trackTitle} numberOfLines={1}>
+              {item.title}
+            </Text>
+            <Text style={styles.trackArtist} numberOfLines={1}>
+              {item.artist}
+            </Text>
+          </View>
+          <Text style={styles.trackDuration}>{formatDuration(item.duration)}</Text>
+        </Pressable>
         
         {isLoggedIn && (
-          <TouchableOpacity 
+          <Pressable 
             style={styles.deleteButtonContainer}
-            onPress={() => handleDeleteTrack(item.id, item.title)}
-            activeOpacity={0.7}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleDeleteTrack(item.id, item.title);
+            }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons name="trash" size={24} color="#EF4444" />
-          </TouchableOpacity>
+          </Pressable>
         )}
-      </TouchableOpacity>
+      </View>
     );
   };
 
