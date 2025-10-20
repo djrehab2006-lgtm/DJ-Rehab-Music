@@ -114,6 +114,12 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   };
 
   const playTrack = async (track: Track, newPlaylist?: Track[]) => {
+    // Prevent multiple simultaneous play requests
+    if (isLoading) {
+      console.log('Already loading a track, ignoring request');
+      return;
+    }
+
     try {
       setIsLoading(true);
 
@@ -127,6 +133,9 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         }
         soundRef.current = null;
       }
+
+      // Small delay to ensure previous track is fully stopped
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Update playlist if provided
       if (newPlaylist && newPlaylist.length > 0) {
