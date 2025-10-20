@@ -23,18 +23,24 @@ interface AudioPlayerContextType {
   playbackStatus: PlaybackStatus;
   isLoading: boolean;
   isFavorite: boolean;
-  playTrack: (track: Track) => Promise<void>;
+  playTrack: (track: Track, playlist?: Track[]) => Promise<void>;
   pauseTrack: () => Promise<void>;
   resumeTrack: () => Promise<void>;
   stopTrack: () => Promise<void>;
   seekTo: (positionMillis: number) => Promise<void>;
   toggleFavorite: () => void;
+  playNext: () => Promise<void>;
+  playPrevious: () => Promise<void>;
+  hasNext: boolean;
+  hasPrevious: boolean;
 }
 
 const AudioPlayerContext = createContext<AudioPlayerContextType | undefined>(undefined);
 
 export function AudioPlayerProvider({ children }: { children: React.ReactNode }) {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
+  const [playlist, setPlaylist] = useState<Track[]>([]);
+  const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [playbackStatus, setPlaybackStatus] = useState<PlaybackStatus>({
     isPlaying: false,
     positionMillis: 0,
@@ -46,6 +52,9 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
   const soundRef = useRef<Sound | null>(null);
+
+  const hasNext = currentIndex < playlist.length - 1;
+  const hasPrevious = currentIndex > 0;
 
   // Configure audio mode on mount
   useEffect(() => {
