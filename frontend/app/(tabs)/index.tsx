@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   loadingContainer: { flex: 1, backgroundColor: '#0F172A', justifyContent: 'center', alignItems: 'center' },
   scrollView: { flex: 1 },
   heroContainer: { height: 240, width: '100%', justifyContent: 'flex-end', overflow: 'hidden' },
-  heroImage: { resizeMode: 'cover', transform: [{ translateY: -40 }] },
+  heroImage: { resizeMode: 'cover', transform: [{ translateY: 60 }] },
   heroOverlay: { backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 24 },
   heroTitle: { fontSize: 32, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8, textShadowColor: 'rgba(0, 0, 0, 0.75)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
   heroSubtitle: { fontSize: 16, color: '#F1F5F9', textShadowColor: 'rgba(0, 0, 0, 0.75)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 },
