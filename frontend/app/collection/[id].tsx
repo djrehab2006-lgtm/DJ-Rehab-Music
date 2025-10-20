@@ -175,7 +175,7 @@ export default function CollectionScreen() {
         <TouchableOpacity
           key={item.id}
           style={[styles.trackCard, isPlaying && styles.trackCardPlaying, isActive && styles.trackCardDragging]}
-          onPress={() => playTrack(item)}
+          onPress={() => playTrack(item, tracks)}
           onLongPress={isLoggedIn ? drag : undefined}
           disabled={isActive}
         >
