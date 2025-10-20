@@ -281,25 +281,24 @@ export default function CollectionScreen() {
 
           {/* Tracks List */}
           <View style={styles.tracksContainer}>
-            {tracks.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Ionicons name="musical-notes-outline" size={64} color="#64748B" />
-                <Text style={styles.emptyText}>No tracks in this collection</Text>
-                {isLoggedIn ? (
-                  <Text style={styles.emptySubtext}>Tap + to add tracks</Text>
-                ) : (
-                  <Text style={styles.emptySubtext}>Ask admin to add some tracks</Text>
-                )}
-              </View>
-            ) : (
-              <DraggableFlatList
-                data={tracks}
-                renderItem={renderTrackItem}
-                keyExtractor={(item) => item.id}
-                onDragEnd={handleDragEnd}
-                scrollEnabled={false}
-              />
-            )}
+            <DraggableFlatList
+              data={tracks}
+              renderItem={renderTrackItem}
+              keyExtractor={(item) => item.id}
+              onDragEnd={handleDragEnd}
+              ListEmptyComponent={
+                <View style={styles.emptyState}>
+                  <Ionicons name="musical-notes-outline" size={64} color="#64748B" />
+                  <Text style={styles.emptyText}>No tracks in this collection</Text>
+                  {isLoggedIn ? (
+                    <Text style={styles.emptySubtext}>Tap + to add tracks</Text>
+                  ) : (
+                    <Text style={styles.emptySubtext}>Ask admin to add some tracks</Text>
+                  )}
+                </View>
+              }
+              scrollEnabled={false}
+            />
           </View>
         </ScrollView>
 
