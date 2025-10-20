@@ -174,43 +174,44 @@ export default function CollectionScreen() {
     
     return (
       <ScaleDecorator>
-        <View style={[styles.trackCard, isPlaying && styles.trackCardPlaying, isActive && styles.trackCardDragging]}>
-          <TouchableOpacity
-            style={styles.trackMainArea}
-            onPress={() => playTrack(item, tracks)}
-            onLongPress={isLoggedIn ? drag : undefined}
-            disabled={isActive}
-          >
-            <View style={styles.trackNumber}>
-              <Text style={styles.trackNumberText}>{trackIndex + 1}</Text>
-            </View>
-            <View style={styles.trackCover}>
-              {item.cover_art ? (
-                <Image source={{ uri: item.cover_art}} style={styles.trackImage} />
-              ) : (
-                <Ionicons name="musical-note" size={20} color="#10B981" />
-              )}
-            </View>
-            <View style={styles.trackInfo}>
-              <Text style={styles.trackTitle} numberOfLines={1}>
-                {item.title}
-              </Text>
-              <Text style={styles.trackArtist} numberOfLines={1}>
-                {item.artist}
-              </Text>
-            </View>
-            <Text style={styles.trackDuration}>{formatDuration(item.duration)}</Text>
-          </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.trackCard, isPlaying && styles.trackCardPlaying, isActive && styles.trackCardDragging]}
+          onPress={() => playTrack(item, tracks)}
+          onLongPress={isLoggedIn ? drag : undefined}
+          disabled={isActive}
+        >
+          <View style={styles.trackNumber}>
+            <Text style={styles.trackNumberText}>{trackIndex + 1}</Text>
+          </View>
+          <View style={styles.trackCover}>
+            {item.cover_art ? (
+              <Image source={{ uri: item.cover_art}} style={styles.trackImage} />
+            ) : (
+              <Ionicons name="musical-note" size={20} color="#10B981" />
+            )}
+          </View>
+          <View style={styles.trackInfo}>
+            <Text style={styles.trackTitle} numberOfLines={1}>
+              {item.title}
+            </Text>
+            <Text style={styles.trackArtist} numberOfLines={1}>
+              {item.artist}
+            </Text>
+          </View>
+          <Text style={styles.trackDuration}>{formatDuration(item.duration)}</Text>
+          
           {isLoggedIn && (
-            <TouchableOpacity
-              onPress={() => handleDeleteTrack(item.id, item.title)}
-              style={styles.deleteButton}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            <View 
+              style={styles.deleteButtonContainer}
+              onTouchEnd={(e) => {
+                e.stopPropagation();
+                handleDeleteTrack(item.id, item.title);
+              }}
             >
               <Ionicons name="trash" size={24} color="#EF4444" />
-            </TouchableOpacity>
+            </View>
           )}
-        </View>
+        </TouchableOpacity>
       </ScaleDecorator>
     );
   };
