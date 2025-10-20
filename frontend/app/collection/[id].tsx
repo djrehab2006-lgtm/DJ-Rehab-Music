@@ -152,6 +152,11 @@ export default function CollectionScreen() {
       handleDeleteTrack(item.id, item.title);
     };
     
+    const handleEditPress = () => {
+      setSelectedTrack(item);
+      setShowEditTrack(true);
+    };
+    
     return (
       <View style={[styles.trackCard, isPlaying && styles.trackCardPlaying]} pointerEvents="box-none">
         <TouchableOpacity
@@ -181,16 +186,28 @@ export default function CollectionScreen() {
         </TouchableOpacity>
         
         {isLoggedIn && (
-          <TouchableOpacity 
-            style={styles.deleteButtonContainer}
-            onPress={handleDeletePress}
-            activeOpacity={0.6}
-            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-          >
-            <View style={styles.deleteButtonBackground}>
-              <Ionicons name="trash" size={26} color="#EF4444" />
-            </View>
-          </TouchableOpacity>
+          <View style={styles.trackActions}>
+            <TouchableOpacity 
+              style={styles.editButtonContainer}
+              onPress={handleEditPress}
+              activeOpacity={0.6}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            >
+              <View style={styles.editButtonBackground}>
+                <Ionicons name="create-outline" size={22} color="#10B981" />
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.deleteButtonContainer}
+              onPress={handleDeletePress}
+              activeOpacity={0.6}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            >
+              <View style={styles.deleteButtonBackground}>
+                <Ionicons name="trash" size={26} color="#EF4444" />
+              </View>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
     );
