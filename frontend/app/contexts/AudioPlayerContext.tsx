@@ -95,7 +95,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   };
 
-  const playTrack = async (track: Track) => {
+  const playTrack = async (track: Track, newPlaylist?: Track[]) => {
     try {
       setIsLoading(true);
 
@@ -108,6 +108,17 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
           console.log('Error stopping previous track:', e);
         }
         soundRef.current = null;
+      }
+
+      // Update playlist if provided
+      if (newPlaylist && newPlaylist.length > 0) {
+        setPlaylist(newPlaylist);
+        const index = newPlaylist.findIndex(t => t.id === track.id);
+        setCurrentIndex(index);
+      } else if (playlist.length > 0) {
+        // Update index in existing playlist
+        const index = playlist.findIndex(t => t.id === track.id);
+        setCurrentIndex(index >= 0 ? index : -1);
       }
 
       // Create and load new sound
@@ -125,6 +136,20 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       console.error('Error playing track:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const playNext = async () => {
+    if (hasNext && playlist.length > 0) {
+      const nextTrack = playlist[currentIndex + 1];
+      await playTrack(nextTrack);
+    }
+  };
+
+  const playPrevious = async () => {
+    if (hasPrevious && playlist.length > 0) {
+      const previousTrack = playlist[currentIndex - 1];
+      await playTrack(previousTrack);
     }
   };
 
