@@ -220,7 +220,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   };
 
-  const toggleFavorite = () => {
+  const toggleFavorite = async () => {
     if (currentTrack) {
       const newFavorites = new Set(favorites);
       if (favorites.has(currentTrack.id)) {
@@ -230,7 +230,14 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       }
       setFavorites(newFavorites);
       setIsFavorite(!isFavorite);
-      // TODO: Persist to AsyncStorage or backend
+      
+      // Persist to AsyncStorage
+      try {
+        const favoriteIds = Array.from(newFavorites);
+        await AsyncStorage.setItem('favorite_tracks', JSON.stringify(favoriteIds));
+      } catch (error) {
+        console.error('Error saving favorites:', error);
+      }
     }
   };
 
