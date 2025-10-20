@@ -140,6 +140,87 @@ export default function CollectionScreen() {
     );
   };
 
+  const handleDragEnd = async ({ data }: { data: Track[] }) => {
+    // Haptic feedback on drag complete
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    
+    // Update local state immediately for smooth UX
+    setTracks(data);
+    
+    // Save order to backend
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      const trackIds = data.map(track => track.id);
+      
+      await fetch(BACKEND_URL + '/api/tracks/reorder', {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ track_ids: trackIds }),
+      });
+    } catch (error) {
+      console.error('Error reordering tracks:', error);
+      Alert.alert('Error', 'Failed to save track order');
+      // Reload to restore correct order
+      loadData();
+    }
+  };
+
+  const renderTrackItem = ({ item, drag, isActive }: RenderItemParams<Track>) => {
+    const isPlaying = currentTrack?.id === item.id;
+    return (
+      <ScaleDecorator>
+        <TouchableOpacity
+          key={item.id}
+          style={[styles.trackCard, isPlaying && styles.trackCardPlaying, isActive && styles.trackCardDragging]}
+          onPress={() => playTrack(item)}
+          onLongPress={isLoggedIn ? drag : undefined}
+          disabled={isActive}
+        >
+          <View style={styles.trackNumber}>
+            <Text style={styles.trackNumberText}>{tracks.indexOf(item) + 1}</Text>
+          </View>
+          <View style={styles.trackCover}>
+            {item.cover_art ? (
+              <Image source={{ uri: item.cover_art }} style={styles.trackImage} />
+            ) : (
+              <Ionicons name="musical-note" size={20} color="#10B981" />
+            )}
+          </View>
+          <View style={styles.trackInfo}>
+            <Text style={styles.trackTitle} numberOfLines={1}>
+              {item.title}
+            </Text>
+            <Text style={styles.trackArtist} numberOfLines={1}>
+              {item.artist}
+            </Text>
+          </View>
+          <Text style={styles.trackDuration}>{formatDuration(item.duration)}</Text>
+          {isLoggedIn ? (
+            <>
+              <TouchableOpacity
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleDeleteTrack(item.id, item.title);
+                }}
+                style={styles.deleteButton}
+              >
+                <Ionicons name="trash-outline" size={24} color="#EF4444" />
+              </TouchableOpacity>
+              <View style={styles.dragHandleTrack}>
+                <Ionicons name="reorder-three" size={24} color="#64748B" />
+              </View>
+            </>
+          ) : (
+            <Ionicons name="play-circle" size={28} color={isPlaying ? "#10B981" : "#64748B"} />
+          )}
+        </TouchableOpacity>
+      </ScaleDecorator>
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
