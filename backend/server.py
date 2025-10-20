@@ -247,6 +247,16 @@ async def delete_track(track_id: str, payload: dict = Depends(verify_token)):
         raise HTTPException(status_code=404, detail="Track not found")
     return {"message": "Track deleted successfully"}
 
+@app.put("/api/tracks/reorder")
+async def reorder_tracks(data: TrackReorder, payload: dict = Depends(verify_token)):
+    # Update position for each track based on new order
+    for index, track_id in enumerate(data.track_ids):
+        await db.tracks.update_one(
+            {"_id": ObjectId(track_id)},
+            {"$set": {"position": index}}
+        )
+    return {"message": "Tracks reordered successfully"}
+
 @app.get("/api/health")
 async def health():
     return {"status": "ok"}
