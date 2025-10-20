@@ -291,55 +291,45 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: 'center', paddingVertical: 48 },
   emptyText: { fontSize: 18, color: '#94A3B8', marginTop: 16, marginBottom: 8 },
   emptySubtext: { fontSize: 14, color: '#64748B' },
-  carouselContainer: {
-    paddingVertical: 8,
-    paddingRight: 20,
-  },
-  carouselCard: {
-    width: 120,
-    marginRight: 16,
-  },
-  carouselCardDragging: {
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.6,
-    shadowRadius: 20,
-    elevation: 12,
-    transform: [{ scale: 1.05 }],
-  },
-  carouselImageContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 12,
-    overflow: 'hidden',
-    position: 'relative',
+  listCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1E293B',
+    padding: 12,
     marginBottom: 8,
+    borderRadius: 12,
   },
-  carouselImage: {
-    width: '100%',
-    height: '100%',
+  listCardDragging: {
     backgroundColor: '#334155',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  carouselName: {
-    fontSize: 13,
+  listImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    backgroundColor: '#334155',
+    marginRight: 12,
+  },
+  listTextContainer: {
+    flex: 1,
+    marginRight: 12,
+  },
+  listName: {
+    fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
     marginBottom: 4,
-    lineHeight: 16,
   },
-  carouselCount: {
-    fontSize: 11,
+  listCount: {
+    fontSize: 13,
     color: '#64748B',
-    fontWeight: '400',
   },
-  dragHandleCarousel: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    borderRadius: 4,
-    padding: 4,
-    zIndex: 10,
+  dragHandleList: {
+    marginRight: 8,
   },
   modalOverlay: {
     flex: 1,
