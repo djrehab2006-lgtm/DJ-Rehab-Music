@@ -203,11 +203,15 @@ export default function CollectionScreen() {
           {isLoggedIn ? (
             <>
               <TouchableOpacity
-                onPress={() => handleDeleteTrack(item.id, item.title)}
+                onPress={() => {
+                  console.log('Delete button pressed for:', item.title);
+                  handleDeleteTrack(item.id, item.title);
+                }}
                 style={styles.deleteButton}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                activeOpacity={0.6}
               >
-                <Ionicons name="trash-outline" size={24} color="#EF4444" />
+                <Ionicons name="trash" size={24} color="#EF4444" />
               </TouchableOpacity>
               <View style={styles.dragHandleTrack}>
                 <Ionicons name="reorder-three" size={24} color="#64748B" />
