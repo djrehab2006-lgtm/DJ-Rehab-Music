@@ -300,7 +300,8 @@ export default function CollectionScreen() {
               </View>
             }
             contentContainerStyle={styles.tracksContainer}
-            showsVerticalScrollIndicator={true}
+            scrollEnabled={true}
+            nestedScrollEnabled={true}
             style={{ flex: 1 }}
           />
         )}
