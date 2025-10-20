@@ -49,6 +49,8 @@ export default function CollectionScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showAddTrack, setShowAddTrack] = useState(false);
   const [showEditFolder, setShowEditFolder] = useState(false);
+  const [showEditTrack, setShowEditTrack] = useState(false);
+  const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
 
   useEffect(() => {
     checkAuth();
