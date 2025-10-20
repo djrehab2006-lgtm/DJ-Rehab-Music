@@ -151,10 +151,11 @@ export default function CollectionScreen() {
     };
     
     return (
-      <View style={[styles.trackCard, isPlaying && styles.trackCardPlaying]}>
-        <Pressable
+      <View style={[styles.trackCard, isPlaying && styles.trackCardPlaying]} pointerEvents="box-none">
+        <TouchableOpacity
           style={styles.trackPressable}
           onPress={handleTrackPress}
+          activeOpacity={0.7}
         >
           <View style={styles.trackNumber}>
             <Text style={styles.trackNumberText}>{index + 1}</Text>
@@ -175,7 +176,7 @@ export default function CollectionScreen() {
             </Text>
           </View>
           <Text style={styles.trackDuration}>{formatDuration(item.duration)}</Text>
-        </Pressable>
+        </TouchableOpacity>
         
         {isLoggedIn && (
           <TouchableOpacity 
@@ -184,7 +185,9 @@ export default function CollectionScreen() {
             activeOpacity={0.6}
             hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
           >
-            <Ionicons name="trash" size={26} color="#EF4444" />
+            <View style={styles.deleteButtonBackground}>
+              <Ionicons name="trash" size={26} color="#EF4444" />
+            </View>
           </TouchableOpacity>
         )}
       </View>
