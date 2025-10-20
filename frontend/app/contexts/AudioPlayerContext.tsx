@@ -227,6 +227,10 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     stopTrack,
     seekTo,
     toggleFavorite,
+    playNext,
+    playPrevious,
+    hasNext,
+    hasPrevious,
   };
 
   return (
