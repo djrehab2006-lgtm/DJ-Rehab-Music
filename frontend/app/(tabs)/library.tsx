@@ -76,7 +76,7 @@ export default function LibraryScreen() {
               <TouchableOpacity 
                 key={track.id} 
                 style={[styles.trackCard, isPlaying && styles.trackCardPlaying]} 
-                onPress={() => playTrack(track)}
+                onPress={() => playTrack(track, tracks)}
               >
                 <View style={styles.trackNumber}>
                   <Text style={styles.trackNumberText}>{index + 1}</Text>
