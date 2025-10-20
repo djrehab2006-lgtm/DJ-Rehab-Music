@@ -625,8 +625,6 @@ const styles = StyleSheet.create({
   trackCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
     backgroundColor: '#1E293B',
     marginVertical: 4,
     borderRadius: 12,
@@ -635,6 +633,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#334155',
     borderWidth: 1,
     borderColor: '#10B981',
+  },
+  trackPressable: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   trackNumber: {
     width: 32,
