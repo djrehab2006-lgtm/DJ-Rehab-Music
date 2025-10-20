@@ -175,7 +175,7 @@ export default function CollectionScreen() {
             )}
           </View>
           <View style={styles.trackInfo}>
-            <Text style={styles.trackTitle} numberOfLines={1}>
+            <Text style={styles.trackTitle} numberOfLines={2}>
               {item.title}
             </Text>
             <Text style={styles.trackArtist} numberOfLines={1}>
