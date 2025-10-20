@@ -164,14 +164,11 @@ export default function CollectionScreen() {
           onPress={handleTrackPress}
           activeOpacity={0.7}
         >
-          <View style={styles.trackNumber}>
-            <Text style={styles.trackNumberText}>{index + 1}</Text>
-          </View>
           <View style={styles.trackCover}>
             {item.cover_art ? (
               <Image source={{ uri: item.cover_art}} style={styles.trackImage} />
             ) : (
-              <Ionicons name="musical-note" size={20} color="#10B981" />
+              <Ionicons name="musical-note" size={18} color="#10B981" />
             )}
           </View>
           <View style={styles.trackInfo}>
