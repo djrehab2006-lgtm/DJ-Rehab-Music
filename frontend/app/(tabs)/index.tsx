@@ -176,9 +176,7 @@ export default function HomeScreen() {
                 renderItem={renderFolderItem}
                 keyExtractor={(item) => item.id}
                 onDragEnd={handleDragEnd}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.carouselContainer}
+                scrollEnabled={false}
               />
             )}
           </View>
