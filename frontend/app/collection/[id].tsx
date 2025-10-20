@@ -644,11 +644,11 @@ const styles = StyleSheet.create({
     borderColor: '#10B981',
   },
   trackPressable: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
+    width: '85%',
   },
   trackNumber: {
     width: 32,
@@ -700,12 +700,23 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   deleteButtonContainer: {
-    padding: 12,
-    marginRight: 8,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 60,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
     elevation: 10,
+  },
+  deleteButtonBackground: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   errorContainer: {
     flex: 1,
