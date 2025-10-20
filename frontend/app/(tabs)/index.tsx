@@ -115,21 +115,21 @@ export default function HomeScreen() {
     return (
       <ScaleDecorator>
         <TouchableOpacity 
-          style={[styles.collectionCard, isActive && styles.collectionCardDragging]}
+          style={[styles.carouselCard, isActive && styles.carouselCardDragging]}
           onPress={() => router.push('/collection/' + item.id)}
           onLongPress={isLoggedIn ? drag : undefined}
           disabled={isActive}
         >
-          <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.collectionImage} />
-          <View style={styles.collectionInfo}>
-            <Text style={styles.collectionName} numberOfLines={1}>{item.name}</Text>
-            <Text style={styles.collectionCount}>{getTrackCount(item.id)} tracks</Text>
-          </View>
+          <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.carouselImage} />
           {isLoggedIn && (
-            <View style={styles.dragHandle}>
-              <Ionicons name="reorder-three" size={24} color="#64748B" />
+            <View style={styles.dragHandleCarousel}>
+              <Ionicons name="reorder-three" size={20} color="#FFFFFF" />
             </View>
           )}
+          <View style={styles.carouselOverlay}>
+            <Text style={styles.carouselName} numberOfLines={2}>{item.name}</Text>
+            <Text style={styles.carouselCount}>{getTrackCount(item.id)} tracks</Text>
+          </View>
         </TouchableOpacity>
       </ScaleDecorator>
     );
