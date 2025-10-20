@@ -124,17 +124,25 @@ export function MiniPlayer() {
 
         {/* Controls */}
         <View style={styles.controls}>
-          {/* Time Display */}
-          <Text style={styles.timeText}>
-            {formatTime(playbackStatus.positionMillis)} / {formatTime(playbackStatus.durationMillis)}
-          </Text>
-
           {/* Favorite Button */}
           <TouchableOpacity onPress={toggleFavorite} style={styles.controlButton}>
             <Ionicons
               name={isFavorite ? 'heart' : 'heart-outline'}
-              size={24}
+              size={22}
               color={isFavorite ? '#EF4444' : '#FFFFFF'}
+            />
+          </TouchableOpacity>
+
+          {/* Previous Button */}
+          <TouchableOpacity 
+            onPress={playPrevious} 
+            disabled={!hasPrevious}
+            style={styles.controlButton}
+          >
+            <Ionicons
+              name="play-back"
+              size={28}
+              color={hasPrevious ? '#FFFFFF' : '#475569'}
             />
           </TouchableOpacity>
 
@@ -145,15 +153,33 @@ export function MiniPlayer() {
             style={styles.playButton}
           >
             {isLoading ? (
-              <Ionicons name="hourglass-outline" size={32} color="#10B981" />
+              <Ionicons name="hourglass-outline" size={36} color="#10B981" />
             ) : (
               <Ionicons
                 name={playbackStatus.isPlaying ? 'pause-circle' : 'play-circle'}
-                size={40}
+                size={44}
                 color="#10B981"
               />
             )}
           </TouchableOpacity>
+
+          {/* Next Button */}
+          <TouchableOpacity 
+            onPress={playNext} 
+            disabled={!hasNext}
+            style={styles.controlButton}
+          >
+            <Ionicons
+              name="play-forward"
+              size={28}
+              color={hasNext ? '#FFFFFF' : '#475569'}
+            />
+          </TouchableOpacity>
+
+          {/* Time Display */}
+          <Text style={styles.timeText}>
+            {formatTime(playbackStatus.positionMillis)}
+          </Text>
         </View>
       </View>
     </Animated.View>
