@@ -228,6 +228,9 @@ frontend:
         - working: "NA"
           agent: "main"
           comment: "Integrated audio player context into collection screen. Track clicks now play audio instead of navigating. Added visual indicator for currently playing track (highlighted card with green border)."
+        - working: "NA"
+          agent: "main"
+          comment: "Removed all drag-and-drop code for tracks. Replaced DraggableFlatList with standard FlatList. Fixed GestureHandlerRootView closing tag error. Cleaned up unused drag-and-drop styles. Delete button implementation preserved with proper touch handling (hitSlop, activeOpacity). Ready for testing."
   
   - task: "Audio Player Integration - Library Screen"
     implemented: true
