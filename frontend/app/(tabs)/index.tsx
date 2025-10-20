@@ -115,21 +115,22 @@ export default function HomeScreen() {
     return (
       <ScaleDecorator>
         <TouchableOpacity 
-          style={[styles.carouselCard, isActive && styles.carouselCardDragging]}
+          style={[styles.listCard, isActive && styles.listCardDragging]}
           onPress={() => router.push('/collection/' + item.id)}
           onLongPress={isLoggedIn ? drag : undefined}
           disabled={isActive}
         >
-          <View style={styles.carouselImageContainer}>
-            <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.carouselImage} />
-            {isLoggedIn && (
-              <View style={styles.dragHandleCarousel}>
-                <Ionicons name="reorder-three" size={16} color="#FFFFFF" />
-              </View>
-            )}
+          <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.listImage} />
+          <View style={styles.listTextContainer}>
+            <Text style={styles.listName} numberOfLines={1}>{item.name}</Text>
+            <Text style={styles.listCount}>{getTrackCount(item.id)} tracks</Text>
           </View>
-          <Text style={styles.carouselName} numberOfLines={2}>{item.name}</Text>
-          <Text style={styles.carouselCount}>{getTrackCount(item.id)} tracks</Text>
+          {isLoggedIn && (
+            <View style={styles.dragHandleList}>
+              <Ionicons name="reorder-three" size={24} color="#64748B" />
+            </View>
+          )}
+          <Ionicons name="chevron-forward" size={20} color="#64748B" />
         </TouchableOpacity>
       </ScaleDecorator>
     );
