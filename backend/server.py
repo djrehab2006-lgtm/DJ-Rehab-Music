@@ -137,9 +137,17 @@ async def get_folders():
 
 @app.post("/api/folders")
 async def create_folder(folder: FolderCreate, payload: dict = Depends(verify_token)):
+    # Get the DEFAULT_FOLDER_ICON if no cover_image provided
+    DEFAULT_FOLDER_ICON = os.getenv("DEFAULT_FOLDER_ICON", "")
+    
+    # Get the highest position and add 1
+    max_folder = await db.folders.find_one(sort=[("position", -1)])
+    next_position = (max_folder.get("position", 0) + 1) if max_folder else 0
+    
     folder_doc = {
         "name": folder.name,
-        "cover_image": folder.cover_image,
+        "cover_image": folder.cover_image or DEFAULT_FOLDER_ICON,
+        "position": next_position,
         "created_at": datetime.utcnow()
     }
     result = await db.folders.insert_one(folder_doc)
