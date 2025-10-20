@@ -56,6 +56,9 @@ class FolderUpdate(BaseModel):
     name: Optional[str] = None
     cover_image: Optional[str] = None
 
+class FolderReorder(BaseModel):
+    folder_ids: List[str]  # Array of folder IDs in new order
+
 class TrackCreate(BaseModel):
     title: str
     artist: str
