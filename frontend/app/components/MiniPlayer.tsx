@@ -21,6 +21,10 @@ export function MiniPlayer() {
     resumeTrack,
     seekTo,
     toggleFavorite,
+    playNext,
+    playPrevious,
+    hasNext,
+    hasPrevious,
   } = useAudioPlayer();
 
   const [slideValue, setSlideValue] = useState(0);
