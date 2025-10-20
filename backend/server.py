@@ -224,6 +224,16 @@ async def create_track(track: TrackCreate, payload: dict = Depends(verify_token)
     del track_doc["_id"]
     return track_doc
 
+@app.put("/api/tracks/reorder")
+async def reorder_tracks(data: TrackReorder, payload: dict = Depends(verify_token)):
+    # Update position for each track based on new order
+    for index, track_id in enumerate(data.track_ids):
+        await db.tracks.update_one(
+            {"_id": ObjectId(track_id)},
+            {"$set": {"position": index}}
+        )
+    return {"message": "Tracks reordered successfully"}
+
 @app.put("/api/tracks/{track_id}")
 async def update_track(track_id: str, track: TrackUpdate, payload: dict = Depends(verify_token)):
     update_data = {k: v for k, v in track.dict().items() if v is not None}
