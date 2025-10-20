@@ -308,6 +308,17 @@ export default function CollectionScreen() {
           router.back();
         }}
       />
+
+      {/* Edit Track Modal */}
+      <EditTrackModal
+        visible={showEditTrack}
+        track={selectedTrack}
+        onClose={() => {
+          setShowEditTrack(false);
+          setSelectedTrack(null);
+        }}
+        onSuccess={loadData}
+      />
     </SafeAreaView>
   );
 }
