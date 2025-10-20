@@ -204,59 +204,57 @@ export default function CollectionScreen() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={styles.container} edges={['top']}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{folder.name}</Text>
-          <View style={styles.headerActions}>
-            {isLoggedIn && (
-              <>
-                <TouchableOpacity onPress={() => setShowEditFolder(true)} style={styles.headerButton}>
-                  <Ionicons name="create-outline" size={24} color="#10B981" />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setShowAddTrack(true)} style={styles.headerButton}>
-                  <Ionicons name="add-circle" size={28} color="#10B981" />
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{folder.name}</Text>
+        <View style={styles.headerActions}>
+          {isLoggedIn && (
+            <>
+              <TouchableOpacity onPress={() => setShowEditFolder(true)} style={styles.headerButton}>
+                <Ionicons name="create-outline" size={24} color="#10B981" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setShowAddTrack(true)} style={styles.headerButton}>
+                <Ionicons name="add-circle" size={28} color="#10B981" />
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+      </View>
+
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Collection Header */}
+        <View style={styles.collectionHeader}>
+          <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.collectionImage} />
+          <Text style={styles.collectionName}>{folder.name}</Text>
+          <Text style={styles.collectionCount}>{tracks.length} tracks</Text>
         </View>
 
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          {/* Collection Header */}
-          <View style={styles.collectionHeader}>
-            <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.collectionImage} />
-            <Text style={styles.collectionName}>{folder.name}</Text>
-            <Text style={styles.collectionCount}>{tracks.length} tracks</Text>
-          </View>
-
-          {/* Tracks List */}
-          <View style={styles.tracksContainer}>
-            {tracks.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Ionicons name="musical-notes-outline" size={64} color="#64748B" />
-                <Text style={styles.emptyText}>No tracks in this collection</Text>
-                {isLoggedIn ? (
-                  <Text style={styles.emptySubtext}>Tap + to add tracks</Text>
-                ) : (
-                  <Text style={styles.emptySubtext}>Ask admin to add some tracks</Text>
-                )}
-              </View>
-            ) : (
-              <DraggableFlatList
-                data={tracks}
-                renderItem={renderTrackItem}
-                keyExtractor={(item) => item.id}
-                onDragEnd={handleDragEnd}
-                scrollEnabled={false}
-              />
-            )}
-          </View>
-        </ScrollView>
+        {/* Tracks List */}
+        <View style={styles.tracksContainer}>
+          {tracks.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="musical-notes-outline" size={64} color="#64748B" />
+              <Text style={styles.emptyText}>No tracks in this collection</Text>
+              {isLoggedIn ? (
+                <Text style={styles.emptySubtext}>Tap + to add tracks</Text>
+              ) : (
+                <Text style={styles.emptySubtext}>Ask admin to add some tracks</Text>
+              )}
+            </View>
+          ) : (
+            <FlatList
+              data={tracks}
+              renderItem={renderTrackItem}
+              keyExtractor={(item) => item.id}
+              scrollEnabled={false}
+            />
+          )}
+        </View>
+      </ScrollView>
 
       {/* Add Track Modal */}
       <AddTrackModal
