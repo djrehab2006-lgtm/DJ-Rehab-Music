@@ -180,6 +180,16 @@ async def delete_folder(folder_id: str, payload: dict = Depends(verify_token)):
         raise HTTPException(status_code=404, detail="Folder not found")
     return {"message": "Folder deleted successfully"}
 
+@app.put("/api/folders/reorder")
+async def reorder_folders(data: FolderReorder, payload: dict = Depends(verify_token)):
+    # Update position for each folder based on new order
+    for index, folder_id in enumerate(data.folder_ids):
+        await db.folders.update_one(
+            {"_id": ObjectId(folder_id)},
+            {"$set": {"position": index}}
+        )
+    return {"message": "Folders reordered successfully"}
+
 # Track Endpoints
 @app.get("/api/tracks")
 async def get_tracks(folder_id: Optional[str] = None):
