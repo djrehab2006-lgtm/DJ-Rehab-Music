@@ -199,7 +199,7 @@ async def get_tracks(folder_id: Optional[str] = None):
     query = {}
     if folder_id:
         query["folder_id"] = folder_id
-    tracks = await db.tracks.find(query).sort("created_at", -1).to_list(500)
+    tracks = await db.tracks.find(query).sort("position", 1).to_list(500)
     return [serialize_doc(t) for t in tracks]
 
 @app.post("/api/tracks")
