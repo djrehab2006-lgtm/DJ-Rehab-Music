@@ -252,6 +252,18 @@ frontend:
         - working: "NA"
           agent: "main"
           comment: "Added MiniPlayer component to tab layout, positioned above the tab bar. Mini-player persists across all tab navigation."
+  
+  - task: "Drag and Drop Folder Reordering"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/app/(tabs)/index.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented drag and drop reordering for folders on Home screen. Features: Long press to initiate drag (admin only), drag handle icon shown for admins, haptic feedback on drag completion, enhanced visual feedback (shadow + scale + highlighting), order persisted to backend."
 
 metadata:
   created_by: "testing_agent"
