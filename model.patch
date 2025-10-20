@@ -1,195 +1,276 @@
+diff --git a/frontend/app/collection/[id].tsx b/frontend/app/collection/[id].tsx
+index 43dab28..0eb1398 100644
+--- a/frontend/app/collection/[id].tsx
++++ b/frontend/app/collection/[id].tsx
+@@ -267,37 +267,41 @@ export default function CollectionScreen() {
+           </View>
+         </View>
+ 
+-        <ScrollView style={styles.scrollView}>
+-          {/* Collection Header */}
+-          <View style={styles.collectionHeader}>
+-            <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.collectionImage} />
+-            <Text style={styles.collectionName}>{folder.name}</Text>
+-            <Text style={styles.collectionCount}>{tracks.length} tracks</Text>
+-          </View>
+-
+-          {/* Tracks List */}
+-          <View style={styles.tracksContainer}>
+-            {tracks.length === 0 ? (
+-              <View style={styles.emptyState}>
+-                <Ionicons name="musical-notes-outline" size={64} color="#64748B" />
+-                <Text style={styles.emptyText}>No tracks in this collection</Text>
+-                {isLoggedIn ? (
+-                  <Text style={styles.emptySubtext}>Tap + to add tracks</Text>
+-                ) : (
+-                  <Text style={styles.emptySubtext}>Ask admin to add some tracks</Text>
+-                )}
++        {tracks.length === 0 ? (
++          <ScrollView style={styles.scrollView}>
++            {/* Collection Header */}
++            <View style={styles.collectionHeader}>
++              <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.collectionImage} />
++              <Text style={styles.collectionName}>{folder.name}</Text>
++              <Text style={styles.collectionCount}>{tracks.length} tracks</Text>
++            </View>
++            
++            <View style={styles.emptyState}>
++              <Ionicons name="musical-notes-outline" size={64} color="#64748B" />
++              <Text style={styles.emptyText}>No tracks in this collection</Text>
++              {isLoggedIn ? (
++                <Text style={styles.emptySubtext}>Tap + to add tracks</Text>
++              ) : (
++                <Text style={styles.emptySubtext}>Ask admin to add some tracks</Text>
++              )}
++            </View>
++          </ScrollView>
++        ) : (
++          <DraggableFlatList
++            data={tracks}
++            renderItem={renderTrackItem}
++            keyExtractor={(item) => item.id}
++            onDragEnd={handleDragEnd}
++            ListHeaderComponent={
++              <View style={styles.collectionHeader}>
++                <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.collectionImage} />
++                <Text style={styles.collectionName}>{folder.name}</Text>
++                <Text style={styles.collectionCount}>{tracks.length} tracks</Text>
+               </View>
+-            ) : (
+-              <DraggableFlatList
+-                data={tracks}
+-                renderItem={renderTrackItem}
+-                keyExtractor={(item) => item.id}
+-                onDragEnd={handleDragEnd}
+-                scrollEnabled={false}
+-              />
+-            )}
+-          </View>
+-        </ScrollView>
++            }
++            contentContainerStyle={styles.tracksContainer}
++          />
++        )}
+ 
+       {/* Add Track Modal */}
+       <AddTrackModal
 diff --git a/model.patch b/model.patch
-index e5f8dcf..e69de29 100644
+index 27403a3..e69de29 100644
 --- a/model.patch
 +++ b/model.patch
-@@ -1,190 +0,0 @@
--diff --git a/backend/server.py b/backend/server.py
--index dba40d5..3aaf802 100644
----- a/backend/server.py
--+++ b/backend/server.py
--@@ -137,9 +137,17 @@ async def get_folders():
-- 
-- @app.post("/api/folders")
-- async def create_folder(folder: FolderCreate, payload: dict = Depends(verify_token)):
--+    # Get the DEFAULT_FOLDER_ICON if no cover_image provided
--+    DEFAULT_FOLDER_ICON = os.getenv("DEFAULT_FOLDER_ICON", "")
--+    
--+    # Get the highest position and add 1
--+    max_folder = await db.folders.find_one(sort=[("position", -1)])
--+    next_position = (max_folder.get("position", 0) + 1) if max_folder else 0
--+    
--     folder_doc = {
--         "name": folder.name,
---        "cover_image": folder.cover_image,
--+        "cover_image": folder.cover_image or DEFAULT_FOLDER_ICON,
--+        "position": next_position,
--         "created_at": datetime.utcnow()
--     }
--     result = await db.folders.insert_one(folder_doc)
+@@ -1,195 +0,0 @@
 -diff --git a/model.patch b/model.patch
--index b2a2dfb..e69de29 100644
+-index e5f8dcf..e69de29 100644
 ---- a/model.patch
 -+++ b/model.patch
--@@ -1,162 +0,0 @@
---diff --git a/frontend/app/(tabs)/index.tsx b/frontend/app/(tabs)/index.tsx
---index 5caf5e9..9b0a2b8 100644
------ a/frontend/app/(tabs)/index.tsx
---+++ b/frontend/app/(tabs)/index.tsx
---@@ -99,7 +99,14 @@ export default function HomeScreen() {
---         </ImageBackground>
+-@@ -1,190 +0,0 @@
+--diff --git a/backend/server.py b/backend/server.py
+--index dba40d5..3aaf802 100644
+----- a/backend/server.py
+--+++ b/backend/server.py
+--@@ -137,9 +137,17 @@ async def get_folders():
 -- 
---         <View style={styles.section}>
----          <Text style={styles.sectionTitle}>Collections</Text>
---+          <View style={styles.sectionHeader}>
---+            <Text style={styles.sectionTitle}>Collections</Text>
---+            {isLoggedIn && (
---+              <TouchableOpacity onPress={() => setShowAddFolder(true)}>
---+                <Ionicons name="add-circle" size={32} color="#10B981" />
---+              </TouchableOpacity>
---+            )}
---+          </View>
---           
---           {folders.length === 0 ? (
---             <View style={styles.emptyState}>
---@@ -140,7 +147,8 @@ const styles = StyleSheet.create({
---   heroTitle: { fontSize: 32, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8, textShadowColor: 'rgba(0, 0, 0, 0.75)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
---   heroSubtitle: { fontSize: 16, color: '#F1F5F9', textShadowColor: 'rgba(0, 0, 0, 0.75)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 },
---   section: { paddingHorizontal: 20, paddingVertical: 24 },
----  sectionTitle: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 16 },
---+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
---+  sectionTitle: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF' },
---   emptyState: { alignItems: 'center', paddingVertical: 48 },
---   emptyText: { fontSize: 18, color: '#94A3B8', marginTop: 16, marginBottom: 8 },
---   emptySubtext: { fontSize: 14, color: '#64748B' },
+-- @app.post("/api/folders")
+-- async def create_folder(folder: FolderCreate, payload: dict = Depends(verify_token)):
+--+    # Get the DEFAULT_FOLDER_ICON if no cover_image provided
+--+    DEFAULT_FOLDER_ICON = os.getenv("DEFAULT_FOLDER_ICON", "")
+--+    
+--+    # Get the highest position and add 1
+--+    max_folder = await db.folders.find_one(sort=[("position", -1)])
+--+    next_position = (max_folder.get("position", 0) + 1) if max_folder else 0
+--+    
+--     folder_doc = {
+--         "name": folder.name,
+---        "cover_image": folder.cover_image,
+--+        "cover_image": folder.cover_image or DEFAULT_FOLDER_ICON,
+--+        "position": next_position,
+--         "created_at": datetime.utcnow()
+--     }
+--     result = await db.folders.insert_one(folder_doc)
 --diff --git a/model.patch b/model.patch
---index e164db5..e69de29 100644
+--index b2a2dfb..e69de29 100644
 ----- a/model.patch
 --+++ b/model.patch
---@@ -1,127 +0,0 @@
+--@@ -1,162 +0,0 @@
+---diff --git a/frontend/app/(tabs)/index.tsx b/frontend/app/(tabs)/index.tsx
+---index 5caf5e9..9b0a2b8 100644
+------ a/frontend/app/(tabs)/index.tsx
+---+++ b/frontend/app/(tabs)/index.tsx
+---@@ -99,7 +99,14 @@ export default function HomeScreen() {
+---         </ImageBackground>
+--- 
+---         <View style={styles.section}>
+----          <Text style={styles.sectionTitle}>Collections</Text>
+---+          <View style={styles.sectionHeader}>
+---+            <Text style={styles.sectionTitle}>Collections</Text>
+---+            {isLoggedIn && (
+---+              <TouchableOpacity onPress={() => setShowAddFolder(true)}>
+---+                <Ionicons name="add-circle" size={32} color="#10B981" />
+---+              </TouchableOpacity>
+---+            )}
+---+          </View>
+---           
+---           {folders.length === 0 ? (
+---             <View style={styles.emptyState}>
+---@@ -140,7 +147,8 @@ const styles = StyleSheet.create({
+---   heroTitle: { fontSize: 32, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8, textShadowColor: 'rgba(0, 0, 0, 0.75)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
+---   heroSubtitle: { fontSize: 16, color: '#F1F5F9', textShadowColor: 'rgba(0, 0, 0, 0.75)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 },
+---   section: { paddingHorizontal: 20, paddingVertical: 24 },
+----  sectionTitle: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 16 },
+---+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+---+  sectionTitle: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF' },
+---   emptyState: { alignItems: 'center', paddingVertical: 48 },
+---   emptyText: { fontSize: 18, color: '#94A3B8', marginTop: 16, marginBottom: 8 },
+---   emptySubtext: { fontSize: 14, color: '#64748B' },
 ---diff --git a/model.patch b/model.patch
----index a3d8ccf..e69de29 100644
+---index e164db5..e69de29 100644
 ------ a/model.patch
 ---+++ b/model.patch
----@@ -1,122 +0,0 @@
+---@@ -1,127 +0,0 @@
 ----diff --git a/model.patch b/model.patch
-----index cc7cb59..e69de29 100644
+----index a3d8ccf..e69de29 100644
 ------- a/model.patch
 ----+++ b/model.patch
-----@@ -1,117 +0,0 @@
+----@@ -1,122 +0,0 @@
 -----diff --git a/model.patch b/model.patch
------index 6977250..e69de29 100644
+-----index cc7cb59..e69de29 100644
 -------- a/model.patch
 -----+++ b/model.patch
------@@ -1,112 +0,0 @@
-------diff --git a/test_result.md b/test_result.md
-------index 187cba4..3e8f5f4 100644
---------- a/test_result.md
-------+++ b/test_result.md
-------@@ -100,4 +100,104 @@
------- 
------- #====================================================================================================
------- # Testing Data - Main Agent and testing sub agent both should log testing data below this section
--------#====================================================================================================
-------\ No newline at end of file
-------+#====================================================================================================
-------+
-------+user_problem_statement: "Test the DJ Rehab Music backend API with authentication, folder management, and track management endpoints"
-------+
-------+backend:
-------+  - task: "Authentication System"
-------+    implemented: true
-------+    working: true
-------+    file: "/app/backend/server.py"
-------+    stuck_count: 0
-------+    priority: "high"
-------+    needs_retesting: false
-------+    status_history:
-------+        - working: true
-------+          agent: "testing"
-------+          comment: "Login endpoint working correctly with default credentials (admin/admin123). JWT token generation and verification working properly."
-------+
-------+  - task: "Health Check Endpoint"
-------+    implemented: true
-------+    working: true
-------+    file: "/app/backend/server.py"
-------+    stuck_count: 0
-------+    priority: "medium"
-------+    needs_retesting: false
-------+    status_history:
-------+        - working: true
-------+          agent: "testing"
-------+          comment: "Health check endpoint (/api/health) responding correctly with status ok"
-------+
-------+  - task: "Folder Management API"
-------+    implemented: true
-------+    working: true
-------+    file: "/app/backend/server.py"
-------+    stuck_count: 0
-------+    priority: "high"
-------+    needs_retesting: false
-------+    status_history:
-------+        - working: true
-------+          agent: "testing"
-------+          comment: "All folder operations working: GET /api/folders, POST /api/folders, PUT /api/folders/:id, DELETE /api/folders/:id. Folder creation, retrieval, update, and deletion all functional."
-------+
-------+  - task: "Track Management API"
-------+    implemented: true
-------+    working: true
-------+    file: "/app/backend/server.py"
-------+    stuck_count: 0
-------+    priority: "high"
-------+    needs_retesting: false
-------+    status_history:
-------+        - working: true
-------+          agent: "testing"
-------+          comment: "All track operations working: GET /api/tracks, POST /api/tracks, PUT /api/tracks/:id, DELETE /api/tracks/:id. Track creation with folder assignment, filtering by folder_id, updates, and deletion all functional."
-------+
-------+  - task: "Database Integration"
-------+    implemented: true
-------+    working: true
-------+    file: "/app/backend/server.py"
-------+    stuck_count: 0
-------+    priority: "high"
-------+    needs_retesting: false
-------+    status_history:
-------+        - working: true
-------+          agent: "testing"
-------+          comment: "MongoDB integration working correctly. Data persistence verified through CRUD operations. Default admin user creation on startup working."
-------+
-------+  - task: "Dependency Issue Resolution"
-------+    implemented: true
-------+    working: true
-------+    file: "/app/backend/requirements.txt"
-------+    stuck_count: 1
-------+    priority: "high"
-------+    needs_retesting: false
-------+    status_history:
-------+        - working: false
-------+          agent: "testing"
-------+          comment: "Initial anyio ExceptionGroup import error causing 500 errors on authenticated endpoints"
-------+        - working: true
-------+          agent: "testing"
-------+          comment: "Fixed by installing exceptiongroup package. Backend now fully functional on both local and external URLs."
-------+
-------+frontend:
-------+  # Frontend testing not performed as per instructions
-------+
-------+metadata:
-------+  created_by: "testing_agent"
-------+  version: "1.0"
-------+  test_sequence: 1
-------+  run_ui: false
-------+
-------+test_plan:
-------+  current_focus:
-------+    - "Authentication System"
-------+    - "Folder Management API"
-------+    - "Track Management API"
-------+  stuck_tasks: []
-------+  test_all: false
-------+  test_priority: "high_first"
-------+
-------+agent_communication:
-------+    - agent: "testing"
-------+      message: "Completed comprehensive backend API testing. All endpoints working correctly after resolving anyio dependency issue. Backend is fully functional for DJ Rehab Music app with authentication, folder management, and track management features."
-------\ No newline at end of file
+-----@@ -1,117 +0,0 @@
+------diff --git a/model.patch b/model.patch
+------index 6977250..e69de29 100644
+--------- a/model.patch
+------+++ b/model.patch
+------@@ -1,112 +0,0 @@
+-------diff --git a/test_result.md b/test_result.md
+-------index 187cba4..3e8f5f4 100644
+---------- a/test_result.md
+-------+++ b/test_result.md
+-------@@ -100,4 +100,104 @@
+------- 
+------- #====================================================================================================
+------- # Testing Data - Main Agent and testing sub agent both should log testing data below this section
+--------#====================================================================================================
+-------\ No newline at end of file
+-------+#====================================================================================================
+-------+
+-------+user_problem_statement: "Test the DJ Rehab Music backend API with authentication, folder management, and track management endpoints"
+-------+
+-------+backend:
+-------+  - task: "Authentication System"
+-------+    implemented: true
+-------+    working: true
+-------+    file: "/app/backend/server.py"
+-------+    stuck_count: 0
+-------+    priority: "high"
+-------+    needs_retesting: false
+-------+    status_history:
+-------+        - working: true
+-------+          agent: "testing"
+-------+          comment: "Login endpoint working correctly with default credentials (admin/admin123). JWT token generation and verification working properly."
+-------+
+-------+  - task: "Health Check Endpoint"
+-------+    implemented: true
+-------+    working: true
+-------+    file: "/app/backend/server.py"
+-------+    stuck_count: 0
+-------+    priority: "medium"
+-------+    needs_retesting: false
+-------+    status_history:
+-------+        - working: true
+-------+          agent: "testing"
+-------+          comment: "Health check endpoint (/api/health) responding correctly with status ok"
+-------+
+-------+  - task: "Folder Management API"
+-------+    implemented: true
+-------+    working: true
+-------+    file: "/app/backend/server.py"
+-------+    stuck_count: 0
+-------+    priority: "high"
+-------+    needs_retesting: false
+-------+    status_history:
+-------+        - working: true
+-------+          agent: "testing"
+-------+          comment: "All folder operations working: GET /api/folders, POST /api/folders, PUT /api/folders/:id, DELETE /api/folders/:id. Folder creation, retrieval, update, and deletion all functional."
+-------+
+-------+  - task: "Track Management API"
+-------+    implemented: true
+-------+    working: true
+-------+    file: "/app/backend/server.py"
+-------+    stuck_count: 0
+-------+    priority: "high"
+-------+    needs_retesting: false
+-------+    status_history:
+-------+        - working: true
+-------+          agent: "testing"
+-------+          comment: "All track operations working: GET /api/tracks, POST /api/tracks, PUT /api/tracks/:id, DELETE /api/tracks/:id. Track creation with folder assignment, filtering by folder_id, updates, and deletion all functional."
+-------+
+-------+  - task: "Database Integration"
+-------+    implemented: true
+-------+    working: true
+-------+    file: "/app/backend/server.py"
+-------+    stuck_count: 0
+-------+    priority: "high"
+-------+    needs_retesting: false
+-------+    status_history:
+-------+        - working: true
+-------+          agent: "testing"
+-------+          comment: "MongoDB integration working correctly. Data persistence verified through CRUD operations. Default admin user creation on startup working."
+-------+
+-------+  - task: "Dependency Issue Resolution"
+-------+    implemented: true
+-------+    working: true
+-------+    file: "/app/backend/requirements.txt"
+-------+    stuck_count: 1
+-------+    priority: "high"
+-------+    needs_retesting: false
+-------+    status_history:
+-------+        - working: false
+-------+          agent: "testing"
+-------+          comment: "Initial anyio ExceptionGroup import error causing 500 errors on authenticated endpoints"
+-------+        - working: true
+-------+          agent: "testing"
+-------+          comment: "Fixed by installing exceptiongroup package. Backend now fully functional on both local and external URLs."
+-------+
+-------+frontend:
+-------+  # Frontend testing not performed as per instructions
+-------+
+-------+metadata:
+-------+  created_by: "testing_agent"
+-------+  version: "1.0"
+-------+  test_sequence: 1
+-------+  run_ui: false
+-------+
+-------+test_plan:
+-------+  current_focus:
+-------+    - "Authentication System"
+-------+    - "Folder Management API"
+-------+    - "Track Management API"
+-------+  stuck_tasks: []
+-------+  test_all: false
+-------+  test_priority: "high_first"
+-------+
+-------+agent_communication:
+-------+    - agent: "testing"
+-------+      message: "Completed comprehensive backend API testing. All endpoints working correctly after resolving anyio dependency issue. Backend is fully functional for DJ Rehab Music app with authentication, folder management, and track management features."
+-------\ No newline at end of file
