@@ -75,6 +75,9 @@ class TrackUpdate(BaseModel):
     folder_id: Optional[str] = None
     cover_art: Optional[str] = None
 
+class TrackReorder(BaseModel):
+    track_ids: List[str]  # Array of track IDs in new order
+
 # Helper functions
 def create_access_token(data: dict):
     to_encode = data.copy()
