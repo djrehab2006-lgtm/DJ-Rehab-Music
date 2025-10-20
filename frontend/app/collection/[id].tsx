@@ -631,17 +631,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#10B981',
   },
-  trackCardDragging: {
-    backgroundColor: '#334155',
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  dragHandleTrack: {
-    marginLeft: 8,
-  },
   trackNumber: {
     width: 32,
     alignItems: 'center',
