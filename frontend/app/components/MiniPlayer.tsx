@@ -113,7 +113,7 @@ export function MiniPlayer() {
             <Ionicons name="musical-note" size={20} color="#10B981" />
           </View>
           <View style={styles.trackDetails}>
-            <Text style={styles.trackTitle} numberOfLines={1}>
+            <Text style={styles.trackTitle} numberOfLines={2}>
               {currentTrack.title}
             </Text>
             <Text style={styles.trackArtist} numberOfLines={1}>
