@@ -583,6 +583,141 @@ function AddTrackModal({ visible, folderId, folderName, onClose, onSuccess }: an
   );
 }
 
+// Edit Track Modal Component
+function EditTrackModal({ visible, track, onClose, onSuccess }: any) {
+  const [title, setTitle] = useState('');
+  const [artist, setArtist] = useState('');
+  const [cdnUrl, setCdnUrl] = useState('');
+  const [duration, setDuration] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (track) {
+      setTitle(track.title);
+      setArtist(track.artist);
+      setCdnUrl(track.cdn_url);
+      setDuration(track.duration.toString());
+    }
+  }, [track]);
+
+  const handleSave = async () => {
+    if (!title.trim() || !artist.trim() || !cdnUrl.trim()) {
+      Alert.alert('Error', 'Please fill in title, artist, and CDN URL');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      const headers = {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json',
+      };
+
+      const url = BACKEND_URL + '/api/tracks/' + track.id;
+      
+      const body = {
+        title,
+        artist,
+        cdn_url: cdnUrl,
+        duration: parseInt(duration) || 0,
+      };
+
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        onSuccess();
+        onClose();
+        Alert.alert('Success', 'Track updated successfully');
+      } else {
+        throw new Error('Failed to update track');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update track');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!track) return null;
+
+  return (
+    <Modal visible={visible} transparent animationType="slide">
+      <View style={styles.modalOverlay}>
+        <ScrollView contentContainerStyle={styles.modalScrollContent}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Edit Track</Text>
+            
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Track title"
+              placeholderTextColor="#64748B"
+              value={title}
+              onChangeText={setTitle}
+              editable={!loading}
+            />
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Artist name"
+              placeholderTextColor="#64748B"
+              value={artist}
+              onChangeText={setArtist}
+              editable={!loading}
+            />
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="CDN URL (streaming link)"
+              placeholderTextColor="#64748B"
+              value={cdnUrl}
+              onChangeText={setCdnUrl}
+              editable={!loading}
+              autoCapitalize="none"
+            />
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Duration (seconds)"
+              placeholderTextColor="#64748B"
+              value={duration}
+              onChangeText={setDuration}
+              keyboardType="numeric"
+              editable={!loading}
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonCancel]}
+                onPress={onClose}
+                disabled={loading}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonSave]}
+                onPress={handleSave}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={[styles.modalButtonText, { color: '#FFFFFF' }]}>Save Changes</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
+    </Modal>
+  );
+}
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
