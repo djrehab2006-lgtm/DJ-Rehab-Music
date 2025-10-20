@@ -656,16 +656,11 @@ const styles = StyleSheet.create({
   trackCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: '#1E293B',
     marginVertical: 4,
     borderRadius: 12,
-  },
-  trackTouchable: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
   },
   trackCardPlaying: {
     backgroundColor: '#334155',
