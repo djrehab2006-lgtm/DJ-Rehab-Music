@@ -294,12 +294,13 @@ const styles = StyleSheet.create({
   emptySubtext: { fontSize: 14, color: '#64748B' },
   carouselContainer: {
     paddingVertical: 8,
+    paddingRight: 20,
   },
   carouselCard: {
-    width: 160,
-    height: 160,
+    width: 200,
+    height: 200,
     marginRight: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
     position: 'relative',
   },
