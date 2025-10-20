@@ -179,6 +179,18 @@ backend:
         - working: true
           agent: "testing"
           comment: "Fixed by installing exceptiongroup package. Backend now fully functional on both local and external URLs."
+  
+  - task: "Folder Reordering API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added position field to folders with auto-increment on creation. Created PUT /api/folders/reorder endpoint to update folder positions. Updated GET /api/folders to sort by position. Folder order now persists across sessions."
 
 frontend:
   - task: "Global Audio Player Context"
