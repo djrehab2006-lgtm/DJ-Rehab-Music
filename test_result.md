@@ -279,6 +279,18 @@ frontend:
         - working: "NA"
           agent: "main"
           comment: "Implemented drag and drop reordering for folders on Home screen. Features: Long press to initiate drag (admin only), drag handle icon shown for admins, haptic feedback on drag completion, enhanced visual feedback (shadow + scale + highlighting), order persisted to backend."
+  
+  - task: "Delete Track Functionality"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/app/collection/[id].tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Delete track button implemented with proper touch handling (hitSlop for better tap target, activeOpacity for visual feedback). Shows confirmation alert before deletion. Requires admin authentication. Refreshes track list after successful deletion."
 
 metadata:
   created_by: "testing_agent"
