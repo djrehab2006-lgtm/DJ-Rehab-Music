@@ -285,10 +285,10 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Drag and Drop Folder Reordering"
+    - "Folder Reordering API"
     - "Global Audio Player Context"
     - "Mini Player Component"
-    - "Audio Player Integration - Collection Screen"
-    - "Audio Player Integration - Library Screen"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -298,3 +298,5 @@ agent_communication:
       message: "Completed comprehensive backend API testing. All endpoints working correctly after resolving anyio dependency issue. Backend is fully functional for DJ Rehab Music app with authentication, folder management, and track management features."
     - agent: "main"
       message: "Implemented persistent music player feature with global audio context. Key features: 1) Only one track plays at a time (previous track stops automatically), 2) Persistent mini-player above tab bar with track info, play/pause, scrubbing slider, time display, and favorite button, 3) Integrated into collection and library screens with visual indicators for currently playing track, 4) Background playback configured. Ready for testing."
+    - agent: "main"
+      message: "Implemented drag and drop folder reordering feature. Backend: Added position field to folders, created PUT /api/folders/reorder endpoint, folders sorted by position on retrieval. Frontend: Integrated react-native-draggable-flatlist, long press to drag (admin only), visual drag handle icon for admins, haptic feedback on completion, enhanced visual effects (shadow + scale + highlighting while dragging), order saved to backend immediately. Folder order persists across sessions and devices."
