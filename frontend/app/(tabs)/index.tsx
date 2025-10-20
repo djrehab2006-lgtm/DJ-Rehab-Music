@@ -83,6 +83,58 @@ export default function HomeScreen() {
     return tracks.filter(track => track.folder_id === folderId).length;
   };
 
+  const handleDragEnd = async ({ data }: { data: Folder[] }) => {
+    // Haptic feedback on drag complete
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    
+    // Update local state immediately for smooth UX
+    setFolders(data);
+    
+    // Save order to backend
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      const folderIds = data.map(folder => folder.id);
+      
+      await fetch(BACKEND_URL + '/api/folders/reorder', {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ folder_ids: folderIds }),
+      });
+    } catch (error) {
+      console.error('Error reordering folders:', error);
+      Alert.alert('Error', 'Failed to save folder order');
+      // Reload to restore correct order
+      loadData();
+    }
+  };
+
+  const renderFolderItem = ({ item, drag, isActive }: RenderItemParams<Folder>) => {
+    return (
+      <ScaleDecorator>
+        <TouchableOpacity 
+          style={[styles.collectionCard, isActive && styles.collectionCardDragging]}
+          onPress={() => router.push('/collection/' + item.id)}
+          onLongPress={isLoggedIn ? drag : undefined}
+          disabled={isActive}
+        >
+          <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.collectionImage} />
+          <View style={styles.collectionInfo}>
+            <Text style={styles.collectionName} numberOfLines={1}>{item.name}</Text>
+            <Text style={styles.collectionCount}>{getTrackCount(item.id)} tracks</Text>
+          </View>
+          {isLoggedIn && (
+            <View style={styles.dragHandle}>
+              <Ionicons name="reorder-three" size={24} color="#64748B" />
+            </View>
+          )}
+        </TouchableOpacity>
+      </ScaleDecorator>
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
