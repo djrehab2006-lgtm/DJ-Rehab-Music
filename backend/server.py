@@ -204,6 +204,11 @@ async def get_tracks(folder_id: Optional[str] = None):
 
 @app.post("/api/tracks")
 async def create_track(track: TrackCreate, payload: dict = Depends(verify_token)):
+    # Get the highest position within the folder and add 1
+    query = {"folder_id": track.folder_id} if track.folder_id else {}
+    max_track = await db.tracks.find_one(query, sort=[("position", -1)])
+    next_position = (max_track.get("position", 0) + 1) if max_track else 0
+    
     track_doc = {
         "title": track.title,
         "artist": track.artist,
@@ -211,6 +216,7 @@ async def create_track(track: TrackCreate, payload: dict = Depends(verify_token)
         "duration": track.duration,
         "folder_id": track.folder_id,
         "cover_art": track.cover_art,
+        "position": next_position,
         "created_at": datetime.utcnow()
     }
     result = await db.tracks.insert_one(track_doc)
