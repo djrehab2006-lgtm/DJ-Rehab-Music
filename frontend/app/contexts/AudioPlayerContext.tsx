@@ -90,9 +90,14 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     try {
       setIsLoading(true);
 
-      // Stop and unload previous track
+      // Stop and unload previous track properly
       if (soundRef.current) {
-        await soundRef.current.unloadAsync();
+        try {
+          await soundRef.current.stopAsync();
+          await soundRef.current.unloadAsync();
+        } catch (e) {
+          console.log('Error stopping previous track:', e);
+        }
         soundRef.current = null;
       }
 
