@@ -144,58 +144,55 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <ImageBackground source={{ uri: HERO_BACKGROUND }} style={styles.heroContainer} imageStyle={styles.heroImage}>
-          <View style={styles.heroOverlay}>
-            <Text style={styles.heroTitle}>DJ REHAB MUSIC</Text>
-            <Text style={styles.heroSubtitle}>Stream Your Favorite Tracks</Text>
-          </View>
-        </ImageBackground>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          <ImageBackground source={{ uri: HERO_BACKGROUND }} style={styles.heroContainer} imageStyle={styles.heroImage}>
+            <View style={styles.heroOverlay}>
+              <Text style={styles.heroTitle}>DJ REHAB MUSIC</Text>
+              <Text style={styles.heroSubtitle}>Stream Your Favorite Tracks</Text>
+            </View>
+          </ImageBackground>
 
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Collections</Text>
-            {isLoggedIn && (
-              <TouchableOpacity onPress={() => setShowAddFolder(true)}>
-                <Ionicons name="add-circle" size={32} color="#10B981" />
-              </TouchableOpacity>
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Collections</Text>
+              {isLoggedIn && (
+                <TouchableOpacity onPress={() => setShowAddFolder(true)}>
+                  <Ionicons name="add-circle" size={32} color="#10B981" />
+                </TouchableOpacity>
+              )}
+            </View>
+            
+            {folders.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Ionicons name="folder-open-outline" size={48} color="#64748B" />
+                <Text style={styles.emptyText}>No collections yet</Text>
+                <Text style={styles.emptySubtext}>Ask admin to add some music</Text>
+              </View>
+            ) : (
+              <View style={styles.collectionsGrid}>
+                <DraggableFlatList
+                  data={folders}
+                  renderItem={renderFolderItem}
+                  keyExtractor={(item) => item.id}
+                  onDragEnd={handleDragEnd}
+                  numColumns={2}
+                  scrollEnabled={false}
+                />
+              </View>
             )}
           </View>
-          
-          {folders.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="folder-open-outline" size={48} color="#64748B" />
-              <Text style={styles.emptyText}>No collections yet</Text>
-              <Text style={styles.emptySubtext}>Ask admin to add some music</Text>
-            </View>
-          ) : (
-            <View style={styles.collectionsGrid}>
-              {folders.map((folder) => (
-                <TouchableOpacity 
-                  key={folder.id} 
-                  style={styles.collectionCard}
-                  onPress={() => router.push('/collection/' + folder.id)}
-                >
-                  <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.collectionImage} />
-                  <View style={styles.collectionInfo}>
-                    <Text style={styles.collectionName} numberOfLines={1}>{folder.name}</Text>
-                    <Text style={styles.collectionCount}>{getTrackCount(folder.id)} tracks</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
-      </ScrollView>
+        </ScrollView>
 
-      {/* Add Folder Modal */}
-      <AddFolderModal
-        visible={showAddFolder}
-        onClose={() => setShowAddFolder(false)}
-        onSuccess={loadData}
-      />
-    </SafeAreaView>
+        {/* Add Folder Modal */}
+        <AddFolderModal
+          visible={showAddFolder}
+          onClose={() => setShowAddFolder(false)}
+          onSuccess={loadData}
+        />
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
