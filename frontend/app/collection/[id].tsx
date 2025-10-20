@@ -301,6 +301,7 @@ export default function CollectionScreen() {
             }
             contentContainerStyle={styles.tracksContainer}
             showsVerticalScrollIndicator={true}
+            style={{ flex: 1 }}
           />
         )}
 
