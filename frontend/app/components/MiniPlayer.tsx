@@ -237,9 +237,10 @@ const styles = StyleSheet.create({
   },
   trackTitle: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     marginBottom: 2,
+    lineHeight: 16,
   },
   trackArtist: {
     color: '#94A3B8',
