@@ -810,7 +810,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    width: '75%',
+    width: '70%',
   },
   trackActions: {
     position: 'absolute',
