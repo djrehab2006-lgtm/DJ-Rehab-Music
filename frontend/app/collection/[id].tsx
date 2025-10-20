@@ -142,11 +142,19 @@ export default function CollectionScreen() {
   const renderTrackItem = ({ item, index }: { item: Track; index: number }) => {
     const isPlaying = currentTrack?.id === item.id;
     
+    const handleTrackPress = () => {
+      playTrack(item, tracks);
+    };
+    
+    const handleDeletePress = () => {
+      handleDeleteTrack(item.id, item.title);
+    };
+    
     return (
       <View style={[styles.trackCard, isPlaying && styles.trackCardPlaying]}>
         <Pressable
           style={styles.trackPressable}
-          onPress={() => playTrack(item, tracks)}
+          onPress={handleTrackPress}
         >
           <View style={styles.trackNumber}>
             <Text style={styles.trackNumberText}>{index + 1}</Text>
@@ -170,16 +178,14 @@ export default function CollectionScreen() {
         </Pressable>
         
         {isLoggedIn && (
-          <Pressable 
+          <TouchableOpacity 
             style={styles.deleteButtonContainer}
-            onPress={(e) => {
-              e.stopPropagation();
-              handleDeleteTrack(item.id, item.title);
-            }}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            onPress={handleDeletePress}
+            activeOpacity={0.6}
+            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
           >
-            <Ionicons name="trash" size={24} color="#EF4444" />
-          </Pressable>
+            <Ionicons name="trash" size={26} color="#EF4444" />
+          </TouchableOpacity>
         )}
       </View>
     );
