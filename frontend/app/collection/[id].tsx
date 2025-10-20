@@ -201,15 +201,17 @@ export default function CollectionScreen() {
           <Text style={styles.trackDuration}>{formatDuration(item.duration)}</Text>
           
           {isLoggedIn && (
-            <View 
+            <TouchableOpacity 
               style={styles.deleteButtonContainer}
-              onTouchEnd={(e) => {
+              onPress={(e) => {
                 e.stopPropagation();
                 handleDeleteTrack(item.id, item.title);
               }}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <Ionicons name="trash" size={24} color="#EF4444" />
-            </View>
+            </TouchableOpacity>
           )}
         </TouchableOpacity>
       </ScaleDecorator>
