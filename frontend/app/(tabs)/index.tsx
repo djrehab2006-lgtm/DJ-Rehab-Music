@@ -171,16 +171,15 @@ export default function HomeScreen() {
                 <Text style={styles.emptySubtext}>Ask admin to add some music</Text>
               </View>
             ) : (
-              <View style={styles.collectionsGrid}>
-                <DraggableFlatList
-                  data={folders}
-                  renderItem={renderFolderItem}
-                  keyExtractor={(item) => item.id}
-                  onDragEnd={handleDragEnd}
-                  numColumns={2}
-                  scrollEnabled={false}
-                />
-              </View>
+              <DraggableFlatList
+                data={folders}
+                renderItem={renderFolderItem}
+                keyExtractor={(item) => item.id}
+                onDragEnd={handleDragEnd}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.carouselContainer}
+              />
             )}
           </View>
         </ScrollView>
