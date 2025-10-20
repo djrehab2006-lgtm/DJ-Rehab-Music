@@ -57,6 +57,11 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const hasNext = currentIndex < playlist.length - 1;
   const hasPrevious = currentIndex > 0;
 
+  // Load favorites from AsyncStorage on mount
+  useEffect(() => {
+    loadFavorites();
+  }, []);
+
   // Configure audio mode on mount
   useEffect(() => {
     configureAudio();
@@ -67,6 +72,18 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       }
     };
   }, []);
+
+  const loadFavorites = async () => {
+    try {
+      const favoritesJson = await AsyncStorage.getItem('favorite_tracks');
+      if (favoritesJson) {
+        const favoriteIds: string[] = JSON.parse(favoritesJson);
+        setFavorites(new Set(favoriteIds));
+      }
+    } catch (error) {
+      console.error('Error loading favorites:', error);
+    }
+  };
 
   const configureAudio = async () => {
     try {
