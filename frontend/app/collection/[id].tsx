@@ -853,8 +853,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   trackCover: {
-    width: 48,
-    height: 48,
+    width: 40,
+    height: 40,
     borderRadius: 8,
     backgroundColor: '#334155',
     justifyContent: 'center',
@@ -868,18 +868,18 @@ const styles = StyleSheet.create({
   },
   trackInfo: {
     flex: 1,
-    marginRight: 12,
+    marginRight: 8,
   },
   trackTitle: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
     marginBottom: 4,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   trackArtist: {
     color: '#94A3B8',
-    fontSize: 14,
+    fontSize: 13,
   },
   trackDuration: {
     color: '#64748B',
