@@ -120,16 +120,16 @@ export default function HomeScreen() {
           onLongPress={isLoggedIn ? drag : undefined}
           disabled={isActive}
         >
-          <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.carouselImage} />
-          {isLoggedIn && (
-            <View style={styles.dragHandleCarousel}>
-              <Ionicons name="reorder-three" size={20} color="#FFFFFF" />
-            </View>
-          )}
-          <View style={styles.carouselOverlay}>
-            <Text style={styles.carouselName} numberOfLines={2}>{item.name}</Text>
-            <Text style={styles.carouselCount}>{getTrackCount(item.id)} tracks</Text>
+          <View style={styles.carouselImageContainer}>
+            <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.carouselImage} />
+            {isLoggedIn && (
+              <View style={styles.dragHandleCarousel}>
+                <Ionicons name="reorder-three" size={16} color="#FFFFFF" />
+              </View>
+            )}
           </View>
+          <Text style={styles.carouselName} numberOfLines={2}>{item.name}</Text>
+          <Text style={styles.carouselCount}>{getTrackCount(item.id)} tracks</Text>
         </TouchableOpacity>
       </ScaleDecorator>
     );
