@@ -149,7 +149,20 @@ export default function HomeScreen() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container} edges={['top']}>
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          ref={scrollViewRef}
+          style={styles.scrollView} 
+          showsVerticalScrollIndicator={true}
+          indicatorStyle="white"
+          onScroll={() => {
+            setScrollIndicatorVisible(true);
+          }}
+          onScrollBeginDrag={() => setScrollIndicatorVisible(true)}
+          onScrollEndDrag={() => {
+            setTimeout(() => setScrollIndicatorVisible(false), 1000);
+          }}
+          scrollEventThrottle={16}
+        >
           <ImageBackground source={{ uri: HERO_BACKGROUND }} style={styles.heroContainer} imageStyle={styles.heroImage}>
             <View style={styles.heroOverlay}>
               <Text style={styles.heroTitle}>DJ REHAB MUSIC</Text>
