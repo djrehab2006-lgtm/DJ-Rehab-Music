@@ -114,5 +114,40 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  topTabBar: {
+    flexDirection: 'row',
+    backgroundColor: '#0F172A',
+    borderBottomWidth: 1,
+    borderBottomColor: '#1E293B',
+    paddingVertical: 8,
+  },
+  topTab: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    position: 'relative',
+  },
+  topTabLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#64748B',
+    marginTop: 4,
+  },
+  topTabLabelActive: {
+    color: '#10B981',
+  },
+  activeIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: '#10B981',
+  },
+});
