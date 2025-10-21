@@ -1,39 +1,24 @@
 <analysis>
-The previous AI engineer successfully initiated and developed the DJ Rehab Music Expo application, featuring a FastAPI backend and MongoDB. Early development focused on establishing core architecture, implementing admin login with JWT, and setting up basic CRUD for folders and tracks. A significant feature, a persistent music player with scrubbing, next/previous controls, and favorites (stored in  with a dedicated tab), was successfully integrated.
-
-The engineer meticulously handled UI layout requests, evolving folder display from a grid to a horizontal carousel, and finally to a vertical list, based on user feedback and screenshots. Hero banner image positioning was also refined. Crucially, the process involved extensive troubleshooting, particularly concerning  compatibility, Expo Go loading issues post-fork, and persistent gesture conflicts related to drag-and-drop and delete functionalities for tracks.
-
-After numerous attempts and  interventions to fix track drag-and-drop and the delete button, the user explicitly decided to drop drag-and-drop for tracks. The current focus is solely on fixing the delete track button, with the engineer actively reverting drag-and-drop code to a simpler  implementation to isolate and resolve the delete functionality.
+The previous AI engineer successfully stabilized the DJ Rehab Music Expo application, addressing numerous UI/UX challenges. Initial efforts focused on removing problematic track drag-and-drop functionality and fixing the delete button in , requiring multiple troubleshooting steps for touch event propagation and layout issues. Subsequent work involved implementing track editing, managing track reordering via a backend fix (FastAPI route order), and refining UI elements. Key UI improvements included making track titles fully visible in the mini-player and folder views, adding scroll indicators, and critically, iteratively correcting the tab bar and mini-player positioning for Android, finally achieving a stable top tab bar with the player directly beneath. The last action was initiating a homepage photo replacement.
 </analysis>
 
 <product_requirements>
-The user requested DJ Rehab Music, an Android music app, with tracks streaming from user-inputted CDN links. Users should manually input CDN links. Folders (albums) and tracks are editable (creation, renaming, deletion of folders; adding, editing, deleting tracks with metadata). A simple admin login (username , password , JWT) is required. The app must support background playback and start with an empty library.
-
-Later requirements included:
-- A provided DJ Rehab logo as the default folder icon.
-- Tab-based navigation: Home, Search, Library, Profile, Admin, and a new Favorites tab.
-- Home tab: Hero background image with Welcome to the show text, Add Folder button (admin only), folders displayed as a vertical list. Folder reordering via drag & drop for admins.
-- Library tab: Displays all tracks.
-- Collection detail screen: Admin-only add/delete/edit tracks/folders. **Track reordering via drag and drop was requested but later dropped.** A functional delete (trash) button for tracks.
-- Profile page: Contact popup with email, Share this app button linking to Apple App Store.
-- A persistent music player above the tab bar with single track playback, a slider scrub feature, play/pause, next/previous controls, and a favorite (heart) icon.
-- Scrolling functionality operational throughout the app.
-- Addition of numerous tracks to various folders.
+The DJ Rehab Music app is an Android music application designed for streaming tracks from CDN links. Key features include manual CDN link input for tracks, folder (album) and track management (creation, renaming, deletion, editing metadata) by an admin, and a simple JWT-based admin login (/). It requires background playback and an empty library at start. UI/UX requirements evolved to include a DJ Rehab logo for folder icons, tab-based navigation (Home, Search, Library, Profile, Admin, Favorites), a Home tab with a hero background, Welcome to the show text, and folders as a vertical list with admin-only drag & drop reordering. The Collection detail screen for admins needed add/delete/edit track functionality; track drag-and-drop was explicitly removed. A persistent mini-player above the tab bar with playback controls, scrubbing, and favorites was crucial. Recent updates focused on making track titles fully visible in both the player and folder views, ensuring adequate spacing for scrolling on the homepage, and moving the tab bar to the top for Android with the mini-player directly below it.
 </product_requirements>
 
 <key_technical_concepts>
-- **Mobile Framework**: Expo (React Native) for cross-platform development.
-- **Routing**:  for file-based navigation.
-- **Backend**: FastAPI for RESTful APIs, with JWT authentication.
-- **Database**: MongoDB for data storage.
-- **State Management**: React Context for global authentication and audio player state.
-- **Audio Playback**:  for comprehensive audio/video handling.
-- **Persistent Storage**:  for client-side data like favorites.
-- **UI/UX**: , ,  (used for folders, removed for tracks), .
+- **Mobile Framework**: Expo (React Native)
+- **Routing**: 
+- **Backend**: FastAPI with JWT authentication
+- **Database**: MongoDB
+- **State Management**: React Context ()
+- **Audio Playback**: 
+- **Persistent Storage**: 
+- **UI/UX**: , , , 
 </key_technical_concepts>
 
 <code_architecture>
-The application follows a full-stack architecture with an Expo (React Native) frontend, a FastAPI backend, and a MongoDB database.
+The application uses a full-stack architecture with an Expo frontend, FastAPI backend, and MongoDB database.
 
 **Directory Structure:**
 
@@ -41,46 +26,36 @@ The application follows a full-stack architecture with an Expo (React Native) fr
 **Key Files and Their Importance:**
 
 -   
-    -   **Summary**: FastAPI backend handling API endpoints.
-    -   **Changes**:  and  models now include a  field. New endpoints  and  were added. Folder/track creation and retrieval endpoints were updated to manage and sort by .
+    -   **Summary**: FastAPI backend for API endpoints.
+    -   **Changes**:  and  models include . Endpoints  and  were added and  fields managed. Crucially, the  endpoint was moved **before**  to fix routing precedence issues.
 -    (Root level)
-    -   **Summary**: Defines the main navigation stack for the entire application.
-    -   **Changes**: Modified to wrap the application with  and include the  component globally, ensuring its visibility on all screens.
+    -   **Summary**: Main navigation stack.
+    -   **Changes**: Initially wrapped with  and . The  was moved in and out of this layout multiple times during tab bar positioning fixes, eventually being restored here.
 -   
     -   **Summary**: Defines the bottom tab navigator.
-    -   **Changes**: A new Favorites tab was added. The  component was removed from here as it's now handled at the root layout level.
+    -   **Changes**: Refactored multiple times to experiment with tab bar positioning (top/bottom) and  placement. Initial  attempts failed, leading to a custom header approach with absolute positioning for the tab bar and player. The final successful implementation moved  back to the root layout and used a custom header for the tabs to appear at the top.
 -   
-    -   **Summary**: The main Home tab.
-    -   **Changes**: Refactored to display folders in a vertical list, not a carousel or grid, as per user's final design preference.  was used for folder reordering. The hero banner's subtitle was changed to Welcome to the show and its image positioning was adjusted.
--    (New File)
-    -   **Summary**: A new screen dedicated to displaying tracks marked as favorites.
-    -   **Changes**: Created to integrate with  to retrieve and render favorited tracks.
+    -   **Summary**: Home tab displaying folders.
+    -   **Changes**: Refactored for vertical folder list (not carousel/grid). Hero banner text Welcome to the show and image adjusted. Added a visible scroll indicator.  padding was adjusted to create more scrolling space on the right, accounting for UI elements like the tab bar and player.
 -   
-    -   **Summary**: Dynamic route for a specific collection (folder) and its tracks.
-    -   **Changes**: Integrated  for track playback, passing a playlist for navigation. This file saw significant churn: initially implementing  for track reordering, it underwent multiple refactors and troubleshooting iterations due to gesture conflicts with the delete button and scrolling. The last action is to remove all drag-and-drop code for tracks and revert to a standard  to focus on fixing the delete button.
--    (New File)
-    -   **Summary**: Centralized state management for audio playback.
-    -   **Changes**: Implements  for single-track playback, scrubbing, play/pause, next/previous functionality. Manages a  and . Includes logic for favoriting tracks, persisted using , and handles loading states to prevent simultaneous playback.
--    (New File)
-    -   **Summary**: UI component for the persistent music player.
-    -   **Changes**: Renders the currently playing track's information, play/pause, next/previous controls, a slider for scrubbing, and a favorite icon, all interacting with the .
+    -   **Summary**: Dynamic route for a specific collection and its tracks.
+    -   **Changes**: Significant changes:  for tracks was removed and replaced with a standard  to resolve gesture conflicts. The delete track button was fixed by restructuring the  to use  with proper touch event isolation (, absolute positioning) to prevent parent  from triggering. Track editing functionality was added with an  and a dedicated edit button. A custom visible scroll indicator was added for the track list. Track number was removed, cover image size reduced, and title font size increased to give more prominence to track titles.
+-   
+    -   **Summary**: Persistent music player UI.
+    -   **Changes**: Modified to allow track titles to display on two lines instead of one () and slightly reduced font size for better fit. Its placement was frequently adjusted between root and tab layouts, finally residing in the root layout above the tabs.
+-   
+    -   **Summary**: Stores the base64 encoded image for the home screen hero banner.
+    -   **Changes**: Will be updated with a new base64 image as per the latest user request.
 </code_architecture>
 
 <pending_tasks>
-- Fully remove the track drag-and-drop functionality from the  file.
-- Fix the delete track functionality on the  screen, ensuring the delete button is responsive and works as expected.
+- Update the home page hero background image with the newly provided image.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was actively working on resolving persistent issues with the delete track button and drag-and-drop functionality within the  screen. Despite numerous attempts, including multiple consultations with the  and various refactors to address gesture conflicts (e.g., nesting  within , incorrect  handlers), these features remained non-functional or introduced new issues (like breaking scrolling).
-
-The user explicitly instructed to **drop the drag-and-drop feature for tracks** and to focus solely on making the **delete track button work**. The AI engineer acknowledged this and, at the point of the last message, was in the process of:
-1.  Removing all  related imports and component usage from .
-2.  Reverting the track rendering mechanism in  back to a standard  (or similar non-draggable list component) to simplify the layout and isolate the delete button's event handling.
-
-The scrolling functionality within folders has been successfully fixed and is confirmed to be working.
+Immediately before this summary request, the AI engineer successfully finalized several critical UI/UX improvements. The delete track button in  was fixed after extensive troubleshooting, employing  with  and absolute positioning for precise touch event handling. Track reordering and adding new tracks via the backend API were confirmed functional by fixing FastAPI route precedence. Admin track editing was implemented in  with a new . UI visibility was enhanced by making track titles visible in the  (two lines) and folder view (increased prominence by removing track numbers, smaller cover, larger font). Scrolling indicators were added to both  and . The significant challenge of repositioning the tab bar to the top and the  directly below it for Android was resolved through multiple iterations, ultimately utilizing a custom header approach in  while keeping  in the root . The application is currently in a state where these functionalities are confirmed working. The very last user request is to replace the home page hero image, and the AI engineer's last action was to prepare for converting the new image to base64.
 </current_work>
 
 <optional_next_step>
-Replace  with  and debug the delete button in .
+Convert the provided  to base64 and update  with this new image data.
 </optional_next_step>
