@@ -96,8 +96,6 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
-    <MiniPlayer />
-    </View>
     </SafeAreaView>
   );
 }
