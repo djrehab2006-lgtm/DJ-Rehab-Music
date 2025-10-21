@@ -1,48 +1,30 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MiniPlayer } from '../components/MiniPlayer';
+import { Platform } from 'react-native';
 
 export default function TabLayout() {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#0F172A' }} edges={['top']}>
-      <View style={{ flex: 1 }}>
-        <MiniPlayer />
-        <View style={{ height: 60, backgroundColor: '#0F172A', borderBottomWidth: 1, borderBottomColor: '#1E293B' }} />
-        <Tabs
-          screenOptions={{
-            headerShown: false,
-            tabBarActiveTintColor: '#10B981',
-            tabBarInactiveTintColor: '#64748B',
-            tabBarStyle: {
-              position: 'absolute',
-              top: 90,
-              left: 0,
-              right: 0,
-              backgroundColor: '#0F172A',
-              borderBottomColor: '#1E293B',
-              borderBottomWidth: 1,
-              height: 60,
-              paddingTop: 4,
-              paddingBottom: 4,
-              elevation: 0,
-              shadowOpacity: 0,
-            },
-            tabBarLabelStyle: {
-              fontSize: 10,
-              fontWeight: '600',
-              marginTop: 2,
-            },
-            tabBarIconStyle: {
-              marginBottom: 2,
-            },
-            tabBarItemStyle: {
-              height: 60,
-            },
-          }}
-        >
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: '#10B981',
+        tabBarInactiveTintColor: '#64748B',
+        tabBarStyle: {
+          backgroundColor: '#0F172A',
+          borderTopColor: '#1E293B',
+          borderTopWidth: 1,
+          height: Platform.OS === 'ios' ? 88 : 65,
+          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+          paddingBottom: 4,
+        },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
