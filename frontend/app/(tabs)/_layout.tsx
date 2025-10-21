@@ -80,7 +80,5 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
-    </View>
-    </SafeAreaView>
   );
 }
