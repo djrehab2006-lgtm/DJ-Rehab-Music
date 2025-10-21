@@ -1,30 +1,45 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
+import { MiniPlayer } from '../components/MiniPlayer';
 
 export default function TabLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#10B981',
-        tabBarInactiveTintColor: '#64748B',
-        tabBarStyle: {
-          backgroundColor: '#0F172A',
-          borderTopColor: '#1E293B',
-          borderTopWidth: 1,
-          height: Platform.OS === 'ios' ? 88 : 65,
-          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          paddingBottom: 4,
-        },
-      }}
-    >
+    <View style={{ flex: 1 }}>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: '#10B981',
+          tabBarInactiveTintColor: '#64748B',
+          tabBarPosition: 'top',
+          tabBarStyle: {
+            backgroundColor: '#0F172A',
+            borderBottomColor: '#1E293B',
+            borderBottomWidth: 1,
+            height: 60,
+            paddingTop: Platform.OS === 'android' ? 8 : 0,
+            elevation: 0,
+            shadowOpacity: 0,
+          },
+          tabBarLabelStyle: {
+            fontSize: 11,
+            fontWeight: '600',
+            textTransform: 'none',
+          },
+          tabBarIndicatorStyle: {
+            backgroundColor: '#10B981',
+            height: 3,
+          },
+          tabBarItemStyle: {
+            flexDirection: 'column',
+            paddingVertical: 8,
+          },
+          tabBarIconStyle: {
+            marginBottom: 0,
+          },
+        }}
+      >
       <Tabs.Screen
         name="index"
         options={{
