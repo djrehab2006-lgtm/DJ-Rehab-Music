@@ -165,7 +165,6 @@ export default function HomeScreen() {
         >
           <ImageBackground source={{ uri: HERO_BACKGROUND }} style={styles.heroContainer} imageStyle={styles.heroImage}>
             <View style={styles.heroOverlay}>
-              <Text style={styles.heroTitle}>DJ REHAB MUSIC</Text>
               <Text style={styles.heroSubtitle}>Welcome to the show</Text>
             </View>
           </ImageBackground>
