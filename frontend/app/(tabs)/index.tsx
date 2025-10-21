@@ -148,10 +148,11 @@ export default function HomeScreen() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView style={styles.container} edges={[]}>
         <ScrollView 
           ref={scrollViewRef}
           style={styles.scrollView} 
+          contentContainerStyle={{ paddingTop: 60 }}
           showsVerticalScrollIndicator={true}
           indicatorStyle="white"
           onScroll={() => {
