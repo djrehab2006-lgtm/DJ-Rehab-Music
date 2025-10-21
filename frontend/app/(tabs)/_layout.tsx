@@ -2,44 +2,47 @@ import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MiniPlayer } from '../components/MiniPlayer';
 
 export default function TabLayout() {
   return (
-    <View style={{ flex: 1 }}>
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: '#10B981',
-          tabBarInactiveTintColor: '#64748B',
-          tabBarPosition: 'top',
-          tabBarStyle: {
-            backgroundColor: '#0F172A',
-            borderBottomColor: '#1E293B',
-            borderBottomWidth: 1,
-            height: 60,
-            paddingTop: Platform.OS === 'android' ? 8 : 0,
-            elevation: 0,
-            shadowOpacity: 0,
-          },
-          tabBarLabelStyle: {
-            fontSize: 11,
-            fontWeight: '600',
-            textTransform: 'none',
-          },
-          tabBarIndicatorStyle: {
-            backgroundColor: '#10B981',
-            height: 3,
-          },
-          tabBarItemStyle: {
-            flexDirection: 'column',
-            paddingVertical: 8,
-          },
-          tabBarIconStyle: {
-            marginBottom: 0,
-          },
-        }}
-      >
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#0F172A' }} edges={['top']}>
+      <View style={{ flex: 1 }}>
+        <Tabs
+          screenOptions={{
+            headerShown: false,
+            tabBarActiveTintColor: '#10B981',
+            tabBarInactiveTintColor: '#64748B',
+            tabBarPosition: 'top',
+            tabBarStyle: {
+              backgroundColor: '#0F172A',
+              borderBottomColor: '#1E293B',
+              borderBottomWidth: 1,
+              paddingTop: 4,
+              paddingBottom: 4,
+              elevation: 0,
+              shadowOpacity: 0,
+            },
+            tabBarLabelStyle: {
+              fontSize: 10,
+              fontWeight: '600',
+              textTransform: 'none',
+              marginTop: 2,
+            },
+            tabBarIndicatorStyle: {
+              backgroundColor: '#10B981',
+              height: 3,
+            },
+            tabBarItemStyle: {
+              flexDirection: 'column',
+              height: 56,
+            },
+            tabBarIconStyle: {
+              marginBottom: 2,
+            },
+          }}
+        >
       <Tabs.Screen
         name="index"
         options={{
