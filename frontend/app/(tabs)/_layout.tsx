@@ -1,30 +1,64 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform } from 'react-native';
+import { Platform, View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter, usePathname } from 'expo-router';
+
+function CustomTopTabs() {
+  const router = useRouter();
+  const pathname = usePathname();
+  
+  const tabs = [
+    { name: 'index', label: 'Home', icon: 'home' },
+    { name: 'search', label: 'Search', icon: 'search' },
+    { name: 'library', label: 'Library', icon: 'library' },
+    { name: 'favorites', label: 'Favorites', icon: 'heart' },
+    { name: 'profile', label: 'Profile', icon: 'person' },
+    { name: 'admin', label: 'Admin', icon: 'settings' },
+  ];
+  
+  const getIsActive = (tabName: string) => {
+    if (tabName === 'index') return pathname === '/' || pathname === '/index';
+    return pathname.includes(tabName);
+  };
+  
+  return (
+    <View style={styles.topTabBar}>
+      {tabs.map((tab) => {
+        const isActive = getIsActive(tab.name);
+        return (
+          <TouchableOpacity
+            key={tab.name}
+            style={styles.topTab}
+            onPress={() => router.push(`/${tab.name === 'index' ? '' : tab.name}`)}
+          >
+            <Ionicons 
+              name={tab.icon as any} 
+              size={20} 
+              color={isActive ? '#10B981' : '#64748B'} 
+            />
+            <Text style={[styles.topTabLabel, isActive && styles.topTabLabelActive]}>
+              {tab.label}
+            </Text>
+            {isActive && <View style={styles.activeIndicator} />}
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
 
 export default function TabLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#10B981',
-        tabBarInactiveTintColor: '#64748B',
-        tabBarStyle: {
-          backgroundColor: '#0F172A',
-          borderTopColor: '#1E293B',
-          borderTopWidth: 1,
-          height: Platform.OS === 'ios' ? 88 : 65,
-          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          paddingBottom: 4,
-        },
-      }}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#0F172A' }} edges={['top']}>
+      <CustomTopTabs />
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: { display: 'none' },
+        }}
+      >
       <Tabs.Screen
         name="index"
         options={{
