@@ -255,7 +255,11 @@ export default function CollectionScreen() {
         </View>
       </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        showsVerticalScrollIndicator={true}
+        indicatorStyle="white"
+      >
         {/* Collection Header */}
         <View style={styles.collectionHeader}>
           <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.collectionImage} />
