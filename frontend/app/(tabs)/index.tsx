@@ -152,7 +152,7 @@ export default function HomeScreen() {
         <ScrollView 
           ref={scrollViewRef}
           style={styles.scrollView} 
-          contentContainerStyle={{ paddingTop: 60 }}
+          contentContainerStyle={{ paddingTop: 150 }}
           showsVerticalScrollIndicator={true}
           indicatorStyle="white"
           onScroll={() => {
