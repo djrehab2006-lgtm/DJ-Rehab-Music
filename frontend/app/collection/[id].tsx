@@ -258,9 +258,18 @@ export default function CollectionScreen() {
       </View>
 
       <ScrollView 
+        ref={scrollViewRef}
         style={styles.scrollView} 
         showsVerticalScrollIndicator={true}
         indicatorStyle="white"
+        onScroll={() => {
+          setScrollIndicatorVisible(true);
+        }}
+        onScrollBeginDrag={() => setScrollIndicatorVisible(true)}
+        onScrollEndDrag={() => {
+          setTimeout(() => setScrollIndicatorVisible(false), 1000);
+        }}
+        scrollEventThrottle={16}
       >
         {/* Collection Header */}
         <View style={styles.collectionHeader}>
