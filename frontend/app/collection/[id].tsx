@@ -51,6 +51,8 @@ export default function CollectionScreen() {
   const [showEditFolder, setShowEditFolder] = useState(false);
   const [showEditTrack, setShowEditTrack] = useState(false);
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
+  const [scrollIndicatorVisible, setScrollIndicatorVisible] = useState(false);
+  const scrollViewRef = React.useRef<ScrollView>(null);
 
   useEffect(() => {
     checkAuth();
