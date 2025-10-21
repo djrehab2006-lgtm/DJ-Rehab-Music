@@ -8,41 +8,39 @@ import { MiniPlayer } from '../components/MiniPlayer';
 export default function TabLayout() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#0F172A' }} edges={['top']}>
-      <View style={{ flex: 1 }}>
-        <Tabs
-          screenOptions={{
-            headerShown: false,
-            tabBarActiveTintColor: '#10B981',
-            tabBarInactiveTintColor: '#64748B',
-            tabBarPosition: 'top',
-            tabBarStyle: {
-              backgroundColor: '#0F172A',
-              borderBottomColor: '#1E293B',
-              borderBottomWidth: 1,
-              paddingTop: 4,
-              paddingBottom: 4,
-              elevation: 0,
-              shadowOpacity: 0,
-            },
-            tabBarLabelStyle: {
-              fontSize: 10,
-              fontWeight: '600',
-              textTransform: 'none',
-              marginTop: 2,
-            },
-            tabBarIndicatorStyle: {
-              backgroundColor: '#10B981',
-              height: 3,
-            },
-            tabBarItemStyle: {
-              flexDirection: 'column',
-              height: 56,
-            },
-            tabBarIconStyle: {
-              marginBottom: 2,
-            },
-          }}
-        >
+      <MiniPlayer />
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: '#10B981',
+          tabBarInactiveTintColor: '#64748B',
+          tabBarStyle: {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: '#0F172A',
+            borderBottomColor: '#1E293B',
+            borderBottomWidth: 1,
+            height: 60,
+            paddingTop: 4,
+            paddingBottom: 4,
+            elevation: 0,
+            shadowOpacity: 0,
+          },
+          tabBarLabelStyle: {
+            fontSize: 10,
+            fontWeight: '600',
+            marginTop: 2,
+          },
+          tabBarIconStyle: {
+            marginBottom: 2,
+          },
+          tabBarItemStyle: {
+            height: 60,
+          },
+        }}
+      >
       <Tabs.Screen
         name="index"
         options={{
