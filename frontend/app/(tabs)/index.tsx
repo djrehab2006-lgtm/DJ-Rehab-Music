@@ -22,26 +22,8 @@ export default function HomeScreen() {
   const scrollViewRef = React.useRef<ScrollView>(null);
 
   useEffect(() => {
-    checkAuth();
     loadData();
   }, []);
-
-  const checkAuth = async () => {
-    try {
-      const token = await AsyncStorage.getItem('auth_token');
-      if (token) {
-        const url = BACKEND_URL + '/api/auth/verify';
-        const response = await fetch(url, {
-          headers: { 'Authorization': 'Bearer ' + token },
-        });
-        if (response.ok) {
-          setIsLoggedIn(true);
-        }
-      }
-    } catch (error) {
-      console.log('Auth check failed');
-    }
-  };
 
   useEffect(() => {
     loadData();
