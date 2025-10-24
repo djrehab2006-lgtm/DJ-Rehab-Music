@@ -92,22 +92,7 @@ export default function CollectionScreen() {
             </Text>
           </View>
           <Text style={styles.trackDuration}>{formatDuration(item.duration)}</Text>
-        </TouchableOpacity>>
-                <Ionicons name="create-outline" size={22} color="#10B981" />
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.deleteButtonContainer}
-              onPress={handleDeletePress}
-              activeOpacity={0.6}
-              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-            >
-              <View style={styles.deleteButtonBackground}>
-                <Ionicons name="trash" size={26} color="#EF4444" />
-              </View>
-            </TouchableOpacity>
-          </View>
-        )}
+        </TouchableOpacity>
       </View>
     );
   };
