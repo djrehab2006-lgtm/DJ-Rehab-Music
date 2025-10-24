@@ -112,11 +112,6 @@ export default function HomeScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Collections</Text>
-              {isLoggedIn && (
-                <TouchableOpacity onPress={() => setShowAddFolder(true)}>
-                  <Ionicons name="add-circle" size={32} color="#10B981" />
-                </TouchableOpacity>
-              )}
             </View>
             
             {folders.length === 0 ? (
