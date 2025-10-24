@@ -175,8 +175,7 @@ export default function CollectionScreen() {
   );
 }
 
-// Edit Folder Modal Component
-function EditFolderModal({ visible, folder, onClose, onSuccess }: any) {
+const styles = StyleSheet.create({
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
 
