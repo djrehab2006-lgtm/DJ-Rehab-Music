@@ -49,28 +49,8 @@ export default function HomeScreen() {
     // Haptic feedback on drag complete
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     
-    // Update local state immediately for smooth UX
+    // Update local state - no backend to save to
     setFolders(data);
-    
-    // Save order to backend
-    try {
-      const token = await AsyncStorage.getItem('auth_token');
-      const folderIds = data.map(folder => folder.id);
-      
-      await fetch(BACKEND_URL + '/api/folders/reorder', {
-        method: 'PUT',
-        headers: {
-          'Authorization': 'Bearer ' + token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ folder_ids: folderIds }),
-      });
-    } catch (error) {
-      console.error('Error reordering folders:', error);
-      Alert.alert('Error', 'Failed to save folder order');
-      // Reload to restore correct order
-      loadData();
-    }
   };
 
   const renderFolderItem = ({ item, drag, isActive }: RenderItemParams<Folder>) => {
