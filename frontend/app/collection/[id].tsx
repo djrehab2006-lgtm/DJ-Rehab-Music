@@ -19,23 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DEFAULT_FOLDER_ICON } from '../constants/defaultFolderIcon';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
-
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
-
-interface Folder {
-  id: string;
-  name: string;
-  cover_image?: string;
-}
-
-interface Track {
-  id: string;
-  title: string;
-  artist: string;
-  duration: number;
-  cdn_url: string;
-  cover_art?: string;
-}
+import { HARDCODED_FOLDERS, HARDCODED_TRACKS, Folder, Track } from '../constants/musicData';
 
 export default function CollectionScreen() {
   const router = useRouter();
