@@ -53,27 +53,6 @@ export default function CollectionScreen() {
       console.error('Error loading data:', error);
       setLoading(false);
     }
-  }; {
-      const [folderRes, tracksRes] = await Promise.all([
-        fetch(BACKEND_URL + '/api/folders'),
-        fetch(BACKEND_URL + '/api/tracks?folder_id=' + folderId),
-      ]);
-
-      if (folderRes.ok) {
-        const folders = await folderRes.json();
-        const foundFolder = folders.find((f: Folder) => f.id === folderId);
-        setFolder(foundFolder || null);
-      }
-
-      if (tracksRes.ok) {
-        const tracksData = await tracksRes.json();
-        setTracks(tracksData);
-      }
-    } catch (error) {
-      console.error('Error loading collection:', error);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const formatDuration = (seconds: number): string => {
