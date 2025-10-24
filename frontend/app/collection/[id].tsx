@@ -30,11 +30,6 @@ export default function CollectionScreen() {
   const [folder, setFolder] = useState<Folder | null>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showAddTrack, setShowAddTrack] = useState(false);
-  const [showEditFolder, setShowEditFolder] = useState(false);
-  const [showEditTrack, setShowEditTrack] = useState(false);
-  const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
   const [scrollIndicatorVisible, setScrollIndicatorVisible] = useState(false);
   const scrollViewRef = React.useRef<ScrollView>(null);
 
