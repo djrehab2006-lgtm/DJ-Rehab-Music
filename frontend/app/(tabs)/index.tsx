@@ -49,23 +49,12 @@ export default function HomeScreen() {
 
   const loadData = async () => {
     try {
-      const [foldersRes, tracksRes] = await Promise.all([
-        fetch(BACKEND_URL + '/api/folders').catch(() => ({ ok: false })),
-        fetch(BACKEND_URL + '/api/tracks').catch(() => ({ ok: false })),
-      ]);
-
-      if (foldersRes.ok) {
-        const foldersData = await foldersRes.json();
-        setFolders(foldersData);
-      }
-
-      if (tracksRes.ok) {
-        const tracksData = await tracksRes.json();
-        setTracks(tracksData);
-      }
+      // Use hardcoded data instead of API calls
+      setFolders(HARDCODED_FOLDERS);
+      setTracks(HARDCODED_TRACKS);
+      setLoading(false);
     } catch (error) {
       console.error('Error loading data:', error);
-    } finally {
       setLoading(false);
     }
   };
