@@ -171,37 +171,6 @@ export default function CollectionScreen() {
           )}
         </View>
       </ScrollView>
-
-      {/* Add Track Modal */}
-      <AddTrackModal
-        visible={showAddTrack}
-        folderId={folderId}
-        folderName={folder.name}
-        onClose={() => setShowAddTrack(false)}
-        onSuccess={loadData}
-      />
-
-      {/* Edit Folder Modal */}
-      <EditFolderModal
-        visible={showEditFolder}
-        folder={folder}
-        onClose={() => setShowEditFolder(false)}
-        onSuccess={() => {
-          loadData();
-          router.back();
-        }}
-      />
-
-      {/* Edit Track Modal */}
-      <EditTrackModal
-        visible={showEditTrack}
-        track={selectedTrack}
-        onClose={() => {
-          setShowEditTrack(false);
-          setSelectedTrack(null);
-        }}
-        onSuccess={loadData}
-      />
     </SafeAreaView>
   );
 }
