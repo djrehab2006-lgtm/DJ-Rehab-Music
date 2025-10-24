@@ -16,8 +16,6 @@ export default function HomeScreen() {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showAddFolder, setShowAddFolder] = useState(false);
   const [scrollIndicatorVisible, setScrollIndicatorVisible] = useState(false);
   const scrollViewRef = React.useRef<ScrollView>(null);
 
