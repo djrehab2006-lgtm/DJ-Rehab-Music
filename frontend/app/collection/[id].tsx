@@ -62,56 +62,11 @@ export default function CollectionScreen() {
     return mins + ':' + secs.toString().padStart(2, '0');
   };
 
-  const handleDeleteTrack = async (trackId: string, trackTitle: string) => {
-    Alert.alert(
-      'Delete Track',
-      `Are you sure you want to delete "${trackTitle}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const token = await AsyncStorage.getItem('auth_token');
-              const headers = {
-                'Authorization': 'Bearer ' + token,
-              };
-
-              const response = await fetch(BACKEND_URL + '/api/tracks/' + trackId, {
-                method: 'DELETE',
-                headers,
-              });
-
-              if (response.ok) {
-                loadData();
-                Alert.alert('Success', 'Track deleted successfully');
-              } else {
-                throw new Error('Failed to delete track');
-              }
-            } catch (error) {
-              Alert.alert('Error', 'Failed to delete track');
-            }
-          },
-        },
-      ]
-    );
-  };
-
   const renderTrackItem = ({ item, index }: { item: Track; index: number }) => {
     const isPlaying = currentTrack?.id === item.id;
     
     const handleTrackPress = () => {
       playTrack(item, tracks);
-    };
-    
-    const handleDeletePress = () => {
-      handleDeleteTrack(item.id, item.title);
-    };
-    
-    const handleEditPress = () => {
-      setSelectedTrack(item);
-      setShowEditTrack(true);
     };
     
     return (
@@ -137,17 +92,7 @@ export default function CollectionScreen() {
             </Text>
           </View>
           <Text style={styles.trackDuration}>{formatDuration(item.duration)}</Text>
-        </TouchableOpacity>
-        
-        {isLoggedIn && (
-          <View style={styles.trackActions}>
-            <TouchableOpacity 
-              style={styles.editButtonContainer}
-              onPress={handleEditPress}
-              activeOpacity={0.6}
-              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-            >
-              <View style={styles.editButtonBackground}>
+        </TouchableOpacity>>
                 <Ionicons name="create-outline" size={22} color="#10B981" />
               </View>
             </TouchableOpacity>
