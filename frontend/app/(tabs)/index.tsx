@@ -59,7 +59,6 @@ export default function HomeScreen() {
         <TouchableOpacity 
           style={[styles.listCard, isActive && styles.listCardDragging]}
           onPress={() => router.push('/collection/' + item.id)}
-          onLongPress={isLoggedIn ? drag : undefined}
           disabled={isActive}
         >
           <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.listImage} />
@@ -67,11 +66,6 @@ export default function HomeScreen() {
             <Text style={styles.listName} numberOfLines={1}>{item.name}</Text>
             <Text style={styles.listCount}>{getTrackCount(item.id)} tracks</Text>
           </View>
-          {isLoggedIn && (
-            <View style={styles.dragHandleList}>
-              <Ionicons name="reorder-three" size={24} color="#64748B" />
-            </View>
-          )}
           <Ionicons name="chevron-forward" size={20} color="#64748B" />
         </TouchableOpacity>
       </ScaleDecorator>
