@@ -159,11 +159,7 @@ export default function CollectionScreen() {
             <View style={styles.emptyState}>
               <Ionicons name="musical-notes-outline" size={64} color="#64748B" />
               <Text style={styles.emptyText}>No tracks in this collection</Text>
-              {isLoggedIn ? (
-                <Text style={styles.emptySubtext}>Tap + to add tracks</Text>
-              ) : (
-                <Text style={styles.emptySubtext}>Ask admin to add some tracks</Text>
-              )}
+              <Text style={styles.emptySubtext}>No tracks available</Text>
             </View>
           ) : (
             <FlatList
