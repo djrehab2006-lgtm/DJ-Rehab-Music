@@ -39,29 +39,26 @@ export default function CollectionScreen() {
   const scrollViewRef = React.useRef<ScrollView>(null);
 
   useEffect(() => {
-    checkAuth();
     loadData();
   }, [folderId]);
 
-  const checkAuth = async () => {
-    try {
-      const token = await AsyncStorage.getItem('auth_token');
-      if (token) {
-        const url = BACKEND_URL + '/api/auth/verify';
-        const response = await fetch(url, {
-          headers: { 'Authorization': 'Bearer ' + token },
-        });
-        if (response.ok) {
-          setIsLoggedIn(true);
-        }
-      }
-    } catch (error) {
-      console.log('Auth check failed');
-    }
-  };
-
   const loadData = async () => {
     try {
+      // Load from hardcoded data
+      const folderData = HARDCODED_FOLDERS.find(f => f.id === folderId);
+      const tracksData = HARDCODED_TRACKS.filter(t => t.folder_id === folderId)
+        .sort((a, b) => a.position - b.position);
+      
+      if (folderData) {
+        setFolder(folderData);
+        setTracks(tracksData);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      setLoading(false);
+    }
+  }; {
       const [folderRes, tracksRes] = await Promise.all([
         fetch(BACKEND_URL + '/api/folders'),
         fetch(BACKEND_URL + '/api/tracks?folder_id=' + folderId),
