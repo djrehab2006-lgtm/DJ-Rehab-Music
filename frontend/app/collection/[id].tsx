@@ -91,7 +91,6 @@ export default function CollectionScreen() {
               {item.artist}
             </Text>
           </View>
-          <Text style={styles.trackDuration}>{formatDuration(item.duration)}</Text>
         </TouchableOpacity>
       </View>
     );
