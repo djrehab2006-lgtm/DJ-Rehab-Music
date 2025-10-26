@@ -1,99 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
-
 export default function AdminScreen() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [loginLoading, setLoginLoading] = useState(false);
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    try {
-      const token = await AsyncStorage.getItem('auth_token');
-      if (token) {
-        const url = BACKEND_URL + '/api/auth/verify';
-        const response = await fetch(url, {
-          headers: { 'Authorization': 'Bearer ' + token },
-        });
-        if (response.ok) {
-          setIsLoggedIn(true);
-        }
-      }
-    } catch (error) {
-      console.log('Auth check failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogin = async () => {
-    if (!username || !password) {
-      Alert.alert('Error', 'Please enter username and password');
-      return;
-    }
-
-    setLoginLoading(true);
-    try {
-      const url = BACKEND_URL + '/api/auth/login';
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Invalid credentials');
-      }
-
-      const data = await response.json();
-      await AsyncStorage.setItem('auth_token', data.access_token);
-      setIsLoggedIn(true);
-    } catch (error) {
-      Alert.alert('Login Failed', 'Invalid username or password');
-    } finally {
-      setLoginLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    await AsyncStorage.removeItem('auth_token');
-    setIsLoggedIn(false);
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#10B981" />
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Admin</Text>
       </View>
-    );
-  }
-
-  if (!isLoggedIn) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
-          <View style={styles.loginContainer}>
-            <View style={styles.logoContainer}>
-              <View style={styles.logoCircle}>
-                <Ionicons name="musical-notes" size={48} color="#1E293B" />
-              </View>
-              <Text style={styles.loginTitle}>Admin Login</Text>
-              <Text style={styles.loginSubtitle}>DJ Rehab Music Management</Text>
-            </View>
-
-            <View style={styles.loginForm}>
-              <View style={styles.inputContainer}>
-                <Ionicons name="person-outline" size={20} color="#64748B" style={styles.inputIcon} />
+      
+      <View style={styles.content}>
+        <View style={styles.infoCard}>
+          <View style={styles.iconContainer}>
+            <Ionicons name="lock-closed" size={48} color="#64748B" />
+          </View>
+          <Text style={styles.infoTitle}>Admin Features Disabled</Text>
+          <Text style={styles.infoText}>
+            This app uses built-in music data. To update tracks or folders, please contact the app developer.
+          </Text>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
                 <TextInput
                   style={styles.input}
                   placeholder="Username"
