@@ -4,18 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
-
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
-
-interface Track {
-  id: string;
-  title: string;
-  artist: string;
-  duration: number;
-  cdn_url: string;
-  cover_art?: string;
-  folder_id?: string;
-}
+import { HARDCODED_TRACKS, Track } from '../constants/musicData';
 
 export default function FavoritesScreen() {
   const { playTrack, currentTrack } = useAudioPlayer();
