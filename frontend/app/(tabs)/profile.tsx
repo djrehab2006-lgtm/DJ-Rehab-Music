@@ -34,7 +34,7 @@ export default function ProfileScreen() {
             </View>
           </View>
           <Text style={styles.appName}>DJ REHAB MUSIC</Text>
-          <Text style={styles.appVersion}>Version 1.0.0</Text>
+          <Text style={styles.appVersion}>Version 1.1.0</Text>
         </View>
 
         {/* Action Buttons */}
