@@ -116,7 +116,6 @@ export default function FavoritesScreen() {
                     <Text style={styles.trackTitle} numberOfLines={1}>{track.title}</Text>
                     <Text style={styles.trackArtist} numberOfLines={1}>{track.artist}</Text>
                   </View>
-                  <Text style={styles.trackDuration}>{formatDuration(track.duration)}</Text>
                   <TouchableOpacity
                     onPress={(e) => {
                       e.stopPropagation();
