@@ -37,11 +37,6 @@ export default function FavoritesScreen() {
       setLoading(false);
     }
   };
-      console.error('Error loading favorites:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const removeFavorite = async (trackId: string) => {
     try {
