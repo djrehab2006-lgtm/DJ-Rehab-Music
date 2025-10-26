@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Linking, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Linking, Alert, Share } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,16 +7,12 @@ export default function ProfileScreen() {
   const [showContactModal, setShowContactModal] = useState(false);
 
   const handleShare = async () => {
-    const appUrl = 'https://apps.apple.com/us/app/dj-rehab-music/id6752807769';
     try {
-      const canOpen = await Linking.canOpenURL(appUrl);
-      if (canOpen) {
-        await Linking.openURL(appUrl);
-      } else {
-        Alert.alert('Error', 'Unable to open App Store link');
-      }
+      await Share.share({
+        message: "I'm listening to the DJ Rehab Music App, now available in the Google Play store.",
+      });
     } catch (error) {
-      Alert.alert('Error', 'Failed to open link');
+      Alert.alert('Error', 'Failed to share');
     }
   };
 
