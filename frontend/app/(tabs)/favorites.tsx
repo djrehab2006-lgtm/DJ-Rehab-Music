@@ -18,7 +18,7 @@ export default function FavoritesScreen() {
   const loadFavorites = async () => {
     setLoading(true);
     try {
-      // Get favorite track IDs from AsyncStorage
+      // Get favorite track IDs from AsyncStorage (local device storage)
       const favoritesJson = await AsyncStorage.getItem('favorite_tracks');
       const favoriteIds: string[] = favoritesJson ? JSON.parse(favoritesJson) : [];
 
@@ -28,15 +28,15 @@ export default function FavoritesScreen() {
         return;
       }
 
-      // Fetch all tracks
-      const response = await fetch(BACKEND_URL + '/api/tracks');
-      if (response.ok) {
-        const allTracks: Track[] = await response.json();
-        // Filter to only favorited tracks
-        const favorites = allTracks.filter(track => favoriteIds.includes(track.id));
-        setFavoriteTracks(favorites);
-      }
+      // Filter hardcoded tracks to only favorited ones
+      const favorites = HARDCODED_TRACKS.filter(track => favoriteIds.includes(track.id));
+      setFavoriteTracks(favorites);
     } catch (error) {
+      console.error('Error loading favorites:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
       console.error('Error loading favorites:', error);
     } finally {
       setLoading(false);
