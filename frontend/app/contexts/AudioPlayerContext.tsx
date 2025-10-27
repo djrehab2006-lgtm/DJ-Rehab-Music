@@ -24,6 +24,7 @@ interface AudioPlayerContextType {
   playbackStatus: PlaybackStatus;
   isLoading: boolean;
   isFavorite: boolean;
+  isShuffled: boolean;
   playTrack: (track: Track, playlist?: Track[]) => Promise<void>;
   pauseTrack: () => Promise<void>;
   resumeTrack: () => Promise<void>;
@@ -43,6 +44,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [playlist, setPlaylist] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const [isShuffled, setIsShuffled] = useState<boolean>(false);
   const [playbackStatus, setPlaybackStatus] = useState<PlaybackStatus>({
     isPlaying: false,
     positionMillis: 0,
