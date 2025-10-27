@@ -151,6 +151,8 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       // Update playlist if provided
       if (newPlaylist && newPlaylist.length > 0) {
         setPlaylist(newPlaylist);
+        setOriginalPlaylist(newPlaylist); // Store original order
+        setIsShuffled(false); // Reset shuffle state when new playlist loaded
         const index = newPlaylist.findIndex(t => t.id === track.id);
         setCurrentIndex(index);
       } else if (playlist.length > 0) {
