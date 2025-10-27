@@ -269,6 +269,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
       setPlaylist(shuffled);
+      setIsShuffled(true);
       // Update current index to find current track in shuffled list
       if (currentTrack) {
         const newIndex = shuffled.findIndex(t => t.id === currentTrack.id);
@@ -282,6 +283,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     playbackStatus,
     isLoading,
     isFavorite,
+    isShuffled,
     playTrack,
     pauseTrack,
     resumeTrack,
