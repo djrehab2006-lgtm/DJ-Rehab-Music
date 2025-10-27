@@ -255,6 +255,23 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   };
 
+  const shufflePlaylist = () => {
+    if (playlist.length > 0) {
+      // Fisher-Yates shuffle algorithm
+      const shuffled = [...playlist];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      setPlaylist(shuffled);
+      // Update current index to find current track in shuffled list
+      if (currentTrack) {
+        const newIndex = shuffled.findIndex(t => t.id === currentTrack.id);
+        setCurrentIndex(newIndex);
+      }
+    }
+  };
+
   const value: AudioPlayerContextType = {
     currentTrack,
     playbackStatus,
@@ -268,6 +285,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     toggleFavorite,
     playNext,
     playPrevious,
+    shufflePlaylist,
     hasNext,
     hasPrevious,
   };
