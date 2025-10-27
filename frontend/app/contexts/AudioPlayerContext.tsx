@@ -110,10 +110,13 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       // Handle track end - automatically play next track
       if (status.didJustFinish && !status.isLooping) {
         setPlaybackStatus(prev => ({ ...prev, isPlaying: false }));
-        // Auto-play next track if available
-        if (hasNext) {
-          playNext();
-        }
+        // Auto-play next track if available with a small delay
+        setTimeout(() => {
+          const nextIndex = currentIndex + 1;
+          if (nextIndex < playlist.length) {
+            playNext();
+          }
+        }, 500);
       }
     }
   };
