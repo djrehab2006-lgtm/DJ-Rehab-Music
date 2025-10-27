@@ -209,6 +209,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
+  shuffleButton: {
+    padding: 8,
+  },
   headerButton: {
     padding: 4,
   },
