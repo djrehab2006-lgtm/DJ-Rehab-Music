@@ -32,6 +32,7 @@ interface AudioPlayerContextType {
   toggleFavorite: () => void;
   playNext: () => Promise<void>;
   playPrevious: () => Promise<void>;
+  shufflePlaylist: () => void;
   hasNext: boolean;
   hasPrevious: boolean;
 }
