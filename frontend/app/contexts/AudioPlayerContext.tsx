@@ -57,6 +57,18 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
   const soundRef = useRef<Sound | null>(null);
+  const isAutoPlayingRef = useRef(false);
+  const currentIndexRef = useRef(currentIndex);
+  const playlistRef = useRef(playlist);
+
+  // Update refs when values change
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
+
+  useEffect(() => {
+    playlistRef.current = playlist;
+  }, [playlist]);
 
   const hasNext = currentIndex < playlist.length - 1;
   const hasPrevious = currentIndex > 0;
