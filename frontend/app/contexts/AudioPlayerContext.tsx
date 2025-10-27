@@ -106,9 +106,13 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         isLoaded: true,
       });
 
-      // Handle track end
+      // Handle track end - automatically play next track
       if (status.didJustFinish && !status.isLooping) {
         setPlaybackStatus(prev => ({ ...prev, isPlaying: false }));
+        // Auto-play next track if available
+        if (hasNext) {
+          playNext();
+        }
       }
     }
   };
