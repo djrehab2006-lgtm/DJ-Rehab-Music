@@ -129,7 +129,7 @@ export default function CollectionScreen() {
         <Text style={styles.headerTitle}>{folder.name}</Text>
         <View style={styles.headerActions}>
           <TouchableOpacity onPress={shufflePlaylist} style={styles.shuffleButton}>
-            <Ionicons name="shuffle" size={24} color="#10B981" />
+            <Ionicons name="shuffle" size={24} color={isShuffled ? "#FF8C00" : "#10B981"} />
           </TouchableOpacity>
         </View>
       </View>
