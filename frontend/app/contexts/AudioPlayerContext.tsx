@@ -43,6 +43,7 @@ const AudioPlayerContext = createContext<AudioPlayerContextType | undefined>(und
 export function AudioPlayerProvider({ children }: { children: React.ReactNode }) {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [playlist, setPlaylist] = useState<Track[]>([]);
+  const [originalPlaylist, setOriginalPlaylist] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [isShuffled, setIsShuffled] = useState<boolean>(false);
   const [playbackStatus, setPlaybackStatus] = useState<PlaybackStatus>({
