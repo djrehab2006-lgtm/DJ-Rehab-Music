@@ -265,18 +265,29 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
   const shufflePlaylist = () => {
     if (playlist.length > 0) {
-      // Fisher-Yates shuffle algorithm
-      const shuffled = [...playlist];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      setPlaylist(shuffled);
-      setIsShuffled(true);
-      // Update current index to find current track in shuffled list
-      if (currentTrack) {
-        const newIndex = shuffled.findIndex(t => t.id === currentTrack.id);
-        setCurrentIndex(newIndex);
+      if (isShuffled) {
+        // Unshuffle - restore original order
+        setPlaylist(originalPlaylist);
+        setIsShuffled(false);
+        // Update current index in original playlist
+        if (currentTrack) {
+          const newIndex = originalPlaylist.findIndex(t => t.id === currentTrack.id);
+          setCurrentIndex(newIndex);
+        }
+      } else {
+        // Shuffle - randomize order
+        const shuffled = [...playlist];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        setPlaylist(shuffled);
+        setIsShuffled(true);
+        // Update current index in shuffled playlist
+        if (currentTrack) {
+          const newIndex = shuffled.findIndex(t => t.id === currentTrack.id);
+          setCurrentIndex(newIndex);
+        }
       }
     }
   };
