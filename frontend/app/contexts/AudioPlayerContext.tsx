@@ -249,21 +249,6 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       }
     }
   };
-        { uri: track.cdn_url },
-        { shouldPlay: true },
-        onPlaybackStatusUpdate
-      );
-
-      soundRef.current = sound;
-      setCurrentTrack(track);
-      setIsFavorite(favorites.has(track.id));
-
-    } catch (error) {
-      console.error('Error playing track:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const playNext = async () => {
     if (hasNext && playlist.length > 0) {
