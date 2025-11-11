@@ -148,9 +148,9 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   };
 
-  const playTrack = async (track: Track, newPlaylist?: Track[]) => {
+  const playTrack = async (track: Track, newPlaylist?: Track[], retryCount = 0) => {
     // Prevent multiple simultaneous play requests
-    if (isLoading) {
+    if (isLoading && retryCount === 0) {
       console.log('Already loading a track, ignoring request');
       return;
     }
@@ -185,8 +185,51 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         setCurrentIndex(index >= 0 ? index : -1);
       }
 
-      // Create and load new sound
+      // Create and load new sound with better error handling
       const { sound } = await Audio.Sound.createAsync(
+        { uri: track.cdn_url },
+        { 
+          shouldPlay: true,
+          progressUpdateIntervalMillis: 1000,
+          // Add buffer options for smoother playback
+        },
+        onPlaybackStatusUpdate
+      );
+
+      soundRef.current = sound;
+      setCurrentTrack(track);
+      
+      // Check if track is in favorites
+      const isFav = favorites.has(track.id);
+      setIsFavorite(isFav);
+      
+      setPlaybackStatus(prev => ({ ...prev, isPlaying: true, isLoaded: true }));
+    } catch (error) {
+      console.error('Error playing track:', error);
+      
+      // Retry logic - try up to 2 times
+      if (retryCount < 2) {
+        console.log(`Retrying playback (attempt ${retryCount + 1})...`);
+        setTimeout(() => {
+          playTrack(track, undefined, retryCount + 1);
+        }, 1000);
+      } else {
+        // If retries fail, try to skip to next track
+        console.log('Failed to play track after retries, skipping to next...');
+        const nextIndex = currentIndexRef.current + 1;
+        if (nextIndex < playlistRef.current.length) {
+          const nextTrack = playlistRef.current[nextIndex];
+          setTimeout(() => {
+            playTrack(nextTrack);
+          }, 500);
+        }
+      }
+    } finally {
+      if (retryCount === 0 || retryCount >= 2) {
+        setIsLoading(false);
+      }
+    }
+  };
         { uri: track.cdn_url },
         { shouldPlay: true },
         onPlaybackStatusUpdate
