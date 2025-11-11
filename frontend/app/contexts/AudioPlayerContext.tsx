@@ -145,6 +145,25 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
           isAutoPlayingRef.current = false;
         }
       }
+    } else if (status.error) {
+      // Handle playback errors
+      console.error('Playback error:', status.error);
+      
+      // Try to recover by playing next track
+      if (!isAutoPlayingRef.current) {
+        isAutoPlayingRef.current = true;
+        const nextIndex = currentIndexRef.current + 1;
+        if (nextIndex < playlistRef.current.length) {
+          const nextTrack = playlistRef.current[nextIndex];
+          setTimeout(() => {
+            playTrack(nextTrack).finally(() => {
+              isAutoPlayingRef.current = false;
+            });
+          }, 500);
+        } else {
+          isAutoPlayingRef.current = false;
+        }
+      }
     }
   };
 
