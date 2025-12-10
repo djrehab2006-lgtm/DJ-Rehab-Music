@@ -38,28 +38,34 @@ export const HARDCODED_FOLDERS: Folder[] = [
     position: 2,
   },
   {
+    id: 'december-new-releases-2024',
+    name: "December New Releases",
+    cover_image: null,
+    position: 3,
+  },
+  {
     id: '68f60ad0aa73f672f814759c',
     name: "Hip-Hop Mixes",
     cover_image: null,
-    position: 3,
+    position: 4,
   },
   {
     id: '68f60adeaa73f672f814759d',
     name: "Decades Mixtapes",
     cover_image: null,
-    position: 4,
+    position: 5,
   },
   {
     id: '68f60aebaa73f672f814759e',
     name: "EDM Mixtapes",
     cover_image: null,
-    position: 5,
+    position: 6,
   },
   {
     id: '68f60afcaa73f672f814759f',
     name: "Award Winning Mixtapes",
     cover_image: null,
-    position: 6,
+    position: 7,
   },
   {
     id: '68f60b0eaa73f672f81475a0',
