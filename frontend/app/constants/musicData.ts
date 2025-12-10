@@ -71,25 +71,25 @@ export const HARDCODED_FOLDERS: Folder[] = [
     id: '68f60b0eaa73f672f81475a0',
     name: "Boom Boom Room Mixtapes",
     cover_image: null,
-    position: 7,
+    position: 8,
   },
   {
     id: '68f60b1aaa73f672f81475a1',
     name: "Pop Uptempo Mixes",
     cover_image: null,
-    position: 8,
+    position: 9,
   },
   {
     id: '68f60b27aa73f672f81475a2',
     name: "FM Radio Mixes",
     cover_image: null,
-    position: 9,
+    position: 10,
   },
   {
     id: '68f626a29d76a0458bdf0291',
     name: "Country Mixes",
     cover_image: "",
-    position: 10,
+    position: 11,
   },
 ];
 
