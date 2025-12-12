@@ -240,6 +240,9 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       soundRef.current = sound;
       setCurrentTrack(track);
       
+      // Update now playing info for lock screen controls
+      await updateNowPlayingInfo(track);
+      
       // Check if track is in favorites
       const isFav = favorites.has(track.id);
       setIsFavorite(isFav);
