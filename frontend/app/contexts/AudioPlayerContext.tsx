@@ -95,6 +95,23 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const hasNext = currentIndex < playlist.length - 1;
   const hasPrevious = currentIndex > 0;
 
+  // Update now playing info for lock screen controls
+  const updateNowPlayingInfo = async (track: Track) => {
+    try {
+      if (soundRef.current) {
+        await soundRef.current.setStatusAsync({
+          progressUpdateIntervalMillis: 1000,
+        });
+        
+        // Set metadata for lock screen
+        await Audio.setIsEnabledAsync(true);
+      }
+      console.log('Updated now playing info:', track.title);
+    } catch (error) {
+      console.error('Error updating now playing info:', error);
+    }
+  };
+
   // Load favorites from AsyncStorage on mount
   useEffect(() => {
     loadFavorites();
