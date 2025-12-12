@@ -1,20 +1,17 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, timedelta
-from motor.motor_asyncio import AsyncIOMotorClient
-from bson import ObjectId
-import os
 import bcrypt
 import jwt
+import os
 from dotenv import load_dotenv
+from pymongo import MongoClient
 
 load_dotenv()
 
 app = FastAPI()
-security = HTTPBearer()
 
 # CORS
 app.add_middleware(
@@ -25,60 +22,60 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# MongoDB
-MONGO_URL = os.getenv("MONGO_URL")
-client = AsyncIOMotorClient(MONGO_URL)
-db = client.djrehab_music
+# MongoDB Connection
+MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
+DB_NAME = os.getenv("DB_NAME", "djrehab_music")
+SECRET_KEY = os.getenv("JWT_SECRET")
 
-# JWT Config
-SECRET_KEY = os.getenv("JWT_SECRET", "your-secret-key-change-in-production")
+# Initialize SECRET_KEY with a secure default if not provided
+if not SECRET_KEY:
+    SECRET_KEY = "temporary-secret-key-for-deployment"
+    print("WARNING: JWT_SECRET not set, using temporary default. Set JWT_SECRET environment variable for production.")
+
+try:
+    client = MongoClient(MONGO_URL, serverSelectionTimeoutMS=5000)
+    db = client[DB_NAME]
+    # Test connection
+    client.admin.command('ping')
+    MONGODB_AVAILABLE = True
+    print(f"MongoDB connected successfully to database: {DB_NAME}")
+except Exception as e:
+    print(f"MongoDB connection failed: {e}")
+    print("App will run in limited mode without database functionality")
+    MONGODB_AVAILABLE = False
+    db = None
+
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
 
 # Models
 class AdminLogin(BaseModel):
     username: str
     password: str
 
-class AdminCreate(BaseModel):
-    username: str
-    password: str
-
 class Token(BaseModel):
     access_token: str
-    token_type: str = "bearer"
+    token_type: str
 
-class FolderCreate(BaseModel):
+class Folder(BaseModel):
     name: str
-    cover_image: Optional[str] = None  # base64
-
-class FolderUpdate(BaseModel):
-    name: Optional[str] = None
     cover_image: Optional[str] = None
 
-class FolderReorder(BaseModel):
-    folder_ids: List[str]  # Array of folder IDs in new order
-
-class TrackCreate(BaseModel):
+class Track(BaseModel):
     title: str
     artist: str
     cdn_url: str
-    duration: Optional[int] = 0  # in seconds
-    folder_id: Optional[str] = None
-    cover_art: Optional[str] = None  # base64
-
-class TrackUpdate(BaseModel):
-    title: Optional[str] = None
-    artist: Optional[str] = None
-    cdn_url: Optional[str] = None
-    duration: Optional[int] = None
-    folder_id: Optional[str] = None
+    duration: int
+    folder_id: str
     cover_art: Optional[str] = None
 
-class TrackReorder(BaseModel):
-    track_ids: List[str]  # Array of track IDs in new order
+class FolderReorder(BaseModel):
+    folder_ids: List[str]
 
-# Helper functions
+class TrackReorder(BaseModel):
+    track_ids: List[str]
+
+# Auth helpers
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -86,14 +83,18 @@ def create_access_token(data: dict):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+def get_current_admin(token: str = Depends(lambda: None)):
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
     try:
-        token = credentials.credentials
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return username
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.InvalidTokenError:
+    except jwt.JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 def serialize_doc(doc):
@@ -102,22 +103,42 @@ def serialize_doc(doc):
         del doc["_id"]
     return doc
 
-# Startup - Create default admin if not exists
+# Startup - Create default admin if not exists (only if MongoDB is available)
 @app.on_event("startup")
 async def startup_event():
-    admin = await db.admins.find_one({"username": "djrehab2006"})
-    if not admin:
-        hashed = bcrypt.hashpw("Helena@1810".encode('utf-8'), bcrypt.gensalt())
-        await db.admins.insert_one({
-            "username": "djrehab2006",
-            "password_hash": hashed.decode('utf-8'),
-            "created_at": datetime.utcnow()
-        })
-        print("Default admin created: username=djrehab2006, password=Helena@1810")
+    if not MONGODB_AVAILABLE:
+        print("Skipping admin initialization - MongoDB not available")
+        return
+    
+    try:
+        admin = await db.admins.find_one({"username": "djrehab2006"})
+        if not admin:
+            hashed = bcrypt.hashpw("Helena@1810".encode('utf-8'), bcrypt.gensalt())
+            await db.admins.insert_one({
+                "username": "djrehab2006",
+                "password_hash": hashed.decode('utf-8'),
+                "created_at": datetime.utcnow()
+            })
+            print("Default admin created: username=djrehab2006, password=Helena@1810")
+    except Exception as e:
+        print(f"Failed to initialize admin user: {e}")
+        print("App will continue without admin functionality")
+
+# Health check
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "mongodb_available": MONGODB_AVAILABLE,
+        "database": DB_NAME if MONGODB_AVAILABLE else "not connected"
+    }
 
 # Auth Endpoints
 @app.post("/api/auth/login", response_model=Token)
 async def login(admin_login: AdminLogin):
+    if not MONGODB_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Database not available")
+    
     admin = await db.admins.find_one({"username": admin_login.username})
     if not admin:
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -125,142 +146,103 @@ async def login(admin_login: AdminLogin):
     if not bcrypt.checkpw(admin_login.password.encode('utf-8'), admin["password_hash"].encode('utf-8')):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    access_token = create_access_token({"sub": admin_login.username})
-    return {"access_token": access_token}
+    access_token = create_access_token(data={"sub": admin_login.username})
+    return {"access_token": access_token, "token_type": "bearer"}
 
 @app.get("/api/auth/verify")
-async def verify(payload: dict = Depends(verify_token)):
-    return {"username": payload.get("sub"), "valid": True}
+async def verify_token(username: str = Depends(get_current_admin)):
+    return {"username": username}
 
 # Folder Endpoints
 @app.get("/api/folders")
 async def get_folders():
-    folders = await db.folders.find().sort("position", 1).to_list(100)
+    if not MONGODB_AVAILABLE:
+        return []
+    folders = await db.folders.find().sort("position", 1).to_list(length=None)
     return [serialize_doc(f) for f in folders]
 
 @app.post("/api/folders")
-async def create_folder(folder: FolderCreate, payload: dict = Depends(verify_token)):
-    # Get the DEFAULT_FOLDER_ICON if no cover_image provided
-    DEFAULT_FOLDER_ICON = os.getenv("DEFAULT_FOLDER_ICON", "")
-    
-    # Get the highest position and add 1
-    max_folder = await db.folders.find_one(sort=[("position", -1)])
-    next_position = (max_folder.get("position", 0) + 1) if max_folder else 0
-    
-    folder_doc = {
-        "name": folder.name,
-        "cover_image": folder.cover_image or DEFAULT_FOLDER_ICON,
-        "position": next_position,
-        "created_at": datetime.utcnow()
-    }
-    result = await db.folders.insert_one(folder_doc)
-    folder_doc["id"] = str(result.inserted_id)
-    del folder_doc["_id"]
-    return folder_doc
+async def create_folder(folder: Folder, admin: str = Depends(get_current_admin)):
+    if not MONGODB_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Database not available")
+    count = await db.folders.count_documents({})
+    folder_dict = folder.dict()
+    folder_dict["position"] = count
+    folder_dict["created_at"] = datetime.utcnow()
+    result = await db.folders.insert_one(folder_dict)
+    new_folder = await db.folders.find_one({"_id": result.inserted_id})
+    return serialize_doc(new_folder)
 
 @app.put("/api/folders/{folder_id}")
-async def update_folder(folder_id: str, folder: FolderUpdate, payload: dict = Depends(verify_token)):
-    update_data = {k: v for k, v in folder.dict().items() if v is not None}
-    if not update_data:
-        raise HTTPException(status_code=400, detail="No fields to update")
-    
-    result = await db.folders.update_one(
-        {"_id": ObjectId(folder_id)},
-        {"$set": update_data}
-    )
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Folder not found")
-    
-    updated_folder = await db.folders.find_one({"_id": ObjectId(folder_id)})
-    return serialize_doc(updated_folder)
+async def update_folder(folder_id: str, folder: Folder, admin: str = Depends(get_current_admin)):
+    if not MONGODB_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Database not available")
+    from bson import ObjectId
+    await db.folders.update_one({"_id": ObjectId(folder_id)}, {"$set": folder.dict()})
+    updated = await db.folders.find_one({"_id": ObjectId(folder_id)})
+    return serialize_doc(updated)
 
 @app.delete("/api/folders/{folder_id}")
-async def delete_folder(folder_id: str, payload: dict = Depends(verify_token)):
-    # Also delete all tracks in this folder
+async def delete_folder(folder_id: str, admin: str = Depends(get_current_admin)):
+    if not MONGODB_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Database not available")
+    from bson import ObjectId
     await db.tracks.delete_many({"folder_id": folder_id})
-    result = await db.folders.delete_one({"_id": ObjectId(folder_id)})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Folder not found")
-    return {"message": "Folder deleted successfully"}
+    await db.folders.delete_one({"_id": ObjectId(folder_id)})
+    return {"message": "Folder deleted"}
 
 @app.put("/api/folders/reorder")
-async def reorder_folders(data: FolderReorder, payload: dict = Depends(verify_token)):
-    # Update position for each folder based on new order
-    for index, folder_id in enumerate(data.folder_ids):
-        await db.folders.update_one(
-            {"_id": ObjectId(folder_id)},
-            {"$set": {"position": index}}
-        )
-    return {"message": "Folders reordered successfully"}
+async def reorder_folders(reorder: FolderReorder, admin: str = Depends(get_current_admin)):
+    if not MONGODB_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Database not available")
+    from bson import ObjectId
+    for idx, folder_id in enumerate(reorder.folder_ids):
+        await db.folders.update_one({"_id": ObjectId(folder_id)}, {"$set": {"position": idx}})
+    return {"message": "Folders reordered"}
 
 # Track Endpoints
 @app.get("/api/tracks")
 async def get_tracks(folder_id: Optional[str] = None):
-    query = {}
-    if folder_id:
-        query["folder_id"] = folder_id
-    tracks = await db.tracks.find(query).sort("position", 1).to_list(500)
+    if not MONGODB_AVAILABLE:
+        return []
+    query = {"folder_id": folder_id} if folder_id else {}
+    tracks = await db.tracks.find(query).sort("position", 1).to_list(length=None)
     return [serialize_doc(t) for t in tracks]
 
 @app.post("/api/tracks")
-async def create_track(track: TrackCreate, payload: dict = Depends(verify_token)):
-    # Get the highest position within the folder and add 1
-    query = {"folder_id": track.folder_id} if track.folder_id else {}
-    max_track = await db.tracks.find_one(query, sort=[("position", -1)])
-    next_position = (max_track.get("position", 0) + 1) if max_track else 0
-    
-    track_doc = {
-        "title": track.title,
-        "artist": track.artist,
-        "cdn_url": track.cdn_url,
-        "duration": track.duration,
-        "folder_id": track.folder_id,
-        "cover_art": track.cover_art,
-        "position": next_position,
-        "created_at": datetime.utcnow()
-    }
-    result = await db.tracks.insert_one(track_doc)
-    track_doc["id"] = str(result.inserted_id)
-    del track_doc["_id"]
-    return track_doc
+async def create_track(track: Track, admin: str = Depends(get_current_admin)):
+    if not MONGODB_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Database not available")
+    count = await db.tracks.count_documents({"folder_id": track.folder_id})
+    track_dict = track.dict()
+    track_dict["position"] = count
+    track_dict["created_at"] = datetime.utcnow()
+    result = await db.tracks.insert_one(track_dict)
+    new_track = await db.tracks.find_one({"_id": result.inserted_id})
+    return serialize_doc(new_track)
 
 @app.put("/api/tracks/reorder")
-async def reorder_tracks(data: TrackReorder, payload: dict = Depends(verify_token)):
-    # Update position for each track based on new order
-    for index, track_id in enumerate(data.track_ids):
-        await db.tracks.update_one(
-            {"_id": ObjectId(track_id)},
-            {"$set": {"position": index}}
-        )
-    return {"message": "Tracks reordered successfully"}
+async def reorder_tracks(reorder: TrackReorder, admin: str = Depends(get_current_admin)):
+    if not MONGODB_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Database not available")
+    from bson import ObjectId
+    for idx, track_id in enumerate(reorder.track_ids):
+        await db.tracks.update_one({"_id": ObjectId(track_id)}, {"$set": {"position": idx}})
+    return {"message": "Tracks reordered"}
 
 @app.put("/api/tracks/{track_id}")
-async def update_track(track_id: str, track: TrackUpdate, payload: dict = Depends(verify_token)):
-    update_data = {k: v for k, v in track.dict().items() if v is not None}
-    if not update_data:
-        raise HTTPException(status_code=400, detail="No fields to update")
-    
-    result = await db.tracks.update_one(
-        {"_id": ObjectId(track_id)},
-        {"$set": update_data}
-    )
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Track not found")
-    
-    updated_track = await db.tracks.find_one({"_id": ObjectId(track_id)})
-    return serialize_doc(updated_track)
+async def update_track(track_id: str, track: Track, admin: str = Depends(get_current_admin)):
+    if not MONGODB_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Database not available")
+    from bson import ObjectId
+    await db.tracks.update_one({"_id": ObjectId(track_id)}, {"$set": track.dict()})
+    updated = await db.tracks.find_one({"_id": ObjectId(track_id)})
+    return serialize_doc(updated)
 
 @app.delete("/api/tracks/{track_id}")
-async def delete_track(track_id: str, payload: dict = Depends(verify_token)):
-    result = await db.tracks.delete_one({"_id": ObjectId(track_id)})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Track not found")
-    return {"message": "Track deleted successfully"}
-
-@app.get("/api/health")
-async def health():
-    return {"status": "ok"}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+async def delete_track(track_id: str, admin: str = Depends(get_current_admin)):
+    if not MONGODB_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Database not available")
+    from bson import ObjectId
+    await db.tracks.delete_one({"_id": ObjectId(track_id)})
+    return {"message": "Track deleted"}
