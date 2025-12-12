@@ -70,6 +70,28 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     playlistRef.current = playlist;
   }, [playlist]);
 
+  // Configure audio session for background playback on mount
+  useEffect(() => {
+    configureAudioSession();
+  }, []);
+
+  const configureAudioSession = async () => {
+    try {
+      await Audio.setAudioModeAsync({
+        staysActiveInBackground: true,
+        playsInSilentModeIOS: true,
+        shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
+        allowsRecordingIOS: false,
+        interruptionModeIOS: 1, // MixWithOthers
+        interruptionModeAndroid: 1, // DoNotMix
+      });
+      console.log('Audio session configured for background playback');
+    } catch (error) {
+      console.error('Error configuring audio session:', error);
+    }
+  };
+
   const hasNext = currentIndex < playlist.length - 1;
   const hasPrevious = currentIndex > 0;
 
