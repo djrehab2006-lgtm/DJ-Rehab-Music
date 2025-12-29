@@ -25,7 +25,9 @@
       "edgeToEdgeEnabled": true,
       "permissions": [
         "INTERNET",
-        "FOREGROUND_SERVICE"
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "WAKE_LOCK"
       ]
     },
     "web": {
