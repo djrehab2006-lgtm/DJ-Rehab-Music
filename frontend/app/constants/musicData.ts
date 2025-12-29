@@ -20,14 +20,14 @@ export interface Folder {
 
 export const HARDCODED_FOLDERS: Folder[] = [
   {
-    id: '68f388dab2668bf7b13fe644',
-    name: "Latest Releases",
+    id: 'january-new-releases-2025',
+    name: "January New Releases",
     cover_image: null,
     position: 0,
   },
   {
-    id: '68f38ac415e322367cfefdbe',
-    name: "Tiktok Hits",
+    id: 'december-new-releases-2024',
+    name: "December New Releases",
     cover_image: null,
     position: 1,
   },
@@ -38,14 +38,14 @@ export const HARDCODED_FOLDERS: Folder[] = [
     position: 2,
   },
   {
-    id: 'december-new-releases-2024',
-    name: "December New Releases",
+    id: '68f388dab2668bf7b13fe644',
+    name: "October Releases",
     cover_image: null,
     position: 3,
   },
   {
-    id: 'january-new-releases-2025',
-    name: "January New Releases",
+    id: '68f38ac415e322367cfefdbe',
+    name: "Tiktok Hits",
     cover_image: null,
     position: 4,
   },
