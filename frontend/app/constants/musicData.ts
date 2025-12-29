@@ -355,9 +355,9 @@ export const HARDCODED_TRACKS: Track[] = [
   },
   {
     id: 'dec-track-26',
-    title: "Straight Outta Compton (Rehab Oh What A Night Flip)",
+    title: "Straight Outta Compton (Rehab Frankie Valli Flip)",
     artist: "DJ Rehab",
-    cdn_url: "https://DJ-Rehab-App.b-cdn.net/Latest%20Update/Straight%20Outta%20Compton%20(Rehab%20Oh%20What%20A%20Night%20Flip).mp3",
+    cdn_url: "https://DJ-Rehab-App.b-cdn.net/App%20Update%203/Straight%20Outta%20Compton%20(Rehab%20Frankie%20Valli%20Flip).mp3",
     duration: 180,
     folder_id: "december-new-releases-2024",
     cover_art: null,
