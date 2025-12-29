@@ -17,9 +17,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DEFAULT_FOLDER_ICON } from '../constants/defaultFolderIcon';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
-import { HARDCODED_FOLDERS, HARDCODED_TRACKS, Folder, Track } from '../constants/musicData';
+import { HARDCODED_FOLDERS, HARDCODED_TRACKS, Folder, Track, FOLDER_ICON } from '../constants/musicData';
 
 export default function CollectionScreen() {
   const router = useRouter();
