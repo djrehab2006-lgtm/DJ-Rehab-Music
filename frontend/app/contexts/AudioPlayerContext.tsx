@@ -80,11 +80,11 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       await Audio.setAudioModeAsync({
         staysActiveInBackground: true,
         playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
+        shouldDuckAndroid: false,
         playThroughEarpieceAndroid: false,
         allowsRecordingIOS: false,
-        interruptionModeIOS: 1, // MixWithOthers
-        interruptionModeAndroid: 1, // DoNotMix
+        interruptionModeIOS: 0, // DoNotMix - keep playing
+        interruptionModeAndroid: 1, // DoNotMix - keep playing
       });
       console.log('Audio session configured for background playback');
     } catch (error) {
