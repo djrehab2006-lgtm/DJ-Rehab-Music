@@ -8,6 +8,9 @@
     "scheme": "djrehab",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -17,6 +20,7 @@
       }
     },
     "android": {
+      "package": "com.djrehab.music",
       "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
