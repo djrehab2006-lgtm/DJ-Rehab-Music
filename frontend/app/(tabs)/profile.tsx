@@ -46,13 +46,25 @@ export default function ProfileScreen() {
         </View>
 
         {/* TikTok Button */}
-        <TouchableOpacity style={styles.tiktokButton} onPress={handleTikTokPress}>
+        <TouchableOpacity style={styles.socialButton} onPress={handleTikTokPress}>
           <View style={styles.tiktokIconContainer}>
             <Ionicons name="logo-tiktok" size={28} color="#FFFFFF" />
           </View>
-          <View style={styles.tiktokTextContainer}>
-            <Text style={styles.tiktokTitle}>Follow on TikTok</Text>
-            <Text style={styles.tiktokHandle}>@thedjrehab</Text>
+          <View style={styles.socialTextContainer}>
+            <Text style={styles.socialTitle}>Follow on TikTok</Text>
+            <Text style={styles.socialHandle}>@thedjrehab</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#F5A623" />
+        </TouchableOpacity>
+
+        {/* Instagram Button */}
+        <TouchableOpacity style={styles.socialButton} onPress={handleInstagramPress}>
+          <View style={styles.instagramIconContainer}>
+            <Ionicons name="logo-instagram" size={28} color="#FFFFFF" />
+          </View>
+          <View style={styles.socialTextContainer}>
+            <Text style={styles.socialTitle}>Follow on Instagram</Text>
+            <Text style={styles.socialHandle}>@djrehabevents</Text>
           </View>
           <Ionicons name="chevron-forward" size={24} color="#F5A623" />
         </TouchableOpacity>
