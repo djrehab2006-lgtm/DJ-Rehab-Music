@@ -18,83 +18,86 @@ export interface Folder {
   position: number;
 }
 
+// Folder icon - using require for local asset
+export const FOLDER_ICON = require('../../assets/folder-icon.jpg');
+
 export const HARDCODED_FOLDERS: Folder[] = [
   {
     id: 'january-new-releases-2025',
     name: "January New Releases",
-    cover_image: null,
+    cover_image: "local",
     position: 0,
   },
   {
     id: 'december-new-releases-2024',
     name: "December New Releases",
-    cover_image: null,
+    cover_image: "local",
     position: 1,
   },
   {
     id: 'november-release-2024',
     name: "November Release",
-    cover_image: null,
+    cover_image: "local",
     position: 2,
   },
   {
     id: '68f388dab2668bf7b13fe644',
     name: "October Releases",
-    cover_image: null,
+    cover_image: "local",
     position: 3,
   },
   {
     id: '68f38ac415e322367cfefdbe',
     name: "Tiktok Hits",
-    cover_image: null,
+    cover_image: "local",
     position: 4,
   },
   {
     id: '68f60ad0aa73f672f814759c',
     name: "Hip-Hop Mixes",
-    cover_image: null,
+    cover_image: "local",
     position: 5,
   },
   {
     id: '68f60adeaa73f672f814759d',
     name: "Decades Mixtapes",
-    cover_image: null,
+    cover_image: "local",
     position: 6,
   },
   {
     id: '68f60aebaa73f672f814759e',
     name: "EDM Mixtapes",
-    cover_image: null,
+    cover_image: "local",
     position: 7,
   },
   {
     id: '68f60afcaa73f672f814759f',
     name: "Award Winning Mixtapes",
-    cover_image: null,
+    cover_image: "local",
     position: 8,
   },
   {
     id: '68f60b0eaa73f672f81475a0',
     name: "Boom Boom Room Mixtapes",
-    cover_image: null,
+    cover_image: "local",
     position: 9,
   },
   {
     id: '68f60b1aaa73f672f81475a1',
     name: "Pop Uptempo Mixes",
-    cover_image: null,
+    cover_image: "local",
     position: 10,
   },
   {
     id: '68f60b27aa73f672f81475a2',
     name: "FM Radio Mixes",
-    cover_image: null,
+    cover_image: "local",
     position: 11,
   },
   {
     id: '68f626a29d76a0458bdf0291',
     name: "Country Mixes",
-    cover_image: "",
+    cover_image: "local",
     position: 12,
   },
 ];
