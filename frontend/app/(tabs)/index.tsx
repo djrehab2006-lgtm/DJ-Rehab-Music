@@ -58,7 +58,7 @@ export default function HomeScreen() {
           onPress={() => router.push('/collection/' + item.id)}
           disabled={isActive}
         >
-          <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.listImage} />
+          <Image source={FOLDER_ICON} style={styles.listImage} />
           <View style={styles.listTextContainer}>
             <Text style={styles.listName} numberOfLines={1}>{item.name}</Text>
             <Text style={styles.listCount}>{getTrackCount(item.id)} tracks</Text>
