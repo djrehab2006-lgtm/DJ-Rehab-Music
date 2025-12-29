@@ -145,7 +145,10 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       await Audio.setAudioModeAsync({
         playsInSilentModeIOS: true,
         staysActiveInBackground: true,
-        shouldDuckAndroid: true,
+        shouldDuckAndroid: false,
+        playThroughEarpieceAndroid: false,
+        interruptionModeIOS: 0, // DoNotMix
+        interruptionModeAndroid: 1, // DoNotMix
       });
     } catch (error) {
       console.error('Error configuring audio:', error);
