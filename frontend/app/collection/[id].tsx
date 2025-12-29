@@ -149,7 +149,7 @@ export default function CollectionScreen() {
       >
         {/* Collection Header */}
         <View style={styles.collectionHeader}>
-          <Image source={{ uri: DEFAULT_FOLDER_ICON }} style={styles.collectionImage} />
+          <Image source={FOLDER_ICON} style={styles.collectionImage} />
           <Text style={styles.collectionName}>{folder.name}</Text>
           <Text style={styles.collectionCount}>{tracks.length} tracks</Text>
         </View>
