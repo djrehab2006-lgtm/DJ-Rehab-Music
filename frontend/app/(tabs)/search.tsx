@@ -83,7 +83,7 @@ export default function SearchScreen() {
 
       <ScrollView style={styles.scrollView}>
         {loading ? (
-          <ActivityIndicator size="large" color="#10B981" style={{ marginTop: 40 }} />
+          <ActivityIndicator size="large" color="#F5A623" style={{ marginTop: 40 }} />
         ) : searchQuery === '' ? (
           <View style={styles.emptyState}>
             <Ionicons name="search-outline" size={64} color="#64748B" />
@@ -107,7 +107,7 @@ export default function SearchScreen() {
                   {track.cover_art ? (
                     <Image source={{ uri: track.cover_art }} style={styles.trackImage} />
                   ) : (
-                    <Ionicons name="musical-note" size={24} color="#10B981" />
+                    <Ionicons name="musical-note" size={24} color="#F5A623" />
                   )}
                 </View>
                 <View style={styles.trackInfo}>
@@ -115,7 +115,7 @@ export default function SearchScreen() {
                   <Text style={styles.trackArtist} numberOfLines={1}>{track.artist}</Text>
                 </View>
                 <Text style={styles.trackDuration}>{formatDuration(track.duration)}</Text>
-                <Ionicons name="play-circle" size={32} color="#10B981" />
+                <Ionicons name="play-circle" size={32} color="#F5A623" />
               </TouchableOpacity>
             ))}
           </View>

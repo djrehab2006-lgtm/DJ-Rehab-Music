@@ -65,7 +65,7 @@ export default function FavoritesScreen() {
           <Text style={styles.headerTitle}>Favorites</Text>
         </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#10B981" />
+          <ActivityIndicator size="large" color="#F5A623" />
         </View>
       </SafeAreaView>
     );
@@ -76,7 +76,7 @@ export default function FavoritesScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Favorites</Text>
         <TouchableOpacity onPress={loadFavorites}>
-          <Ionicons name="refresh" size={24} color="#10B981" />
+          <Ionicons name="refresh" size={24} color="#F5A623" />
         </TouchableOpacity>
       </View>
 
@@ -109,7 +109,7 @@ export default function FavoritesScreen() {
                     {track.cover_art ? (
                       <Image source={{ uri: track.cover_art }} style={styles.trackImage} />
                     ) : (
-                      <Ionicons name="musical-note" size={20} color="#10B981" />
+                      <Ionicons name="musical-note" size={20} color="#F5A623" />
                     )}
                   </View>
                   <View style={styles.trackInfo}>
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     marginBottom: 8, 
     borderRadius: 12 
   },
-  trackCardPlaying: { backgroundColor: '#334155', borderWidth: 1, borderColor: '#10B981' },
+  trackCardPlaying: { backgroundColor: '#334155', borderWidth: 1, borderColor: '#F5A623' },
   trackNumber: { 
     width: 32, 
     height: 32, 

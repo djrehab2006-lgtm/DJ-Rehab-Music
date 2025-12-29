@@ -40,12 +40,12 @@ export default function ProfileScreen() {
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
           <TouchableOpacity style={styles.actionButton} onPress={() => setShowContactModal(true)}>
-            <Ionicons name="mail-outline" size={24} color="#10B981" />
+            <Ionicons name="mail-outline" size={24} color="#F5A623" />
             <Text style={styles.actionButtonText}>Contact</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
-            <Ionicons name="share-social-outline" size={24} color="#10B981" />
+            <Ionicons name="share-social-outline" size={24} color="#F5A623" />
             <Text style={styles.actionButtonText}>Share App</Text>
           </TouchableOpacity>
         </View>
@@ -61,19 +61,19 @@ export default function ProfileScreen() {
         <View style={styles.infoSection}>
           <Text style={styles.sectionTitle}>Features</Text>
           <View style={styles.featureItem}>
-            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+            <Ionicons name="checkmark-circle" size={20} color="#F5A623" />
             <Text style={styles.featureText}>Background playback</Text>
           </View>
           <View style={styles.featureItem}>
-            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+            <Ionicons name="checkmark-circle" size={20} color="#F5A623" />
             <Text style={styles.featureText}>Organized collections</Text>
           </View>
           <View style={styles.featureItem}>
-            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+            <Ionicons name="checkmark-circle" size={20} color="#F5A623" />
             <Text style={styles.featureText}>Search functionality</Text>
           </View>
           <View style={styles.featureItem}>
-            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+            <Ionicons name="checkmark-circle" size={20} color="#F5A623" />
             <Text style={styles.featureText}>Admin management</Text>
           </View>
         </View>
@@ -83,7 +83,7 @@ export default function ProfileScreen() {
       <Modal visible={showContactModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Ionicons name="mail" size={48} color="#10B981" style={styles.modalIcon} />
+            <Ionicons name="mail" size={48} color="#F5A623" style={styles.modalIcon} />
             <Text style={styles.modalTitle}>Booking Inquiries</Text>
             <Text style={styles.modalText}>For booking inquiries, email:</Text>
             <TouchableOpacity onPress={handleEmailPress} style={styles.emailButton}>
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emailButton: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#F5A623',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,

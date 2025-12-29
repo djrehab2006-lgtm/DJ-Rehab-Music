@@ -72,7 +72,7 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#10B981" />
+        <ActivityIndicator size="large" color="#F5A623" />
       </View>
     );
   }
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   },
   listCardDragging: {
     backgroundColor: '#334155',
-    shadowColor: '#10B981',
+    shadowColor: '#F5A623',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
     shadowRadius: 12,
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#334155',
   },
   modalButtonSave: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#F5A623',
   },
   modalButtonText: {
     fontSize: 16,
