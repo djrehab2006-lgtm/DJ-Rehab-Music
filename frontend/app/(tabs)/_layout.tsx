@@ -15,7 +15,6 @@ function CustomTopTabs() {
     { name: 'library', label: 'Library', icon: 'library' },
     { name: 'favorites', label: 'Favorites', icon: 'heart' },
     { name: 'profile', label: 'Profile', icon: 'person' },
-    { name: 'admin', label: 'Admin', icon: 'settings' },
   ];
   
   const getIsActive = (tabName: string) => {
@@ -107,10 +106,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="admin"
         options={{
-          title: 'Admin',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings" size={24} color={color} />
-          ),
+          href: null,
         }}
       />
     </Tabs>
