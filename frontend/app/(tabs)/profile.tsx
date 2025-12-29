@@ -20,6 +20,10 @@ export default function ProfileScreen() {
     Linking.openURL('mailto:djrehab2006@gmail.com');
   };
 
+  const handleTikTokPress = () => {
+    Linking.openURL('https://www.tiktok.com/@thedjrehab');
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
@@ -36,6 +40,18 @@ export default function ProfileScreen() {
           <Text style={styles.appName}>DJ REHAB MUSIC</Text>
           <Text style={styles.appVersion}>Version 1.1.0</Text>
         </View>
+
+        {/* TikTok Button */}
+        <TouchableOpacity style={styles.tiktokButton} onPress={handleTikTokPress}>
+          <View style={styles.tiktokIconContainer}>
+            <Ionicons name="logo-tiktok" size={28} color="#FFFFFF" />
+          </View>
+          <View style={styles.tiktokTextContainer}>
+            <Text style={styles.tiktokTitle}>Follow on TikTok</Text>
+            <Text style={styles.tiktokHandle}>@thedjrehab</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#F5A623" />
+        </TouchableOpacity>
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
@@ -74,7 +90,7 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.featureItem}>
             <Ionicons name="checkmark-circle" size={20} color="#F5A623" />
-            <Text style={styles.featureText}>Admin management</Text>
+            <Text style={styles.featureText}>Shuffle & continuous play</Text>
           </View>
         </View>
       </ScrollView>
@@ -109,9 +125,41 @@ const styles = StyleSheet.create({
   content: { flex: 1, padding: 20 },
   card: { backgroundColor: '#1E293B', borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 24 },
   logoContainer: { marginBottom: 16 },
-  logo: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#FCD34D', justifyContent: 'center', alignItems: 'center' },
+  logo: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#F5A623', justifyContent: 'center', alignItems: 'center' },
   appName: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8 },
   appVersion: { fontSize: 14, color: '#94A3B8' },
+  tiktokButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1E293B',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#F5A623',
+  },
+  tiktokIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  tiktokTextContainer: {
+    flex: 1,
+  },
+  tiktokTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  tiktokHandle: {
+    fontSize: 14,
+    color: '#F5A623',
+  },
   infoSection: { marginBottom: 24 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 12 },
   infoText: { fontSize: 14, color: '#94A3B8', lineHeight: 22 },
