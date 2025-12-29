@@ -83,19 +83,19 @@ export const HARDCODED_FOLDERS: Folder[] = [
     id: '68f60b1aaa73f672f81475a1',
     name: "Pop Uptempo Mixes",
     cover_image: null,
-    position: 9,
+    position: 10,
   },
   {
     id: '68f60b27aa73f672f81475a2',
     name: "FM Radio Mixes",
     cover_image: null,
-    position: 10,
+    position: 11,
   },
   {
     id: '68f626a29d76a0458bdf0291',
     name: "Country Mixes",
     cover_image: "",
-    position: 11,
+    position: 12,
   },
 ];
 
