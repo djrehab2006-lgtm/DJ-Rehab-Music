@@ -144,16 +144,6 @@ const styles = StyleSheet.create({
   logo: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#F5A623', justifyContent: 'center', alignItems: 'center' },
   appName: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8 },
   appVersion: { fontSize: 14, color: '#94A3B8' },
-  tiktokButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#F5A623',
-  },
   tiktokIconContainer: {
     width: 50,
     height: 50,
@@ -163,16 +153,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 16,
   },
-  tiktokTextContainer: {
+  instagramIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#E1306C',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  socialButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1E293B',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#F5A623',
+  },
+  socialTextContainer: {
     flex: 1,
   },
-  tiktokTitle: {
+  socialTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 4,
   },
-  tiktokHandle: {
+  socialHandle: {
     fontSize: 14,
     color: '#F5A623',
   },
