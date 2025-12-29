@@ -24,6 +24,10 @@ export default function ProfileScreen() {
     Linking.openURL('https://www.tiktok.com/@thedjrehab');
   };
 
+  const handleInstagramPress = () => {
+    Linking.openURL('https://www.instagram.com/djrehabevents/');
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
