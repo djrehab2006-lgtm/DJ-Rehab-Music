@@ -1686,9 +1686,9 @@ export const HARDCODED_TRACKS: Track[] = [
   },
   {
     id: 'jan-track-2',
-    title: "Poppin' My Collar (Rehab Material Girl Flip)",
+    title: "Poppin My Collar (Rehab Madonna Flip)",
     artist: "DJ Rehab",
-    cdn_url: "https://DJ-Rehab-App.b-cdn.net/App%20Update%203/Poppin'%20My%20Collar(Rehab%20Material%20Girl%20Flip).mp3",
+    cdn_url: "https://DJ-Rehab-App.b-cdn.net/App%20Update%203/Poppin%20My%20Collar%20(Rehab%20Madonna%20Flip).mp3",
     duration: 180,
     folder_id: "january-new-releases-2025",
     cover_art: null,
