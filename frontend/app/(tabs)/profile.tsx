@@ -35,16 +35,6 @@ export default function ProfileScreen() {
       </View>
 
       <ScrollView style={styles.content}>
-        <View style={styles.card}>
-          <View style={styles.logoContainer}>
-            <View style={styles.logo}>
-              <Ionicons name="musical-notes" size={48} color="#1E293B" />
-            </View>
-          </View>
-          <Text style={styles.appName}>DJ REHAB MUSIC</Text>
-          <Text style={styles.appVersion}>Version 1.1.0</Text>
-        </View>
-
         {/* TikTok Button */}
         <TouchableOpacity style={styles.socialButton} onPress={handleTikTokPress}>
           <View style={styles.tiktokIconContainer}>
