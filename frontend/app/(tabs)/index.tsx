@@ -94,7 +94,7 @@ export default function HomeScreen() {
           }}
           scrollEventThrottle={16}
         >
-          <ImageBackground source={{ uri: HERO_BACKGROUND }} style={styles.heroContainer} imageStyle={styles.heroImage}>
+          <ImageBackground source={HERO_BACKGROUND} style={styles.heroContainer} imageStyle={styles.heroImage}>
             <View style={styles.heroOverlay}>
               <Text style={styles.heroSubtitle}>Welcome to the show</Text>
             </View>
