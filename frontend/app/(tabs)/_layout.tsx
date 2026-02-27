@@ -35,7 +35,7 @@ function CustomTopTabs() {
             <Ionicons 
               name={tab.icon as any} 
               size={20} 
-              color={isActive ? '#F5A623' : '#64748B'} 
+              color={isActive ? '#5BA3D9' : '#64748B'} 
             />
             <Text style={[styles.topTabLabel, isActive && styles.topTabLabelActive]}>
               {tab.label}
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   topTabLabelActive: {
-    color: '#F5A623',
+    color: '#5BA3D9',
   },
   activeIndicator: {
     position: 'absolute',
@@ -144,6 +144,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#F5A623',
+    backgroundColor: '#5BA3D9',
   },
 });

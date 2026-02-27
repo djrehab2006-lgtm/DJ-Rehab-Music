@@ -79,7 +79,7 @@ export default function CollectionScreen() {
             {item.cover_art ? (
               <Image source={{ uri: item.cover_art}} style={styles.trackImage} />
             ) : (
-              <Ionicons name="musical-note" size={18} color="#F5A623" />
+              <Ionicons name="musical-note" size={18} color="#5BA3D9" />
             )}
           </View>
           <View style={styles.trackInfo}>
@@ -98,7 +98,7 @@ export default function CollectionScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#F5A623" />
+        <ActivityIndicator size="large" color="#5BA3D9" />
       </View>
     );
   }
@@ -128,7 +128,7 @@ export default function CollectionScreen() {
         <Text style={styles.headerTitle}>{folder.name}</Text>
         <View style={styles.headerActions}>
           <TouchableOpacity onPress={shufflePlaylist} style={styles.shuffleButton}>
-            <Ionicons name="shuffle" size={24} color={isShuffled ? "#FF8C00" : "#F5A623"} />
+            <Ionicons name="shuffle" size={24} color={isShuffled ? "#FF8C00" : "#5BA3D9"} />
           </TouchableOpacity>
         </View>
       </View>
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   trackCardPlaying: {
     backgroundColor: '#334155',
     borderWidth: 1,
-    borderColor: '#F5A623',
+    borderColor: '#5BA3D9',
   },
   trackPressable: {
     flexDirection: 'row',
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#334155',
   },
   modalButtonSave: {
-    backgroundColor: '#F5A623',
+    backgroundColor: '#5BA3D9',
   },
   modalButtonText: {
     fontSize: 16,

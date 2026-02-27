@@ -99,9 +99,9 @@ export function MiniPlayer() {
           onValueChange={setSlideValue}
           onSlidingStart={handleSlidingStart}
           onSlidingComplete={handleSlidingComplete}
-          minimumTrackTintColor="#F5A623"
+          minimumTrackTintColor="#5BA3D9"
           maximumTrackTintColor="#334155"
-          thumbTintColor="#F5A623"
+          thumbTintColor="#5BA3D9"
         />
       </View>
 
@@ -110,7 +110,7 @@ export function MiniPlayer() {
         {/* Track Info */}
         <View style={styles.trackInfo}>
           <View style={styles.trackIcon}>
-            <Ionicons name="musical-note" size={20} color="#F5A623" />
+            <Ionicons name="musical-note" size={20} color="#5BA3D9" />
           </View>
           <View style={styles.trackDetails}>
             <Text style={styles.trackTitle} numberOfLines={2}>
@@ -153,12 +153,12 @@ export function MiniPlayer() {
             style={styles.playButton}
           >
             {isLoading ? (
-              <Ionicons name="hourglass-outline" size={36} color="#F5A623" />
+              <Ionicons name="hourglass-outline" size={36} color="#5BA3D9" />
             ) : (
               <Ionicons
                 name={playbackStatus.isPlaying ? 'pause-circle' : 'play-circle'}
                 size={44}
-                color="#F5A623"
+                color="#5BA3D9"
               />
             )}
           </TouchableOpacity>

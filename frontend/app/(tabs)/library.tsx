@@ -50,7 +50,7 @@ export default function LibraryScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#F5A623" />
+        <ActivityIndicator size="large" color="#5BA3D9" />
       </View>
     );
   }
@@ -85,7 +85,7 @@ export default function LibraryScreen() {
                   {track.cover_art ? (
                     <Image source={{ uri: track.cover_art }} style={styles.trackImage} />
                   ) : (
-                    <Ionicons name="musical-note" size={20} color="#F5A623" />
+                    <Ionicons name="musical-note" size={20} color="#5BA3D9" />
                   )}
                 </View>
                 <View style={styles.trackInfo}>
@@ -93,7 +93,7 @@ export default function LibraryScreen() {
                   <Text style={styles.trackArtist} numberOfLines={1}>{track.artist}</Text>
                 </View>
                 <Text style={styles.trackDuration}>{formatDuration(track.duration)}</Text>
-                <Ionicons name="play-circle" size={28} color={isPlaying ? "#F5A623" : "#64748B"} />
+                <Ionicons name="play-circle" size={28} color={isPlaying ? "#5BA3D9" : "#64748B"} />
               </TouchableOpacity>
             );
           })
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 18, color: '#94A3B8', marginTop: 16, marginBottom: 8 },
   emptySubtext: { fontSize: 14, color: '#64748B' },
   trackCard: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, backgroundColor: '#1E293B', marginHorizontal: 16, marginVertical: 4, borderRadius: 12 },
-  trackCardPlaying: { backgroundColor: '#334155', borderWidth: 1, borderColor: '#F5A623' },
+  trackCardPlaying: { backgroundColor: '#334155', borderWidth: 1, borderColor: '#5BA3D9' },
   trackNumber: { width: 32, alignItems: 'center', marginRight: 12 },
   trackNumberText: { color: '#64748B', fontSize: 16, fontWeight: '600' },
   trackCover: { width: 48, height: 48, borderRadius: 8, backgroundColor: '#334155', justifyContent: 'center', alignItems: 'center', marginRight: 12 },

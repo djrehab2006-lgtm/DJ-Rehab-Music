@@ -44,7 +44,7 @@ export default function ProfileScreen() {
             <Text style={styles.socialTitle}>Follow on TikTok</Text>
             <Text style={styles.socialHandle}>@thedjrehab</Text>
           </View>
-          <Ionicons name="chevron-forward" size={24} color="#F5A623" />
+          <Ionicons name="chevron-forward" size={24} color="#5BA3D9" />
         </TouchableOpacity>
 
         {/* Instagram Button */}
@@ -56,18 +56,18 @@ export default function ProfileScreen() {
             <Text style={styles.socialTitle}>Follow on Instagram</Text>
             <Text style={styles.socialHandle}>@djrehabevents</Text>
           </View>
-          <Ionicons name="chevron-forward" size={24} color="#F5A623" />
+          <Ionicons name="chevron-forward" size={24} color="#5BA3D9" />
         </TouchableOpacity>
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
           <TouchableOpacity style={styles.actionButton} onPress={() => setShowContactModal(true)}>
-            <Ionicons name="mail-outline" size={24} color="#F5A623" />
+            <Ionicons name="mail-outline" size={24} color="#5BA3D9" />
             <Text style={styles.actionButtonText}>Contact</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
-            <Ionicons name="share-social-outline" size={24} color="#F5A623" />
+            <Ionicons name="share-social-outline" size={24} color="#5BA3D9" />
             <Text style={styles.actionButtonText}>Share App</Text>
           </TouchableOpacity>
         </View>
@@ -83,19 +83,19 @@ export default function ProfileScreen() {
         <View style={styles.infoSection}>
           <Text style={styles.sectionTitle}>Features</Text>
           <View style={styles.featureItem}>
-            <Ionicons name="checkmark-circle" size={20} color="#F5A623" />
+            <Ionicons name="checkmark-circle" size={20} color="#5BA3D9" />
             <Text style={styles.featureText}>Background playback</Text>
           </View>
           <View style={styles.featureItem}>
-            <Ionicons name="checkmark-circle" size={20} color="#F5A623" />
+            <Ionicons name="checkmark-circle" size={20} color="#5BA3D9" />
             <Text style={styles.featureText}>Organized collections</Text>
           </View>
           <View style={styles.featureItem}>
-            <Ionicons name="checkmark-circle" size={20} color="#F5A623" />
+            <Ionicons name="checkmark-circle" size={20} color="#5BA3D9" />
             <Text style={styles.featureText}>Search functionality</Text>
           </View>
           <View style={styles.featureItem}>
-            <Ionicons name="checkmark-circle" size={20} color="#F5A623" />
+            <Ionicons name="checkmark-circle" size={20} color="#5BA3D9" />
             <Text style={styles.featureText}>Shuffle & continuous play</Text>
           </View>
         </View>
@@ -105,7 +105,7 @@ export default function ProfileScreen() {
       <Modal visible={showContactModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Ionicons name="mail" size={48} color="#F5A623" style={styles.modalIcon} />
+            <Ionicons name="mail" size={48} color="#5BA3D9" style={styles.modalIcon} />
             <Text style={styles.modalTitle}>Booking Inquiries</Text>
             <Text style={styles.modalText}>For booking inquiries, email:</Text>
             <TouchableOpacity onPress={handleEmailPress} style={styles.emailButton}>
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   content: { flex: 1, padding: 20 },
   card: { backgroundColor: '#1E293B', borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 24 },
   logoContainer: { marginBottom: 16 },
-  logo: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#F5A623', justifyContent: 'center', alignItems: 'center' },
+  logo: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#5BA3D9', justifyContent: 'center', alignItems: 'center' },
   appName: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8 },
   appVersion: { fontSize: 14, color: '#94A3B8' },
   tiktokIconContainer: {
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#F5A623',
+    borderColor: '#5BA3D9',
   },
   socialTextContainer: {
     flex: 1,
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   },
   socialHandle: {
     fontSize: 14,
-    color: '#F5A623',
+    color: '#5BA3D9',
   },
   infoSection: { marginBottom: 24 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 12 },
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emailButton: {
-    backgroundColor: '#F5A623',
+    backgroundColor: '#5BA3D9',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
