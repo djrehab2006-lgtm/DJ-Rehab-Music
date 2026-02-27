@@ -1838,6 +1838,16 @@ export const HARDCODED_TRACKS: Track[] = [
     position: 0,
   },
   {
+    id: 'feb-track-new',
+    title: "Misbehavin' (Rehab Mustard On The Beat Flip)",
+    artist: "DJ Rehab",
+    cdn_url: "https://DJ-Rehab-App.b-cdn.net/Misbehavin'%20(Rehab%20Mustard%20On%20The%20Beat%20Flip).mp3",
+    duration: 180,
+    folder_id: "february-releases-2025",
+    cover_art: null,
+    position: 1,
+  },
+  {
     id: 'feb-track-2',
     title: "The Dukes of Hazzard (Rehab Stuntin' Flip)",
     artist: "DJ Rehab",
@@ -1845,7 +1855,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "february-releases-2025",
     cover_art: null,
-    position: 1,
+    position: 2,
   },
   {
     id: 'feb-track-3',
@@ -1855,7 +1865,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "february-releases-2025",
     cover_art: null,
-    position: 2,
+    position: 3,
   },
   {
     id: 'feb-track-4',
@@ -1865,7 +1875,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "february-releases-2025",
     cover_art: null,
-    position: 3,
+    position: 4,
   },
   {
     id: 'feb-track-5',
@@ -1875,7 +1885,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "february-releases-2025",
     cover_art: null,
-    position: 4,
+    position: 5,
   },
   {
     id: 'feb-track-6',
@@ -1885,7 +1895,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "february-releases-2025",
     cover_art: null,
-    position: 5,
+    position: 6,
   },
   {
     id: 'feb-track-7',
@@ -1895,7 +1905,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "february-releases-2025",
     cover_art: null,
-    position: 6,
+    position: 7,
   },
   {
     id: 'feb-track-8',
@@ -1905,7 +1915,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "february-releases-2025",
     cover_art: null,
-    position: 7,
+    position: 8,
   },
   {
     id: 'feb-track-9',
@@ -1915,7 +1925,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "february-releases-2025",
     cover_art: null,
-    position: 8,
+    position: 9,
   },
   {
     id: 'feb-track-10',
@@ -1925,7 +1935,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "february-releases-2025",
     cover_art: null,
-    position: 9,
+    position: 10,
   },
   // March Releases 2025
   {
