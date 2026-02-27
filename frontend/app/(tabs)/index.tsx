@@ -96,7 +96,7 @@ export default function HomeScreen() {
         >
           <ImageBackground source={HERO_BACKGROUND} style={styles.heroContainer} imageStyle={styles.heroImage}>
             <View style={styles.heroOverlay}>
-              <Text style={styles.heroSubtitle}>Welcome to the show</Text>
+              <Text style={styles.heroTitle}>DJ Rehab Music</Text>
             </View>
           </ImageBackground>
 
