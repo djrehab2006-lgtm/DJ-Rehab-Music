@@ -1600,7 +1600,7 @@ export const HARDCODED_TRACKS: Track[] = [
     id: 'jan-track-a2',
     title: "The Spins (Rehab Right Down The Line Flip)",
     artist: "DJ Rehab",
-    cdn_url: "https://DJ-Rehab-App.b-cdn.net/App%20Update/App%20Update%202/The%20Spins%20(Rehab%20Right%20Down%20The%20Line%20Flip).mp3",
+    cdn_url: "https://DJ-Rehab-App.b-cdn.net/The%20Spins%20(Rehab%20Right%20Down%20The%20Line%20Flip).mp3",
     duration: 180,
     folder_id: "january-new-releases-2025",
     cover_art: null,
