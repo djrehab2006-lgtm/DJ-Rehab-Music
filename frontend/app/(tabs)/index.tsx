@@ -136,6 +136,8 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     width: '100%',
     height: '100%',
+    position: 'absolute',
+    top: -50,
   },
   heroOverlay: { backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 24, marginTop: 80 },
   heroTitle: { fontSize: 32, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8, textShadowColor: 'rgba(0, 0, 0, 0.75)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
