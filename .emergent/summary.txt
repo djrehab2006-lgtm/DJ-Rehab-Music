@@ -2,291 +2,173 @@
 
 original_problem_statement: The user's primary goal is to create a standalone Android music streaming application, DJ Rehab Music, ready for publication on the Google Play Store. The application should not have any backend dependencies; all music folders and tracks must be hardcoded directly into the app.
 
-Key feature requests and implementations throughout the session included:
-- Custom hero background image and app icon.
-- Removal of all admin login and content management features from the UI.
-- Implementation of a local-only favorites feature using device storage (AsyncStorage).
-- Continuous, non-stop track playback.
-- A shuffle button within music folders that toggles between shuffled and original track order.
-- Lock screen playback controls and the ability for audio to play while the screen is off (background audio).
-- A custom Share message for Android.
-- Regular content updates by adding new folders (November Release, December New Releases, January New Releases) and tracks via their CDN links.
-- The user needs to be able to generate a production-ready  file for Google Play.
+Key feature requests include:
+- A fully customized UI (icons, colors, banner images).
+- Continuous, non-stop track playback that persists when the screen is locked or the app is in the background.
+- A favorites feature using local device storage.
+- A shuffle feature.
+- Social media links (TikTok, Instagram).
+- Regular content updates with new folders and tracks provided via CDN links.
+- The ability to generate a production-ready  file for Google Play.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The project is a fully standalone Expo (React Native) application. The dependency on the FastAPI/MongoDB backend has been completely removed for the app's core functionality. All folder and track data (currently 13 folders, 147+ tracks) is hardcoded in .
+The project is a standalone Expo (React Native) application. All music data, which now consists of approximately 220+ tracks across 15 folders, is hardcoded in . The backend has been completely deprecated.
 
-The app features:
-- A customized UI with a hero image and branded app icon/splash screen.
-- Continuous background playback with lock screen controls.
-- A shuffle function that can be toggled on/off.
-- A favorites system that saves locally to the user's device.
-- A custom Share to text feature.
-- The app version is set to 1.1.0 in .
+The app's UI has been extensively customized with a blue color scheme, a custom hero banner, and branded icons for the app and folders. The profile page includes links to TikTok and Instagram. The admin tab has been removed from the UI. Audio playback is currently handled by . The app is functional for testing within the Expo Go environment.
 
 **Last working item**:
-    - Last item agent was working: The agent was fulfilling a user request to add a new folder named January New Releases. It has edited the  file to add the new folder object. However, it had only partially completed the task of updating the  property for all subsequent folders to maintain the correct order.
-    - Status: IN PROGRESS
+    - Last item agent was working: The agent was reverting a failed attempt to migrate the audio playback system from  to . The user requested the revert because the new implementation broke compatibility with the Expo Go app, which they use for testing. The agent successfully removed the  package, restored the original  that uses , cleaned up related files and cache, and restarted the Expo server.
+    - Status: USER VERIFICATION PENDING
     - Agent Testing Done: N
-    - Which testing method agent to use? main agent to test via curl
+    - Which testing method agent to use? The user needs to verify the app's functionality on their device using the Expo Go app. No further agent testing is required for the revert.
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1: The user is blocked from building the app for the Google Play Store due to errors on their local machine. (Priority: P0)
-  - Issue 2: The  file is in an inconsistent state after the last edit. (Priority: P1)
+  - Issue 1: Continuous background/lock-screen playback is not working. (Priority: P0)
+  - Issue 2: The user is blocked from building the app for the Google Play Store. (Priority: P1)
+  - Issue 3: The QR code for connecting to Expo Go is unreliable. (Priority: P2)
   
   Issues Detail:
   - Issue 1: 
-     - Description: The user has repeatedly encountered errors when trying to run An Expo user account is required to proceed.
-
-Log in to EAS with email or username (exit and run eas login --help to see other login options)
-Input is required, but stdin is not readable. Failed to display prompt: Email or username on their local Mac. The last error was , which the previous agent diagnosed as a dependency issue.
-     - Attempted fixes: The agent has provided a series of debugging steps for the user, including  changes, creating  manually, and running yarn install v1.22.22
-[1/4] Resolving packages...
-success Already up-to-date.
-Done in 0.31s.. The user was about to follow the latest instructions (run yarn install v1.22.22
-[1/4] Resolving packages...
-success Already up-to-date.
-Done in 0.37s. and fix ) before being side-tracked by a content update request.
+     - Description: The user has reported multiple times that audio playback stops when the phone screen is locked or goes dark. The current  implementation is insufficient for true, uninterrupted background audio.
+     - Attempted fixes: The agent initially added  permissions, which did not solve the problem. The agent then attempted a full migration to , which is the correct technical solution. However, this was forcefully reverted by the user because it requires a 'development build' and is incompatible with the standard Expo Go app, which is the user's required method for testing.
      - Next debug checklist: 
-        1. Instruct the user to navigate to the  directory on their local machine.
-        2. Instruct the user to run yarn install v1.22.22
-[1/4] Resolving packages...
-success Already up-to-date.
-Done in 0.34s. to ensure all dependencies are correctly installed.
-        3. Instruct the user to verify their  contains the  field inside the 
-  Usage: expo [command] [options]
-
-  Options:
-  
-    -V, --version                     output the version number
-    --non-interactive                 Fail, if an interactive prompt would be required to continue.
-    -h, --help                        output usage information
-  
-  Commands:
-
-    init [name]                       Create a new Expo project
-    start [path]                      Start a local dev server for the app
-    start:web [path]                  Start a Webpack dev server for the web app
-    export [path]                     Export the static files of the app for hosting it on a web server
-    install [packages...]             Install a module or other package to a project
-    run:android [path]                Run the Android app binary locally
-    run:ios [path]                    Run the iOS app binary locally
-    send [path]                       Share the project's URL to an email address
-
-    login                             Login to an Expo account
-    logout                            Logout of an Expo account
-    register                          Sign up for a new Expo account
-    whoami                            Return the currently authenticated account
-
-    client:install:ios                Install Expo Go for iOS on the simulator
-    client:install:android            Install Expo Go for Android on a connected device or emulator
-
-    config [path]                     Show the project config
-    doctor [path]                     Diagnose issues with the project
-    upgrade [sdk-version]             Upgrade the project packages and config for the given SDK version
-
-    customize:web [path]              Eject the default web files for customization
-    prebuild [path]                   Create native iOS and Android project files before building natively.
-                                      Learn more: https://docs.expo.dev/workflow/customizing/
-
-    build:web [path]                  Build the web app for production
-
-    credentials:manager [path]        Superseded by eas credentials in eas-cli
-
-    url [path]                        Log a URL for opening the project in Expo Go
-    url:ipa [path]                    Log the download URL for the standalone iOS binary
-    url:apk [path]                    Log the download URL for the standalone Android binary
-
-    webhooks [path]                   List all webhooks for a project
-    webhooks:add [path]               Add a webhook to a project
-    webhooks:remove [path]            Delete a webhook
-    webhooks:update [path]            Update an existing webhook
-
-    build:ios [path]                  Superseded by eas build in eas-cli
-    build:android [path]              Superseded by eas build in eas-cli
-    build:status [path]               Superseded by eas build:list in eas-cli
-    eject [path]                      Superseded by expo prebuild
-    fetch:ios:certs [path]            Superseded by eas credentials in eas-cli
-    fetch:android:keystore [path]     Superseded by eas credentials in eas-cli
-    fetch:android:hashes [path]       Superseded by eas credentials in eas-cli
-    fetch:android:upload-cert [path]  Superseded by eas credentials in eas-cli
-    publish [path]                    Superseded by eas update in eas-cli
-    publish:set [path]                Superseded by eas update:republish in eas-cli
-    publish:rollback [path]           Superseded by eas update:republish in eas-cli
-    publish:history [path]            Superseded by eas update:list in eas-cli
-    publish:details [path]            Superseded by eas update:view in eas-cli
-    push:android:upload [path]        Superseded by eas credentials in eas-cli
-    push:android:show [path]          Superseded by eas credentials in eas-cli
-    push:android:clear [path]         Superseded by eas credentials in eas-cli
-    upload:android [path]             Superseded by eas submit in eas-cli
-    upload:ios [path]                 Superseded by eas submit in eas-cli
-    client:ios [path]                 Superseded by Expo Dev Clients
-
-[12:27:30]   Run a command with --help for more info 💡
-[12:27:30]     $ expo start --help
-[12:27:30] object, which was a previously identified error.
-        4. Once confirmed, instruct the user to run An Expo user account is required to proceed.
-
-Log in to EAS with email or username (exit and run eas login --help to see other login options)
-Input is required, but stdin is not readable. Failed to display prompt: Email or username again.
-     - Why fix this issue and what will be achieved with the fix? This is the user's ultimate goal. Fixing this will allow them to generate the  file required to publish their app on the Google Play Store.
-     - Status:  IN PROGRESS
+        1.  Clearly explain to the user the technical limitation: To achieve robust lock-screen controls, a library like  is necessary.
+        2.  Explain the trade-off: Using this library means the app can no longer be tested with the public Expo Go app. Instead, a development build must be created and installed on their device for testing.
+        3.  Ask for the user's explicit approval to proceed with the migration to  with the full understanding that it will change their testing workflow.
+        4.  If approved, re-implement  by installing the package, creating the  file, updating , and replacing the logic in .
+     - Why fix this issue and what will be achieved with the fix? This is the most critical user-facing issue and a core requirement for a music streaming app. Fixing it will allow music to play continuously, significantly improving the user experience.
+     - Status:  NOT STARTED
      - Is recurring issue? Y
-     - Should Test frontend/backend/both after fix? N/A (User will test the build process)
-     - Blocked on other issue: None
+     - Should Test frontend/backend/both after fix? Frontend (Requires a development build, not Expo Go).
+     - Blocked on other issue: User approval for changing the testing workflow.
   - Issue 2: 
-     - Description: The agent added the January New Releases folder to the  array in  but has not finished updating the  values for all the folders that come after it. This will cause incorrect folder ordering on the home screen.
-     - Attempted fixes: The agent performed an initial edit to add the folder and update the position of one subsequent folder.
-     - Next debug checklist:
-        1. View the file .
-        2. Identify all folders with a  value greater than or equal to the newly added folder's position.
-        3. Increment the  value of each of these folders by 1 to ensure a correct, sequential order.
-     - Why fix this issue and what will be achieved with the fix? This will ensure the folders on the home screen are displayed in the order intended by the user.
-     - Status:  IN PROGRESS
-     - Is recurring issue? N
-     - Should Test frontend/backend/both after fix? Frontend testing agent (or screenshot tool) to verify the home screen folder order.
-     - Blocked on other issue: None
+     - Description: The user's ultimate goal is to generate an  file for the Google Play Store. Previous attempts on their local machine failed. While the agent has provided updated instructions, it's unconfirmed if the user's local environment issues are resolved.
+     - Attempted fixes: The agent has provided detailed step-by-step instructions for cloning the repository, installing dependencies, and running the --platform is required when building in non-interactive mode command.
+     - Next debug checklist: Once the lock-screen playback issue is resolved, the next step is to guide the user through the An Expo user account is required to proceed.
+Either log in with eas login or set the EXPO_TOKEN environment variable if you're using EAS CLI on CI (Learn more: https://docs.expo.dev/accounts/programmatic-access/) command on their local machine and troubleshoot any errors that arise.
+     - Why fix this issue and what will be achieved with the fix? This allows the user to publish their app, which is the project's final goal.
+     - Status:  BLOCKED
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix? N/A (User performs the build).
+     - Blocked on other issue: Issue 1: Continuous background/lock-screen playback.
+  - Issue 3: 
+     - Description: The QR code generated in the preview environment often points to a stale or incorrect tunnel URL, preventing the user from connecting with Expo Go.
+     - Attempted fixes: The agent successfully found a workaround by inspecting the environment variables () and ngrok tunnels to provide the user with a direct tunnel URL () to enter manually.
+     - Next debug checklist: This appears to be a platform-level issue. The workaround is effective. If it occurs again, the next agent should repeat the process of finding the manual URL.
+     - Why fix this issue and what will be achieved with the fix? Fixing the root cause is likely outside the agent's scope, but providing the workaround unblocks user testing.
+     - Status:  IN PROGRESS (Workaround exists)
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix? N/A.
+     - Blocked on other issue: None.
 
 **In progress Task List**:
-  - Task 1:  Finalize the addition of the January New Releases folder (Priority: P1)
- 
- Task Detail:
-  - Task 1: 
-     - Where to resume: The agent needs to edit  and finish re-numbering the  of all folders that should appear after January New Releases.
-     - What will be achieved with this? The home screen will display all folders in the correct user-specified order.
-     - Status:  IN PROGRESS
-     - Should Test frontend/backend/both after fix? Frontend (Screenshot or view home page)
-     - Blocked on something: None
+  - None.
 
 **Upcoming and Future Tasks**
 Upcoming Tasks:
-- (P0) Guide the user to a successful An Expo user account is required to proceed.
-
-Log in to EAS with email or username (exit and run eas login --help to see other login options)
-Input is required, but stdin is not readable. Failed to display prompt: Email or username on their local machine.
-- (P1) The user will likely provide a list of track URLs to be added to the newly created January New Releases folder.
+- (P0) Re-address and correctly implement robust lock-screen audio playback, which will require migrating from  to  after getting user consent for a dev-build workflow.
+- (P1) Guide the user to a successful --platform is required when building in non-interactive mode on their local machine.
+- (P2) User may provide more tracks to be added to the March Releases folder or other folders.
 
 Future Tasks:
-- The user may come back with a Google Play Store URL to add to the custom Share message in .
+- None explicitly mentioned.
 
 **Completed work in this session**
-- List of all completed tasks with file and method name:
-  - **Pivoted to Standalone App**: Converted the application from a client-server architecture to a fully standalone app with all music data hardcoded in .
-  - **Refactored Core Screens**: Removed all API calls, authentication checks, and admin functionality from  and .
-  - **Local Favorites**: Implemented a local-only favorites feature using  and updated the  and .
-  - **Removed Login**: Decommissioned the admin login page by replacing the content of .
-  - **Enhanced Audio Player**: Implemented continuous track-to-track playback, background audio, lock screen controls, and a togglable shuffle feature in .
-  - **UI/UX Updates**:
-    - Replaced the home page hero image ().
-    - Set the application icon and splash screen ( and ).
-    - Removed track duration display from collection and favorites screens to increase title visibility.
-    - Implemented a custom Android share message in  using the  API.
-  - **Content Management**:
-    - Set app version to 1.1.0 in .
-    - Added November Release and December New Releases folders with a total of 48 new tracks to .
-  - **Build Support**: Provided extensive guidance and debugging for the user on how to run An Expo user account is required to proceed.
-
-Log in to EAS with email or username (exit and run eas login --help to see other login options)
-Input is required, but stdin is not readable. Failed to display prompt: Email or username locally, diagnosing multiple errors related to git case-sensitivity, project ID, and dependencies.
-
-- Recently completed:
-  - Background audio & lock screen controls (DONE)
-  - Continuous and robust track playback (DONE)
-  - Added December New Releases folder and 29 tracks (DONE)
+- **Major Features & Refactors:**
+  - **Color Scheme Overhaul:** Changed the app's entire color scheme from green to orange, and then from orange to blue (), including buttons, headers, and icons, to match user-provided branding.
+  - **UI Customization:** Replaced the home screen hero banner image, adjusted its position, and updated the overlay text and font styles.
+  - **Iconography Update:** Replaced the default folder icons and the main app icon with a custom user-provided icon (initially orange, then blue).
+  - **Profile Page Enhancements:** Added social media buttons to link to TikTok and Instagram and subsequently removed the app title and version number for a cleaner look.
+  - **Admin Tab Removal:** Removed the Admin tab from the bottom tab navigator for a user-facing-only experience.
+- **Content Management:**
+  - Added February Releases and March Releases folders.
+  - Added over 75 new tracks across the January, February, and March folders through multiple user requests.
+  - Performed several track URL replacements and re-ordering of tracks and folders.
+- **Critical Bug Fix & Revert:**
+  - **Attempted and Reverted  Migration:** Attempted a migration to fix background audio issues but reverted all changes at the user's request to restore Expo Go compatibility. This involved removing the package, restoring files (, ), and clearing the environment (, metro cache).
+- **Build & Environment:**
+  - Configured  and  for a production  build, including setting the package name to .
+  - Provided extensive debugging and instructions for local build and Expo Go connection issues.
 
 **Earlier issues found/mentioned but not fixed**
-   - None. All identified issues were either addressed or are part of the current pending list.
+   - Issue 1: Continuous background audio and lock screen controls are not functional. This is the primary unresolved issue. The  implementation is not sufficient. A previous attempt to fix this with  was reverted by the user.
 
 **Known issue recurrence from previous fork**
-  - None.
+  - **Local EAS Build Failures:** The user has historically struggled to run --platform is required when building in non-interactive mode on their local machine. This remains the final, unverified step in the development lifecycle.
+  - **Expo Go Connection Issues:** In this session, a new recurring issue emerged where the Expo Go QR code points to a stale URL, requiring a manual URL entry to connect.
 
 **Code Architecture**
-
+expo-av
 
 **Key Technical Concepts**
 - **Mobile Framework**: Expo (React Native)
 - **Language**: TypeScript
 - **Routing**: 
 - **Data Source**: Hardcoded TypeScript objects in .
-- **State Management**: React Context ()
-- **Audio Playback**:  (configured for background audio and lock screen controls).
-- **Local Storage**:  for saving user's favorite tracks.
+- **State Management**: React Context ().
+- **Audio Playback**: . Configured for basic background audio but lacks robust lock-screen controls.
+- **Build Service**: Expo Application Services (EAS) for cloud builds.
 
 **key DB schema**
-- N/A. The application no longer uses a database. All data is hardcoded in the frontend.
+  - N/A. The application is fully standalone and does not use a database.
 
 **changes in tech stack**
-- The application's architecture was fundamentally changed from a full-stack app (Expo + FastAPI + MongoDB) to a standalone client-only Expo application. The backend is no longer a dependency for the app's functionality.
+  - None. An attempt to introduce  was made and then fully reverted. The tech stack remains as it was.
 
 **All files of reference**
 - : The single source of truth for all music content. All content updates happen here.
-- : The core of the app's logic, handling playback, state, continuous play, shuffle, favorites, and background audio.
-- : The screen that displays tracks in a folder. Was heavily refactored to remove backend calls and admin features.
-- : The home screen. Refactored to display folders from the hardcoded data file.
-- : Expo configuration file. Modified for versioning, icons, splash screen, and permissions.
-- : Configuration file for Expo Application Services (EAS) builds.
+- : The core of the app's audio logic. Currently uses . This is the file that needs to be replaced to fix the lock-screen control issue.
+- : The home screen, contains the custom hero banner and folder list.
+- : The profile screen with custom social media links.
+- : Main Expo config file. Contains the package name, version, and permissions.
+- : EAS Build configuration file.
 
 **Areas that need refactoring**:
--  has become very large and complex, managing multiple states (playback, playlist, shuffle, favorites, loading). It could potentially be broken down into smaller, more focused custom hooks.
-- The refactoring of  was done in many small, error-prone steps. While functional, the code could benefit from a clean-up pass to ensure no commented-out code or unused variables remain.
+- : This file has become extremely large (over 2300 lines) due to all music being hardcoded. It is brittle, difficult to navigate, and prone to merge conflicts. While this is the user-defined architecture, it is a major technical debt.
+- : Manages many pieces of state (playback, shuffle, favorites, etc.) and would be the focal point of the upcoming migration to a new audio library.
 
 **key api endpoints**
-- N/A. The application no longer relies on API endpoints.
+- N/A.
 
 **Critical Info for New Agent**
-- **Standalone App**: The most critical point is that this is a **standalone mobile app**. The backend and database are **not used**. All data is hardcoded in . Do not attempt to fix the backend or re-introduce API calls.
-- **User's Goal**: The user's primary objective is to successfully build an  file for the Google Play Store using An Expo user account is required to proceed.
-
-Log in to EAS with email or username (exit and run eas login --help to see other login options)
-Input is required, but stdin is not readable. Failed to display prompt: Email or username on their local machine. They are currently facing build errors and need clear, step-by-step guidance.
-- **Content Updates**: The established workflow for adding new music is to directly edit the  file, then have the user pull the changes and run a new build.
+- **The Lock-Screen Playback Dilemma:** The user's highest priority is fixing uninterrupted background/lock-screen playback. The current  library is not capable of this. The correct solution is .
+- **The Expo Go Constraint:** The previous agent's attempt to implement  was rejected by the user because it broke compatibility with the Expo Go app. The user relies on Expo Go for immediate testing.
+- **Your Primary Task:** You must first communicate the technical trade-off to the user: to get proper lock-screen controls, they must switch to a development build workflow and give up using the public Expo Go app for testing. **DO NOT start implementing  again without getting the user's explicit consent for this workflow change.**
+- **Build Goal:** The user's final goal is to build the  file for the Play Store. This is blocked until the lock-screen feature is working to their satisfaction.
 
 **documents created in this job**
 - 
 - 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Asks how to build the  file. (Agent provided instructions)
-2.  **User**: Reports a  error (diverged branches). (Agent provided a fix)
-3.  **User**: Asks what framework the app is. (Agent explained Expo/React Native)
-4.  **User**: Provides deployment logs. (Agent was briefly sidetracked fixing the irrelevant backend, but then got back on track)
-5.  **User**: Clarifies they need to get the app to Google Play, not deploy to web. (Agent realigned and provided correct An Expo user account is required to proceed.
-
-Log in to EAS with email or username (exit and run eas login --help to see other login options)
-Input is required, but stdin is not readable. Failed to display prompt: Email or username instructions)
-6.  **User**: Asks how to download the files. (Agent explained the GitHub workflow)
-7.  **User**: Reports  is missing in their local repo. (Agent provided instructions to create it)
-8.  **User**: Reports An Expo user account is required to proceed.
-
-Log in to EAS with email or username (exit and run eas login --help to see other login options)
-Input is required, but stdin is not readable. Failed to display prompt: Email or username error: running from wrong directory. (Agent provided fix)
-9.  **User**: Reports An Expo user account is required to proceed.
-
-Log in to EAS with email or username (exit and run eas login --help to see other login options)
-Input is required, but stdin is not readable. Failed to display prompt: Email or username error:  plugin not found. (Agent diagnosed dependency issue)
-10. **User**: Asks how to save/close the  file editor. (Agent provided instructions)
-11. **User**: Requests a new folder January New Releases be added. (This is the last, in-progress task).
+1.  **User**: Asks for build instructions. (Agent provided them).
+2.  **User**: Reports tracks are not playing continuously when the screen is dark. (This is the critical P0 issue).
+3.  **Agent**: Explains this is a limitation of  and starts implementing .
+4.  **User**: I need to restore the previous verson of app that works on Expo Go. (This is a direct rejection of the  implementation due to the loss of Expo Go compatibility).
+5.  **Agent**: Acknowledges and successfully reverts all changes, restoring the  implementation and getting the Expo server running again.
+6.  **Agent**: Informs the user the restoration is complete and asks for verification. The app is now back in a state that is testable on Expo Go, but the critical lock-screen issue remains.
+7.  **(Pending User Action)**: User needs to verify the reverted app works on Expo Go and then decide on how to proceed with the lock-screen issue.
 
 **Project Health Check:**
-- **Functional**: The application is fully functional within the Expo Go testing environment.
-- **Blocked**: The production pipeline is blocked by the user's local build environment issues.
+- **Mocked**: N/A
+- **Broken**: The core feature of continuous background/lock-screen playback is broken and is a known limitation of the current tech ().
 
 **3rd Party Integrations**
 - None.
 
 **Testing status**
   - Testing agent used after significant changes: NO
-  - Troubleshoot agent used after agent stuck in loop: YES (once, for a persistence issue, but the user's clarification about hardcoding data made the findings moot)
+  - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: None
-  - Known regressions: None
+  - Known regressions: The fix for lock-screen controls was reverted, so the lack of that feature persists.
 
 **Credentials to test flow:**
 N/A - Login functionality has been removed.
 
 **What agent forgot to execute**
-The agent was in the middle of updating the  of all folders in  after adding January New Releases. It only updated the folder immediately following the new one and did not continue to re-number the rest of the list. It also did not restart the expo server to verify its last partial edit.
+The agent did not forget to execute a task; rather, its correct technical solution for the lock-screen playback issue () was rejected by the user due to the side-effect of breaking the Expo Go testing workflow. The agent correctly followed the user's directive to revert the changes. The next step is a strategic one: re-proposing the solution while clearly explaining the necessary change in the user's testing process.
 
 </analysis>
