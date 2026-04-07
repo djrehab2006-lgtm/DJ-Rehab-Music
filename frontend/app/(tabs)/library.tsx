@@ -1,126 +1,405 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  Alert,
+  TextInput,
+  Modal,
+} from 'react-native';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAudioPlayer } from '../contexts/AudioPlayerContext';
-
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
-
-interface Track {
-  id: string;
-  title: string;
-  artist: string;
-  duration: number;
-  cdn_url: string;
-  cover_art?: string;
-}
+import { getPlaylists, createPlaylist, deletePlaylist, renamePlaylist, Playlist } from '../utils/playlistStorage';
 
 export default function LibraryScreen() {
   const router = useRouter();
-  const { playTrack, currentTrack } = useAudioPlayer();
-  const [tracks, setTracks] = useState<Track[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
+  const [createModalVisible, setCreateModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState('');
+  const [editPlaylist, setEditPlaylist] = useState<Playlist | null>(null);
+  const [editName, setEditName] = useState('');
 
-  useEffect(() => {
-    loadTracks();
-  }, []);
+  // Reload playlists every time the tab is focused
+  useFocusEffect(
+    useCallback(() => {
+      loadPlaylists();
+    }, [])
+  );
 
-  const loadTracks = async () => {
-    try {
-      const response = await fetch(BACKEND_URL + '/api/tracks');
-      if (response.ok) {
-        const data = await response.json();
-        setTracks(data);
-      }
-    } catch (error) {
-      console.error('Error loading tracks:', error);
-    } finally {
-      setLoading(false);
+  const loadPlaylists = async () => {
+    setLoading(true);
+    const data = await getPlaylists();
+    setPlaylists(data);
+    setLoading(false);
+  };
+
+  const handleCreatePlaylist = async () => {
+    if (!newPlaylistName.trim()) {
+      Alert.alert('Error', 'Please enter a playlist name');
+      return;
     }
+    await createPlaylist(newPlaylistName.trim());
+    setNewPlaylistName('');
+    setCreateModalVisible(false);
+    await loadPlaylists();
   };
 
-  const formatDuration = (seconds: number): string => {
-    if (!seconds) return '0:00';
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return mins + ':' + secs.toString().padStart(2, '0');
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#5BA3D9" />
-      </View>
+  const handleDeletePlaylist = (playlist: Playlist) => {
+    Alert.alert(
+      'Delete Playlist',
+      `Are you sure you want to delete "${playlist.name}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await deletePlaylist(playlist.id);
+            await loadPlaylists();
+          },
+        },
+      ]
     );
-  }
+  };
+
+  const handleEditPlaylist = (playlist: Playlist) => {
+    setEditPlaylist(playlist);
+    setEditName(playlist.name);
+    setEditModalVisible(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editName.trim() || !editPlaylist) return;
+    await renamePlaylist(editPlaylist.id, editName.trim());
+    setEditModalVisible(false);
+    setEditPlaylist(null);
+    await loadPlaylists();
+  };
+
+  const renderPlaylistItem = ({ item }: { item: Playlist }) => (
+    <TouchableOpacity
+      style={styles.playlistCard}
+      onPress={() => router.push(`/playlist/${item.id}`)}
+      activeOpacity={0.7}
+    >
+      <View style={styles.playlistIcon}>
+        <Ionicons name="list" size={28} color="#5BA3D9" />
+      </View>
+      <View style={styles.playlistInfo}>
+        <Text style={styles.playlistName} numberOfLines={1}>{item.name}</Text>
+        <Text style={styles.playlistMeta}>{item.trackIds.length} tracks</Text>
+      </View>
+      <View style={styles.playlistActions}>
+        <TouchableOpacity
+          onPress={() => handleEditPlaylist(item)}
+          style={styles.actionBtn}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Ionicons name="pencil-outline" size={18} color="#94A3B8" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => handleDeletePlaylist(item)}
+          style={styles.actionBtn}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Ionicons name="trash-outline" size={18} color="#EF4444" />
+        </TouchableOpacity>
+      </View>
+      <Ionicons name="chevron-forward" size={20} color="#475569" />
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Library</Text>
-        <Text style={styles.headerSubtitle}>{tracks.length} tracks</Text>
+        <View>
+          <Text style={styles.headerTitle}>My Playlists</Text>
+          <Text style={styles.headerSubtitle}>{playlists.length} playlists</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.createBtn}
+          onPress={() => { setNewPlaylistName(''); setCreateModalVisible(true); }}
+        >
+          <Ionicons name="add" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollView}>
-        {tracks.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Ionicons name="musical-notes-outline" size={64} color="#64748B" />
-            <Text style={styles.emptyText}>No tracks yet</Text>
-            <Text style={styles.emptySubtext}>Ask admin to add some music</Text>
-          </View>
-        ) : (
-          tracks.map((track, index) => {
-            const isPlaying = currentTrack?.id === track.id;
-            return (
-              <TouchableOpacity 
-                key={track.id} 
-                style={[styles.trackCard, isPlaying && styles.trackCardPlaying]} 
-                onPress={() => playTrack(track, tracks)}
+      {/* Playlist List */}
+      {playlists.length === 0 && !loading ? (
+        <View style={styles.emptyState}>
+          <Ionicons name="musical-notes-outline" size={64} color="#334155" />
+          <Text style={styles.emptyText}>No playlists yet</Text>
+          <Text style={styles.emptySubtext}>
+            Tap the + button to create your first playlist
+          </Text>
+          <TouchableOpacity
+            style={styles.emptyCreateBtn}
+            onPress={() => { setNewPlaylistName(''); setCreateModalVisible(true); }}
+          >
+            <Ionicons name="add-circle" size={20} color="#FFFFFF" />
+            <Text style={styles.emptyCreateText}>Create Playlist</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={playlists}
+          renderItem={renderPlaylistItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={true}
+        />
+      )}
+
+      {/* Create Playlist Modal */}
+      <Modal
+        visible={createModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCreateModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setCreateModalVisible(false)}
+        >
+          <TouchableOpacity activeOpacity={1} style={styles.modalContent} onPress={() => {}}>
+            <Text style={styles.modalTitle}>New Playlist</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Enter playlist name..."
+              placeholderTextColor="#64748B"
+              value={newPlaylistName}
+              onChangeText={setNewPlaylistName}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={handleCreatePlaylist}
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalBtn, styles.modalBtnCancel]}
+                onPress={() => setCreateModalVisible(false)}
               >
-                <View style={styles.trackNumber}>
-                  <Text style={styles.trackNumberText}>{index + 1}</Text>
-                </View>
-                <View style={styles.trackCover}>
-                  {track.cover_art ? (
-                    <Image source={{ uri: track.cover_art }} style={styles.trackImage} />
-                  ) : (
-                    <Ionicons name="musical-note" size={20} color="#5BA3D9" />
-                  )}
-                </View>
-                <View style={styles.trackInfo}>
-                  <Text style={styles.trackTitle} numberOfLines={1}>{track.title}</Text>
-                  <Text style={styles.trackArtist} numberOfLines={1}>{track.artist}</Text>
-                </View>
-                <Text style={styles.trackDuration}>{formatDuration(track.duration)}</Text>
-                <Ionicons name="play-circle" size={28} color={isPlaying ? "#5BA3D9" : "#64748B"} />
+                <Text style={styles.modalBtnText}>Cancel</Text>
               </TouchableOpacity>
-            );
-          })
-        )}
-      </ScrollView>
+              <TouchableOpacity
+                style={[styles.modalBtn, styles.modalBtnSave]}
+                onPress={handleCreatePlaylist}
+              >
+                <Text style={styles.modalBtnText}>Create</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Edit Playlist Modal */}
+      <Modal
+        visible={editModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setEditModalVisible(false)}
+        >
+          <TouchableOpacity activeOpacity={1} style={styles.modalContent} onPress={() => {}}>
+            <Text style={styles.modalTitle}>Rename Playlist</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={editName}
+              onChangeText={setEditName}
+              placeholder="Playlist name..."
+              placeholderTextColor="#64748B"
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={handleSaveEdit}
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalBtn, styles.modalBtnCancel]}
+                onPress={() => setEditModalVisible(false)}
+              >
+                <Text style={styles.modalBtnText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalBtn, styles.modalBtnSave]}
+                onPress={handleSaveEdit}
+              >
+                <Text style={styles.modalBtnText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F172A' },
-  loadingContainer: { flex: 1, backgroundColor: '#0F172A', justifyContent: 'center', alignItems: 'center' },
-  header: { paddingHorizontal: 20, paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: '#1E293B' },
-  headerTitle: { fontSize: 32, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 4 },
-  headerSubtitle: { fontSize: 14, color: '#94A3B8' },
-  scrollView: { flex: 1 },
-  emptyState: { alignItems: 'center', paddingVertical: 80 },
-  emptyText: { fontSize: 18, color: '#94A3B8', marginTop: 16, marginBottom: 8 },
-  emptySubtext: { fontSize: 14, color: '#64748B' },
-  trackCard: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, backgroundColor: '#1E293B', marginHorizontal: 16, marginVertical: 4, borderRadius: 12 },
-  trackCardPlaying: { backgroundColor: '#334155', borderWidth: 1, borderColor: '#5BA3D9' },
-  trackNumber: { width: 32, alignItems: 'center', marginRight: 12 },
-  trackNumberText: { color: '#64748B', fontSize: 16, fontWeight: '600' },
-  trackCover: { width: 48, height: 48, borderRadius: 8, backgroundColor: '#334155', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  trackImage: { width: '100%', height: '100%', borderRadius: 8 },
-  trackInfo: { flex: 1, marginRight: 12 },
-  trackTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '600', marginBottom: 4 },
-  trackArtist: { color: '#94A3B8', fontSize: 14 },
-  trackDuration: { color: '#64748B', fontSize: 14, marginRight: 12, minWidth: 40 },
+  container: {
+    flex: 1,
+    backgroundColor: '#0F172A',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1E293B',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    color: '#94A3B8',
+  },
+  createBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#5BA3D9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  listContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 120,
+  },
+  playlistCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1E293B',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
+  },
+  playlistIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 12,
+    backgroundColor: '#0F172A',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  playlistInfo: {
+    flex: 1,
+    marginRight: 8,
+  },
+  playlistName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 3,
+  },
+  playlistMeta: {
+    fontSize: 13,
+    color: '#64748B',
+  },
+  playlistActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginRight: 8,
+  },
+  actionBtn: {
+    padding: 6,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#94A3B8',
+    marginTop: 20,
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 28,
+  },
+  emptyCreateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#5BA3D9',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
+  },
+  emptyCreateText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  modalContent: {
+    backgroundColor: '#1E293B',
+    borderRadius: 16,
+    padding: 24,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 16,
+  },
+  modalInput: {
+    backgroundColor: '#0F172A',
+    borderRadius: 10,
+    padding: 14,
+    color: '#FFFFFF',
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#334155',
+    marginBottom: 16,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalBtnCancel: {
+    backgroundColor: '#334155',
+  },
+  modalBtnSave: {
+    backgroundColor: '#5BA3D9',
+  },
+  modalBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
 });

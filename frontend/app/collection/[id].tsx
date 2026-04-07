@@ -19,6 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { HARDCODED_FOLDERS, HARDCODED_TRACKS, Folder, Track, FOLDER_ICON } from '../constants/musicData';
+import { AddToPlaylistModal } from '../components/AddToPlaylistModal';
 
 export default function CollectionScreen() {
   const router = useRouter();
@@ -28,6 +29,8 @@ export default function CollectionScreen() {
 
   const [folder, setFolder] = useState<Folder | null>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
+  const [addToPlaylistVisible, setAddToPlaylistVisible] = useState(false);
+  const [selectedTrackForPlaylist, setSelectedTrackForPlaylist] = useState<Track | null>(null);
   const [loading, setLoading] = useState(true);
   const [scrollIndicatorVisible, setScrollIndicatorVisible] = useState(false);
   const scrollViewRef = React.useRef<ScrollView>(null);
@@ -67,6 +70,11 @@ export default function CollectionScreen() {
     const handleTrackPress = () => {
       playTrack(item, tracks);
     };
+
+    const handleAddToPlaylist = () => {
+      setSelectedTrackForPlaylist(item);
+      setAddToPlaylistVisible(true);
+    };
     
     return (
       <View style={[styles.trackCard, isPlaying && styles.trackCardPlaying]} pointerEvents="box-none">
@@ -90,6 +98,13 @@ export default function CollectionScreen() {
               {item.artist}
             </Text>
           </View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.addToPlaylistBtn}
+          onPress={handleAddToPlaylist}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Ionicons name="add-circle-outline" size={22} color="#5BA3D9" />
         </TouchableOpacity>
       </View>
     );
@@ -172,6 +187,19 @@ export default function CollectionScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Add to Playlist Modal */}
+      {selectedTrackForPlaylist && (
+        <AddToPlaylistModal
+          visible={addToPlaylistVisible}
+          trackId={selectedTrackForPlaylist.id}
+          trackTitle={selectedTrackForPlaylist.title}
+          onClose={() => {
+            setAddToPlaylistVisible(false);
+            setSelectedTrackForPlaylist(null);
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -263,6 +291,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1E293B',
     marginVertical: 4,
     borderRadius: 12,
+    paddingRight: 8,
   },
   trackCardPlaying: {
     backgroundColor: '#334155',
@@ -344,6 +373,9 @@ const styles = StyleSheet.create({
   trackArtist: {
     color: '#94A3B8',
     fontSize: 13,
+  },
+  addToPlaylistBtn: {
+    padding: 8,
   },
   trackDuration: {
     color: '#64748B',
