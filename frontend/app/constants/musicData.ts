@@ -275,7 +275,7 @@ export const HARDCODED_TRACKS: Track[] = [
     id: 'apr-track-16',
     title: "Escape Pina Colada (Rehab Project Pat Flip)",
     artist: "DJ Rehab",
-    cdn_url: "https://DJ-Rehab-App.b-cdn.net/April%202026/Escape%20Pina%20Colada%20(Rehab%20Project%20Pat%20Flip).mp3",
+    cdn_url: "https://DJ-Rehab-App.b-cdn.net/April%202026/Pina%20Colada%20(Rehab%20Project%20Pat%20Flip).mp3",
     duration: 180,
     folder_id: "april-releases-2025",
     cover_art: null,
