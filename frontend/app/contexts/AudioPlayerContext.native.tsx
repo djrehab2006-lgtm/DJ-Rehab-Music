@@ -8,10 +8,6 @@ import TrackPlayer, {
 } from 'react-native-track-player';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Register playback service at module level - this runs when this file is first imported
-// Must happen before any TrackPlayer.setupPlayer() call
-TrackPlayer.registerPlaybackService(() => require('../services/playbackService'));
-
 interface Track {
   id: string;
   title: string;
