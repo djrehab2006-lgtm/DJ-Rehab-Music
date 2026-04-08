@@ -59,8 +59,7 @@
           "android": {
             "compileSdkVersion": 35,
             "targetSdkVersion": 35,
-            "minSdkVersion": 24,
-            "newArchEnabled": false
+            "minSdkVersion": 24
           }
         }
       ]
