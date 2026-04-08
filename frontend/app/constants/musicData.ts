@@ -302,6 +302,16 @@ export const HARDCODED_TRACKS: Track[] = [
     position: 17,
   },
   {
+    id: 'apr-track-19',
+    title: "Supersition (Rehab Take A Look Around Flip)",
+    artist: "DJ Rehab",
+    cdn_url: "https://DJ-Rehab-App.b-cdn.net/April%202026/Supersition%20(Rehab%20Take%20A%20Look%20Around%20Flip).mp3",
+    duration: 180,
+    folder_id: "april-releases-2025",
+    cover_art: null,
+    position: 18,
+  },
+  {
     id: 'dec-track-1',
     title: "Christmas Trappin'",
     artist: "DJ Rehab",
