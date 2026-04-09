@@ -49,20 +49,24 @@ let isPlayerSetup = false;
 
 async function setupPlayer() {
   if (isPlayerSetup) return;
+
+  let playerAlreadyInitialized = false;
   try {
-    // Check if player is already initialized
-    const currentTrack = await TrackPlayer.getActiveTrack();
-    isPlayerSetup = true;
-    return;
+    // Check if player is already initialized (e.g., from a previous session)
+    await TrackPlayer.getActiveTrack();
+    playerAlreadyInitialized = true;
   } catch {
-    // Player not initialized, set it up
+    // Player not initialized, need full setup
   }
 
   try {
-    await TrackPlayer.setupPlayer({
-      autoHandleInterruptions: true,
-    });
+    if (!playerAlreadyInitialized) {
+      await TrackPlayer.setupPlayer({
+        autoHandleInterruptions: true,
+      });
+    }
 
+    // ALWAYS update options to ensure lock screen controls are configured
     await TrackPlayer.updateOptions({
       android: {
         appKilledPlaybackBehavior: AppKilledPlaybackBehavior.ContinuePlayback,
@@ -79,6 +83,7 @@ async function setupPlayer() {
         Capability.Play,
         Capability.Pause,
         Capability.SkipToNext,
+        Capability.SkipToPrevious,
       ],
       notificationCapabilities: [
         Capability.Play,
