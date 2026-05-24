@@ -388,6 +388,16 @@ export const HARDCODED_TRACKS: Track[] = [
     position: 25,
   },
   {
+    id: 'may-track-26',
+    title: "All My Life (Rehab iio Flip)",
+    artist: "DJ Rehab",
+    cdn_url: "https://DJ-Rehab-App.b-cdn.net/May%20Update/All%20My%20Life%20(Rehab%20iio%20Flip).mp3",
+    duration: 180,
+    folder_id: "may-releases-2025",
+    cover_art: null,
+    position: 26,
+  },
+  {
     id: 'apr-track-1',
     title: "The Chain (Rehab Outkast Double Flip)",
     artist: "DJ Rehab",
