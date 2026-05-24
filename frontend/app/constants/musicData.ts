@@ -398,6 +398,16 @@ export const HARDCODED_TRACKS: Track[] = [
     position: 26,
   },
   {
+    id: 'may-track-27',
+    title: "Candy Rain (Rehab+KL Flip) - Soul For Real feat. Stevie Nicks",
+    artist: "DJ Rehab",
+    cdn_url: "https://DJ-Rehab-App.b-cdn.net/May%20Update/Candy%20Rain%20(Rehab%2BKL%20Flip)%20-Soul%20For%20Real%20feat.%20Stevie%20Nicks.mp3",
+    duration: 180,
+    folder_id: "may-releases-2025",
+    cover_art: null,
+    position: 27,
+  },
+  {
     id: 'apr-track-1',
     title: "The Chain (Rehab Outkast Double Flip)",
     artist: "DJ Rehab",
