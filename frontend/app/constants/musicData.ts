@@ -128,6 +128,16 @@ export const HARDCODED_FOLDERS: Folder[] = [
 
 export const HARDCODED_TRACKS: Track[] = [
   {
+    id: 'may-track-0',
+    title: "Choosin' Texas (Rehab Got 5 On It Flip)",
+    artist: "DJ Rehab",
+    cdn_url: "https://DJ-Rehab-App.b-cdn.net/May%20Update/Choosin'%20Texas%20(Rehab%20Got%205%20On%20It%20Flip)%202.mp3",
+    duration: 180,
+    folder_id: "may-releases-2025",
+    cover_art: null,
+    position: 0,
+  },
+  {
     id: 'may-track-1',
     title: "Fishin' In The Dark (Rehab Swing Flip)",
     artist: "DJ Rehab",
@@ -135,7 +145,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 0,
+    position: 1,
   },
   {
     id: 'may-track-2',
@@ -145,7 +155,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 1,
+    position: 2,
   },
   {
     id: 'may-track-3',
@@ -155,7 +165,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 2,
+    position: 3,
   },
   {
     id: 'may-track-4',
@@ -165,7 +175,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 3,
+    position: 4,
   },
   {
     id: 'may-track-5',
@@ -175,7 +185,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 4,
+    position: 5,
   },
   {
     id: 'may-track-6',
@@ -185,7 +195,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 5,
+    position: 6,
   },
   {
     id: 'may-track-7',
@@ -195,7 +205,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 6,
+    position: 7,
   },
   {
     id: 'may-track-8',
@@ -205,7 +215,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 7,
+    position: 8,
   },
   {
     id: 'may-track-9',
@@ -215,7 +225,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 8,
+    position: 9,
   },
   {
     id: 'may-track-10',
@@ -225,7 +235,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 9,
+    position: 10,
   },
   {
     id: 'may-track-11',
@@ -235,7 +245,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 10,
+    position: 11,
   },
   {
     id: 'may-track-12',
@@ -245,7 +255,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 11,
+    position: 12,
   },
   {
     id: 'may-track-13',
@@ -255,7 +265,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 12,
+    position: 13,
   },
   {
     id: 'may-track-14',
@@ -265,7 +275,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 13,
+    position: 14,
   },
   {
     id: 'may-track-15',
@@ -275,7 +285,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 14,
+    position: 15,
   },
   {
     id: 'may-track-16',
@@ -285,7 +295,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 15,
+    position: 16,
   },
   {
     id: 'may-track-17',
@@ -295,7 +305,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 16,
+    position: 17,
   },
   {
     id: 'may-track-18',
@@ -305,7 +315,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 17,
+    position: 18,
   },
   {
     id: 'may-track-19',
@@ -315,7 +325,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 18,
+    position: 19,
   },
   {
     id: 'may-track-20',
@@ -325,7 +335,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "may-releases-2025",
     cover_art: null,
-    position: 19,
+    position: 20,
   },
   {
     id: 'apr-track-1',
