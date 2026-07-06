@@ -17,7 +17,8 @@
         "UIBackgroundModes": [
           "audio"
         ]
-      }
+      },
+      "bundleIdentifier": "com.emergent.rehabbeatstest.wxc30l"
     },
     "android": {
       "package": "com.djrehab2006.djrehabmusic",
