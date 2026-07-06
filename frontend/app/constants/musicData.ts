@@ -616,6 +616,16 @@ export const HARDCODED_TRACKS: Track[] = [
     position: 21,
   },
   {
+    id: 'jul-track-2nd-11',
+    title: "Get Low (Rehab Always Forever Flip)",
+    artist: "DJ Rehab",
+    cdn_url: "https://DJ-Rehab-App.b-cdn.net/July%202nd%20Update/Get%20Low%20(Rehab%20Always%20Forever%20Flip).mp3",
+    duration: 180,
+    folder_id: "july-releases-2025",
+    cover_art: null,
+    position: 22,
+  },
+  {
     id: 'jun-track-1',
     title: "Boston (Rehab Dreams Flip)",
     artist: "DJ Rehab",
