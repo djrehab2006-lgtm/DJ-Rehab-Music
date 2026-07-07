@@ -398,3 +398,57 @@ index b2409a0..55ad36a 100644
      }
 +    }
  }
+diff --git a/node_modules/react-native-track-player/android/src/main/java/com/doublesymmetry/trackplayer/service/MusicService.kt b/node_modules/react-native-track-player/android/src/main/java/com/doublesymmetry/trackplayer/service/MusicService.kt
+index afa6b0f..371673b 100644
+--- a/node_modules/react-native-track-player/android/src/main/java/com/doublesymmetry/trackplayer/service/MusicService.kt
++++ b/node_modules/react-native-track-player/android/src/main/java/com/doublesymmetry/trackplayer/service/MusicService.kt
+@@ -94,6 +94,13 @@ class MusicService : HeadlessJsTaskService() {
+     private var compactCapabilities: List<Capability> = emptyList()
+ 
+     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
++        if (intent == null) {
++            // The service was restarted by the system (sticky restart) while the app is likely
++            // in the background. Calling startForeground() here would throw
++            // ForegroundServiceStartNotAllowedException on Android 12+. Stop gracefully instead.
++            stopSelf()
++            return START_NOT_STICKY
++        }
+         startTask(getTaskConfig(intent))
+         startAndStopEmptyNotificationToAvoidANR()
+         return START_STICKY
+@@ -120,9 +127,32 @@ class MusicService : HeadlessJsTaskService() {
+             notificationBuilder.foregroundServiceBehavior = NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE
+         }
+         val notification = notificationBuilder.build()
+-        startForeground(EMPTY_NOTIFICATION_ID, notification)
+-        @Suppress("DEPRECATION")
+-        stopForeground(true)
++        try {
++            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
++                startForeground(
++                    EMPTY_NOTIFICATION_ID,
++                    notification,
++                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
++                )
++            } else {
++                startForeground(EMPTY_NOTIFICATION_ID, notification)
++            }
++            @Suppress("DEPRECATION")
++            stopForeground(true)
++        } catch (error: Exception) {
++            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
++                error is ForegroundServiceStartNotAllowedException
++            ) {
++                // App is in the background and not allowed to start a foreground service.
++                // Swallow the exception to avoid crashing; playback will resume when the
++                // user re-opens the app or presses a media control.
++                Timber.e(
++                    "ForegroundServiceStartNotAllowedException: App tried to start a foreground Service when it was not allowed to do so."
++                )
++            } else {
++                throw error
++            }
++        }
+     }
+ 
+     @MainThread
