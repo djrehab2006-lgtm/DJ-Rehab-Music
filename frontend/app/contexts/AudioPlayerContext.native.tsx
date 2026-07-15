@@ -8,6 +8,9 @@ import TrackPlayer, {
 } from 'react-native-track-player';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Local track art used for lock screen / notification artwork
+const TRACK_ARTWORK = require('../../assets/track-icon.png');
+
 interface Track {
   id: string;
   title: string;
@@ -291,7 +294,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         url: t.cdn_url,
         title: t.title,
         artist: t.artist,
-        artwork: t.cover_art || undefined,
+        artwork: t.cover_art || TRACK_ARTWORK,
       }));
 
       await TrackPlayer.add(rntpTracks);
@@ -440,7 +443,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         url: t.cdn_url,
         title: t.title,
         artist: t.artist,
-        artwork: t.cover_art || undefined,
+        artwork: t.cover_art || TRACK_ARTWORK,
       }));
 
       await TrackPlayer.add(rntpTracks);

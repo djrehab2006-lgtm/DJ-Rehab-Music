@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Image 
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
-import { HARDCODED_TRACKS, Track } from '../constants/musicData';
+import { HARDCODED_TRACKS, Track, TRACK_ICON } from '../constants/musicData';
 
 const PASTEL_COLORS = [
   '#FFB3BA', // pastel red
@@ -81,11 +81,7 @@ export default function SearchScreen() {
                   activeOpacity={0.7}
                 >
                   <View style={styles.trackCover}>
-                    {track.cover_art ? (
-                      <Image source={{ uri: track.cover_art }} style={styles.trackImage} />
-                    ) : (
-                      <Ionicons name="musical-note" size={24} color="#334155" />
-                    )}
+                    <Image source={TRACK_ICON} style={styles.trackImage} />
                   </View>
                   <View style={styles.trackInfo}>
                     <Text style={styles.trackTitle} numberOfLines={2}>{track.title}</Text>

@@ -18,7 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
-import { HARDCODED_FOLDERS, HARDCODED_TRACKS, Folder, Track, FOLDER_ICON } from '../constants/musicData';
+import { HARDCODED_FOLDERS, HARDCODED_TRACKS, Folder, Track, FOLDER_ICON, TRACK_ICON } from '../constants/musicData';
 import { AddToPlaylistModal } from '../components/AddToPlaylistModal';
 
 const PASTEL_COLORS = [
@@ -99,11 +99,7 @@ export default function CollectionScreen() {
           activeOpacity={0.7}
         >
           <View style={styles.trackCover}>
-            {item.cover_art ? (
-              <Image source={{ uri: item.cover_art}} style={styles.trackImage} />
-            ) : (
-              <Ionicons name="musical-note" size={18} color="#334155" />
-            )}
+            <Image source={TRACK_ICON} style={styles.trackImage} />
           </View>
           <View style={styles.trackInfo}>
             <Text style={styles.trackTitle} numberOfLines={2}>

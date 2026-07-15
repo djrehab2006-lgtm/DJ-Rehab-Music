@@ -6,10 +6,12 @@ import {
   TouchableOpacity,
   Animated,
   Platform,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
+import { TRACK_ICON } from '../constants/musicData';
 
 export function MiniPlayer() {
   const {
@@ -110,7 +112,7 @@ export function MiniPlayer() {
         {/* Track Info */}
         <View style={styles.trackInfo}>
           <View style={styles.trackIcon}>
-            <Ionicons name="musical-note" size={20} color="#5BA3D9" />
+            <Image source={TRACK_ICON} style={styles.trackIconImage} />
           </View>
           <View style={styles.trackDetails}>
             <Text style={styles.trackTitle} numberOfLines={2}>
@@ -231,6 +233,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  trackIconImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
   },
   trackDetails: {
     flex: 1,

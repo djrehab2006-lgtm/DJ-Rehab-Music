@@ -8,12 +8,13 @@ import {
   Alert,
   TextInput,
   Modal,
+  Image,
 } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
-import { HARDCODED_TRACKS, Track } from '../constants/musicData';
+import { HARDCODED_TRACKS, Track, TRACK_ICON } from '../constants/musicData';
 import { getPlaylistById, removeTrackFromPlaylist, renamePlaylist, Playlist } from '../utils/playlistStorage';
 
 const PASTEL_COLORS = [
@@ -113,7 +114,7 @@ export default function PlaylistDetailScreen() {
             <Text style={styles.trackNumberText}>{index + 1}</Text>
           </View>
           <View style={styles.trackCover}>
-            <Ionicons name="musical-note" size={18} color="#334155" />
+            <Image source={TRACK_ICON} style={styles.trackImage} />
           </View>
           <View style={styles.trackInfo}>
             <Text style={styles.trackTitle} numberOfLines={2}>{item.title}</Text>
@@ -349,6 +350,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  trackImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
   },
   trackInfo: {
     flex: 1,

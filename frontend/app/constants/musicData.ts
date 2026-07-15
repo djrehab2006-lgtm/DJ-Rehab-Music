@@ -21,6 +21,9 @@ export interface Folder {
 // Folder icon - using require for local asset
 export const FOLDER_ICON = require('../../assets/folder-icon.jpg');
 
+// Track art icon - shown for every track (cards, mini player, lock screen)
+export const TRACK_ICON = require('../../assets/track-icon.png');
+
 export const HARDCODED_FOLDERS: Folder[] = [
   {
     id: '100k-stream-hit-club',

@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
-import { HARDCODED_TRACKS, Track } from '../constants/musicData';
+import { HARDCODED_TRACKS, Track, TRACK_ICON } from '../constants/musicData';
 
 export default function FavoritesScreen() {
   const { playTrack, currentTrack } = useAudioPlayer();
@@ -106,11 +106,7 @@ export default function FavoritesScreen() {
                     <Text style={styles.trackNumberText}>{index + 1}</Text>
                   </View>
                   <View style={styles.trackCover}>
-                    {track.cover_art ? (
-                      <Image source={{ uri: track.cover_art }} style={styles.trackImage} />
-                    ) : (
-                      <Ionicons name="musical-note" size={20} color="#5BA3D9" />
-                    )}
+                    <Image source={TRACK_ICON} style={styles.trackImage} />
                   </View>
                   <View style={styles.trackInfo}>
                     <Text style={styles.trackTitle} numberOfLines={1}>{track.title}</Text>
