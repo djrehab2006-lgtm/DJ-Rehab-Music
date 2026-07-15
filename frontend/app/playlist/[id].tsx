@@ -16,6 +16,13 @@ import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { HARDCODED_TRACKS, Track } from '../constants/musicData';
 import { getPlaylistById, removeTrackFromPlaylist, renamePlaylist, Playlist } from '../utils/playlistStorage';
 
+const PASTEL_COLORS = [
+  '#FFB3BA', // pastel red
+  '#FFD6E8', // pastel pink
+  '#FDF3B3', // pastel yellow
+  '#C8E6C9', // pastel green
+];
+
 export default function PlaylistDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -87,9 +94,16 @@ export default function PlaylistDetailScreen() {
 
   const renderTrackItem = ({ item, index }: { item: Track; index: number }) => {
     const isPlaying = currentTrack?.id === item.id;
+    const pastelColor = PASTEL_COLORS[index % PASTEL_COLORS.length];
 
     return (
-      <View style={[styles.trackCard, isPlaying && styles.trackCardPlaying]}>
+      <View
+        style={[
+          styles.trackCard,
+          { backgroundColor: pastelColor },
+          isPlaying && styles.trackCardPlaying,
+        ]}
+      >
         <TouchableOpacity
           style={styles.trackPressable}
           onPress={() => playTrack(item, tracks)}
@@ -99,7 +113,7 @@ export default function PlaylistDetailScreen() {
             <Text style={styles.trackNumberText}>{index + 1}</Text>
           </View>
           <View style={styles.trackCover}>
-            <Ionicons name="musical-note" size={18} color="#5BA3D9" />
+            <Ionicons name="musical-note" size={18} color="#334155" />
           </View>
           <View style={styles.trackInfo}>
             <Text style={styles.trackTitle} numberOfLines={2}>{item.title}</Text>
@@ -307,9 +321,8 @@ const styles = StyleSheet.create({
     paddingRight: 12,
   },
   trackCardPlaying: {
-    backgroundColor: '#334155',
-    borderWidth: 1,
-    borderColor: '#5BA3D9',
+    borderWidth: 2,
+    borderColor: '#2E7BBF',
   },
   trackPressable: {
     flexDirection: 'row',
@@ -324,7 +337,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   trackNumberText: {
-    color: '#64748B',
+    color: '#475569',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -332,7 +345,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 8,
-    backgroundColor: '#334155',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -342,14 +355,14 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   trackTitle: {
-    color: '#FFFFFF',
+    color: '#0F172A',
     fontSize: 15,
     fontWeight: '600',
     marginBottom: 3,
     lineHeight: 20,
   },
   trackArtist: {
-    color: '#94A3B8',
+    color: '#475569',
     fontSize: 13,
   },
   removeBtn: {

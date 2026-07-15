@@ -15,6 +15,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getPlaylists, createPlaylist, deletePlaylist, renamePlaylist, Playlist } from '../utils/playlistStorage';
 
+const PASTEL_COLORS = [
+  '#FFB3BA', // pastel red
+  '#FFD6E8', // pastel pink
+  '#FDF3B3', // pastel yellow
+  '#C8E6C9', // pastel green
+];
+
 export default function LibraryScreen() {
   const router = useRouter();
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -82,14 +89,14 @@ export default function LibraryScreen() {
     await loadPlaylists();
   };
 
-  const renderPlaylistItem = ({ item }: { item: Playlist }) => (
+  const renderPlaylistItem = ({ item, index }: { item: Playlist; index: number }) => (
     <TouchableOpacity
-      style={styles.playlistCard}
+      style={[styles.playlistCard, { backgroundColor: PASTEL_COLORS[index % PASTEL_COLORS.length] }]}
       onPress={() => router.push(`/playlist/${item.id}`)}
       activeOpacity={0.7}
     >
       <View style={styles.playlistIcon}>
-        <Ionicons name="list" size={28} color="#5BA3D9" />
+        <Ionicons name="list" size={28} color="#334155" />
       </View>
       <View style={styles.playlistInfo}>
         <Text style={styles.playlistName} numberOfLines={1}>{item.name}</Text>
@@ -101,17 +108,17 @@ export default function LibraryScreen() {
           style={styles.actionBtn}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="pencil-outline" size={18} color="#94A3B8" />
+          <Ionicons name="pencil-outline" size={18} color="#475569" />
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => handleDeletePlaylist(item)}
           style={styles.actionBtn}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="trash-outline" size={18} color="#EF4444" />
+          <Ionicons name="trash-outline" size={18} color="#DC2626" />
         </TouchableOpacity>
       </View>
-      <Ionicons name="chevron-forward" size={20} color="#475569" />
+      <Ionicons name="chevron-forward" size={20} color="#334155" />
     </TouchableOpacity>
   );
 
@@ -293,7 +300,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 12,
-    backgroundColor: '#0F172A',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
@@ -305,12 +312,12 @@ const styles = StyleSheet.create({
   playlistName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#0F172A',
     marginBottom: 3,
   },
   playlistMeta: {
     fontSize: 13,
-    color: '#64748B',
+    color: '#475569',
   },
   playlistActions: {
     flexDirection: 'row',

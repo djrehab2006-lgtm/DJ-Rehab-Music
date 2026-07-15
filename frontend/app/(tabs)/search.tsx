@@ -5,6 +5,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { HARDCODED_TRACKS, Track } from '../constants/musicData';
 
+const PASTEL_COLORS = [
+  '#FFB3BA', // pastel red
+  '#FFD6E8', // pastel pink
+  '#FDF3B3', // pastel yellow
+  '#C8E6C9', // pastel green
+];
+
 export default function SearchScreen() {
   const { playTrack, currentTrack } = useAudioPlayer();
   const [searchQuery, setSearchQuery] = useState('');
@@ -63,12 +70,13 @@ export default function SearchScreen() {
             <Text style={styles.resultsCount}>
               {filteredTracks.length} {filteredTracks.length === 1 ? 'result' : 'results'}
             </Text>
-            {filteredTracks.map((track) => {
+            {filteredTracks.map((track, index) => {
               const isPlaying = currentTrack?.id === track.id;
+              const pastelColor = PASTEL_COLORS[index % PASTEL_COLORS.length];
               return (
                 <TouchableOpacity
                   key={track.id}
-                  style={[styles.trackCard, isPlaying && styles.trackCardPlaying]}
+                  style={[styles.trackCard, { backgroundColor: pastelColor }, isPlaying && styles.trackCardPlaying]}
                   onPress={() => handleTrackPress(track)}
                   activeOpacity={0.7}
                 >
@@ -76,7 +84,7 @@ export default function SearchScreen() {
                     {track.cover_art ? (
                       <Image source={{ uri: track.cover_art }} style={styles.trackImage} />
                     ) : (
-                      <Ionicons name="musical-note" size={24} color="#5BA3D9" />
+                      <Ionicons name="musical-note" size={24} color="#334155" />
                     )}
                   </View>
                   <View style={styles.trackInfo}>
@@ -86,7 +94,7 @@ export default function SearchScreen() {
                   <Ionicons
                     name={isPlaying ? 'pause-circle' : 'play-circle'}
                     size={32}
-                    color="#5BA3D9"
+                    color="#334155"
                   />
                 </TouchableOpacity>
               );
@@ -111,10 +119,10 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 18, color: '#94A3B8', marginTop: 16, marginBottom: 8 },
   emptySubtext: { fontSize: 14, color: '#64748B' },
   trackCard: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, backgroundColor: '#1E293B', marginHorizontal: 16, marginVertical: 4, borderRadius: 12 },
-  trackCardPlaying: { backgroundColor: '#334155', borderWidth: 1, borderColor: '#5BA3D9' },
-  trackCover: { width: 56, height: 56, borderRadius: 8, backgroundColor: '#334155', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  trackCardPlaying: { borderWidth: 2, borderColor: '#2E7BBF' },
+  trackCover: { width: 56, height: 56, borderRadius: 8, backgroundColor: 'rgba(255, 255, 255, 0.5)', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   trackImage: { width: '100%', height: '100%', borderRadius: 8 },
   trackInfo: { flex: 1, marginRight: 12 },
-  trackTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '600', marginBottom: 4 },
-  trackArtist: { color: '#94A3B8', fontSize: 14 },
+  trackTitle: { color: '#0F172A', fontSize: 16, fontWeight: '600', marginBottom: 4 },
+  trackArtist: { color: '#475569', fontSize: 14 },
 });

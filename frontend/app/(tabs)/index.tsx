@@ -10,6 +10,13 @@ import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-nativ
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 
+const PASTEL_COLORS = [
+  '#FFB3BA', // pastel red
+  '#FFD6E8', // pastel pink
+  '#FDF3B3', // pastel yellow
+  '#C8E6C9', // pastel green
+];
+
 export default function HomeScreen() {
   const router = useRouter();
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -50,11 +57,13 @@ export default function HomeScreen() {
     setFolders(data);
   };
 
-  const renderFolderItem = ({ item, drag, isActive }: RenderItemParams<Folder>) => {
+  const renderFolderItem = ({ item, drag, isActive, getIndex }: RenderItemParams<Folder>) => {
+    const index = getIndex() ?? 0;
+    const pastelColor = PASTEL_COLORS[index % PASTEL_COLORS.length];
     return (
       <ScaleDecorator>
         <TouchableOpacity 
-          style={[styles.listCard, isActive && styles.listCardDragging]}
+          style={[styles.listCard, { backgroundColor: pastelColor }, isActive && styles.listCardDragging]}
           onPress={() => router.push('/collection/' + item.id)}
           disabled={isActive}
         >
@@ -63,7 +72,7 @@ export default function HomeScreen() {
             <Text style={styles.listName} numberOfLines={1}>{item.name}</Text>
             <Text style={styles.listCount}>{getTrackCount(item.id)} tracks</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#64748B" />
+          <Ionicons name="chevron-forward" size={20} color="#334155" />
         </TouchableOpacity>
       </ScaleDecorator>
     );
@@ -157,7 +166,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   listCardDragging: {
-    backgroundColor: '#334155',
     shadowColor: '#5BA3D9',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
@@ -178,12 +186,12 @@ const styles = StyleSheet.create({
   listName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#0F172A',
     marginBottom: 4,
   },
   listCount: {
     fontSize: 13,
-    color: '#64748B',
+    color: '#475569',
   },
   dragHandleList: {
     marginRight: 8,
