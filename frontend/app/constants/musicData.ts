@@ -675,6 +675,16 @@ export const HARDCODED_TRACKS: Track[] = [
     cover_art: null,
     position: 27,
   },
+  {
+    id: 'jul-track-2nd-17',
+    title: "Better Man (Rehab Gryffin House Flip)",
+    artist: "DJ Rehab",
+    cdn_url: "https://DJ-Rehab-App.b-cdn.net/July%202nd%20Update/Better%20Man%20(Rehab%20Gryffin%20House%20Flip).mp3",
+    duration: 180,
+    folder_id: "july-releases-2025",
+    cover_art: null,
+    position: 28,
+  },
 
   {
     id: 'jun-track-1',
