@@ -1,62 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState, useMemo } from 'react';
+import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
-
-interface Track {
-  id: string;
-  title: string;
-  artist: string;
-  duration: number;
-  cover_art?: string;
-}
+import { useAudioPlayer } from '../contexts/AudioPlayerContext';
+import { HARDCODED_TRACKS, Track } from '../constants/musicData';
 
 export default function SearchScreen() {
-  const router = useRouter();
+  const { playTrack, currentTrack } = useAudioPlayer();
   const [searchQuery, setSearchQuery] = useState('');
-  const [tracks, setTracks] = useState<Track[]>([]);
-  const [filteredTracks, setFilteredTracks] = useState<Track[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadTracks();
-  }, []);
+  const filteredTracks = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (query === '') return [];
+    return HARDCODED_TRACKS.filter(
+      track =>
+        track.title.toLowerCase().includes(query) ||
+        track.artist.toLowerCase().includes(query)
+    );
+  }, [searchQuery]);
 
-  useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setFilteredTracks([]);
-    } else {
-      const filtered = tracks.filter(
-        track =>
-          track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          track.artist.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredTracks(filtered);
-    }
-  }, [searchQuery, tracks]);
-
-  const loadTracks = async () => {
-    try {
-      const response = await fetch(BACKEND_URL + '/api/tracks');
-      if (response.ok) {
-        const data = await response.json();
-        setTracks(data);
-      }
-    } catch (error) {
-      console.error('Error loading tracks:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatDuration = (seconds: number): string => {
-    if (!seconds) return '0:00';
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return mins + ':' + secs.toString().padStart(2, '0');
+  const handleTrackPress = (track: Track) => {
+    playTrack(track, filteredTracks);
   };
 
   return (
@@ -81,10 +45,8 @@ export default function SearchScreen() {
         )}
       </View>
 
-      <ScrollView style={styles.scrollView}>
-        {loading ? (
-          <ActivityIndicator size="large" color="#5BA3D9" style={{ marginTop: 40 }} />
-        ) : searchQuery === '' ? (
+      <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
+        {searchQuery.trim() === '' ? (
           <View style={styles.emptyState}>
             <Ionicons name="search-outline" size={64} color="#64748B" />
             <Text style={styles.emptyText}>Search for music</Text>
@@ -101,23 +63,34 @@ export default function SearchScreen() {
             <Text style={styles.resultsCount}>
               {filteredTracks.length} {filteredTracks.length === 1 ? 'result' : 'results'}
             </Text>
-            {filteredTracks.map((track) => (
-              <TouchableOpacity key={track.id} style={styles.trackCard} onPress={() => router.push('/player?trackId=' + track.id)}>
-                <View style={styles.trackCover}>
-                  {track.cover_art ? (
-                    <Image source={{ uri: track.cover_art }} style={styles.trackImage} />
-                  ) : (
-                    <Ionicons name="musical-note" size={24} color="#5BA3D9" />
-                  )}
-                </View>
-                <View style={styles.trackInfo}>
-                  <Text style={styles.trackTitle} numberOfLines={1}>{track.title}</Text>
-                  <Text style={styles.trackArtist} numberOfLines={1}>{track.artist}</Text>
-                </View>
-                <Text style={styles.trackDuration}>{formatDuration(track.duration)}</Text>
-                <Ionicons name="play-circle" size={32} color="#5BA3D9" />
-              </TouchableOpacity>
-            ))}
+            {filteredTracks.map((track) => {
+              const isPlaying = currentTrack?.id === track.id;
+              return (
+                <TouchableOpacity
+                  key={track.id}
+                  style={[styles.trackCard, isPlaying && styles.trackCardPlaying]}
+                  onPress={() => handleTrackPress(track)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.trackCover}>
+                    {track.cover_art ? (
+                      <Image source={{ uri: track.cover_art }} style={styles.trackImage} />
+                    ) : (
+                      <Ionicons name="musical-note" size={24} color="#5BA3D9" />
+                    )}
+                  </View>
+                  <View style={styles.trackInfo}>
+                    <Text style={styles.trackTitle} numberOfLines={2}>{track.title}</Text>
+                    <Text style={styles.trackArtist} numberOfLines={1}>{track.artist}</Text>
+                  </View>
+                  <Ionicons
+                    name={isPlaying ? 'pause-circle' : 'play-circle'}
+                    size={32}
+                    color="#5BA3D9"
+                  />
+                </TouchableOpacity>
+              );
+            })}
           </View>
         )}
       </ScrollView>
@@ -138,10 +111,10 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 18, color: '#94A3B8', marginTop: 16, marginBottom: 8 },
   emptySubtext: { fontSize: 14, color: '#64748B' },
   trackCard: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, backgroundColor: '#1E293B', marginHorizontal: 16, marginVertical: 4, borderRadius: 12 },
+  trackCardPlaying: { backgroundColor: '#334155', borderWidth: 1, borderColor: '#5BA3D9' },
   trackCover: { width: 56, height: 56, borderRadius: 8, backgroundColor: '#334155', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   trackImage: { width: '100%', height: '100%', borderRadius: 8 },
   trackInfo: { flex: 1, marginRight: 12 },
   trackTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '600', marginBottom: 4 },
   trackArtist: { color: '#94A3B8', fontSize: 14 },
-  trackDuration: { color: '#64748B', fontSize: 14, marginRight: 12 },
 });
