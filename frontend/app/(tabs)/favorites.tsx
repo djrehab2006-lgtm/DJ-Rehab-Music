@@ -164,11 +164,11 @@ const styles = StyleSheet.create({
   trackCard: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    paddingHorizontal: 16, 
-    paddingVertical: 12, 
+    paddingHorizontal: 12, 
+    paddingVertical: 6, 
     backgroundColor: '#1E293B', 
-    marginBottom: 8, 
-    borderRadius: 12 
+    marginBottom: 4, 
+    borderRadius: 10 
   },
   trackCardPlaying: { backgroundColor: '#334155', borderWidth: 1, borderColor: '#5BA3D9' },
   trackNumber: { 
@@ -182,18 +182,19 @@ const styles = StyleSheet.create({
   },
   trackNumberText: { color: '#94A3B8', fontSize: 14, fontWeight: '600' },
   trackCover: { 
-    width: 48, 
-    height: 48, 
-    borderRadius: 8, 
+    width: 32, 
+    height: 32, 
+    borderRadius: 6, 
     backgroundColor: '#334155', 
     justifyContent: 'center', 
     alignItems: 'center', 
-    marginRight: 12 
+    marginRight: 10,
+    overflow: 'hidden'
   },
-  trackImage: { width: '100%', height: '100%', borderRadius: 8 },
+  trackImage: { width: '100%', height: '100%', borderRadius: 6 },
   trackInfo: { flex: 1, marginRight: 12 },
-  trackTitle: { fontSize: 15, fontWeight: '600', color: '#FFFFFF', marginBottom: 4 },
-  trackArtist: { fontSize: 13, color: '#94A3B8' },
+  trackTitle: { fontSize: 14, fontWeight: '600', color: '#FFFFFF', marginBottom: 2 },
+  trackArtist: { fontSize: 11, color: '#94A3B8' },
   trackDuration: { color: '#64748B', fontSize: 13, marginRight: 12 },
   favoriteButton: { padding: 4 },
 });

@@ -317,8 +317,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1E293B',
-    marginVertical: 4,
-    borderRadius: 12,
+    marginVertical: 2,
+    borderRadius: 10,
     paddingRight: 12,
   },
   trackCardPlaying: {
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingVertical: 6,
     flex: 1,
   },
   trackNumber: {
@@ -343,19 +343,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   trackCover: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 6,
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 10,
     overflow: 'hidden',
   },
   trackImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 8,
+    borderRadius: 6,
   },
   trackInfo: {
     flex: 1,
@@ -363,14 +363,14 @@ const styles = StyleSheet.create({
   },
   trackTitle: {
     color: '#0F172A',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 3,
-    lineHeight: 20,
+    marginBottom: 2,
+    lineHeight: 18,
   },
   trackArtist: {
     color: '#475569',
-    fontSize: 13,
+    fontSize: 11,
   },
   removeBtn: {
     padding: 8,

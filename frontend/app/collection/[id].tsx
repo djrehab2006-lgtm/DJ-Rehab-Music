@@ -300,8 +300,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1E293B',
-    marginVertical: 4,
-    borderRadius: 12,
+    marginVertical: 2,
+    borderRadius: 10,
     paddingRight: 8,
   },
   trackCardPlaying: {
@@ -311,8 +311,8 @@ const styles = StyleSheet.create({
   trackPressable: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     width: '70%',
   },
   trackActions: {
@@ -375,14 +375,14 @@ const styles = StyleSheet.create({
   },
   trackTitle: {
     color: '#0F172A',
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 4,
-    lineHeight: 22,
+    marginBottom: 2,
+    lineHeight: 18,
   },
   trackArtist: {
     color: '#475569',
-    fontSize: 13,
+    fontSize: 11,
   },
   addToPlaylistBtn: {
     padding: 8,
