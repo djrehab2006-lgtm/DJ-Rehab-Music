@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { HARDCODED_TRACKS, Track, TRACK_ICON } from '../constants/musicData';
+import { shareTrack } from '../utils/shareTrack';
 
 const PASTEL_COLORS = [
   '#FFB3BA', // pastel red
@@ -87,6 +88,16 @@ export default function SearchScreen() {
                     <Text style={styles.trackTitle} numberOfLines={2}>{track.title}</Text>
                     <Text style={styles.trackArtist} numberOfLines={1}>{track.artist}</Text>
                   </View>
+                  <TouchableOpacity
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      shareTrack(track.title);
+                    }}
+                    style={styles.shareBtn}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <Ionicons name="share-social-outline" size={20} color="#334155" />
+                  </TouchableOpacity>
                   <Ionicons
                     name={isPlaying ? 'pause-circle' : 'play-circle'}
                     size={32}
@@ -119,6 +130,7 @@ const styles = StyleSheet.create({
   trackCover: { width: 36, height: 36, borderRadius: 6, backgroundColor: 'rgba(255, 255, 255, 0.5)', justifyContent: 'center', alignItems: 'center', marginRight: 10, overflow: 'hidden' },
   trackImage: { width: '100%', height: '100%', borderRadius: 8 },
   trackInfo: { flex: 1, marginRight: 12 },
+  shareBtn: { padding: 6, marginRight: 4 },
   trackTitle: { color: '#0F172A', fontSize: 14, fontWeight: '600', marginBottom: 2 },
   trackArtist: { color: '#475569', fontSize: 11 },
 });

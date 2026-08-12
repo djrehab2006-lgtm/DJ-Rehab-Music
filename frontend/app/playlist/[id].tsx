@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { HARDCODED_TRACKS, Track, TRACK_ICON } from '../constants/musicData';
 import { getPlaylistById, removeTrackFromPlaylist, renamePlaylist, Playlist } from '../utils/playlistStorage';
+import { shareTrack } from '../utils/shareTrack';
 
 const PASTEL_COLORS = [
   '#FFB3BA', // pastel red
@@ -120,6 +121,13 @@ export default function PlaylistDetailScreen() {
             <Text style={styles.trackTitle} numberOfLines={2}>{item.title}</Text>
             <Text style={styles.trackArtist} numberOfLines={1}>{item.artist}</Text>
           </View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.shareBtn}
+          onPress={() => shareTrack(item.title)}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="share-social-outline" size={20} color="#334155" />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.removeBtn}
@@ -373,6 +381,9 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   removeBtn: {
+    padding: 8,
+  },
+  shareBtn: {
     padding: 8,
   },
   emptyState: {

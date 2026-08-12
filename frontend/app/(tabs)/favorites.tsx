@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { HARDCODED_TRACKS, Track, TRACK_ICON } from '../constants/musicData';
+import { shareTrack } from '../utils/shareTrack';
 
 export default function FavoritesScreen() {
   const { playTrack, currentTrack } = useAudioPlayer();
@@ -115,6 +116,15 @@ export default function FavoritesScreen() {
                   <TouchableOpacity
                     onPress={(e) => {
                       e.stopPropagation();
+                      shareTrack(track.title);
+                    }}
+                    style={styles.shareBtn}
+                  >
+                    <Ionicons name="share-social-outline" size={20} color="#94A3B8" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={(e) => {
+                      e.stopPropagation();
                       removeFavorite(track.id);
                     }}
                     style={styles.favoriteButton}
@@ -197,4 +207,5 @@ const styles = StyleSheet.create({
   trackArtist: { fontSize: 11, color: '#94A3B8' },
   trackDuration: { color: '#64748B', fontSize: 13, marginRight: 12 },
   favoriteButton: { padding: 4 },
+  shareBtn: { padding: 4, marginRight: 6 },
 });

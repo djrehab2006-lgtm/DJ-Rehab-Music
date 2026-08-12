@@ -20,6 +20,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { HARDCODED_FOLDERS, HARDCODED_TRACKS, Folder, Track, FOLDER_ICON, TRACK_ICON } from '../constants/musicData';
 import { AddToPlaylistModal } from '../components/AddToPlaylistModal';
+import { shareTrack } from '../utils/shareTrack';
 
 const PASTEL_COLORS = [
   '#FFB3BA', // pastel red
@@ -109,6 +110,13 @@ export default function CollectionScreen() {
               {item.artist}
             </Text>
           </View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.shareBtn}
+          onPress={() => shareTrack(item.title)}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Ionicons name="share-social-outline" size={20} color="#334155" />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.addToPlaylistBtn}
@@ -385,6 +393,9 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   addToPlaylistBtn: {
+    padding: 8,
+  },
+  shareBtn: {
     padding: 8,
   },
   trackDuration: {
