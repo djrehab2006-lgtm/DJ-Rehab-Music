@@ -22,7 +22,7 @@
     },
     "android": {
       "package": "com.djrehab2006.djrehabmusic",
-      "versionCode": 900,
+      "versionCode": 1000,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
