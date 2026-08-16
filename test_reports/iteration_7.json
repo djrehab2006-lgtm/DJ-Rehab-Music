@@ -1,0 +1,36 @@
+{
+  "summary": "Frontend-only validation of the playlist persistence fix in /app/frontend/app/utils/playlistStorage.ts (dual-write to AsyncStorage + file backup on native, safe no-op on web, auto-recovery when AsyncStorage empty). Static code review + web-runtime functional tests all PASS. Persistence across reload works via localStorage on web. No resurrection after delete verified via LS-empty simulation. Regression on rename, playback, MiniPlayer, and all 5 tabs is clean. NOTE: The native file backup path (documentDirectory/playlists_backup.json via expo-file-system/legacy) cannot be exercised in the browser preview - verified via code review only. Deprecated package warnings previously reported (expo-av, non-route files under app/, textShadow/shadow/pointerEvents/resizeMode style deprecations) still present, unrelated to this fix.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "expo-av", "issue": "Deprecated: expo-av should be migrated to expo-audio (audio) and expo-video (video) per Expo SDK 54. Console warning on every render. Reference: /app/frontend/package.json:23 and /app/frontend/app/contexts/AudioPlayerContext.tsx (pre-existing, not introduced by this fix)"},
+      {"component": "expo-router non-route files", "issue": "Utility/context/constant/component files placed under app/ trigger 'missing default export' warnings for AddToPlaylistModal.tsx, MiniPlayer.tsx, musicData.ts, AudioPlayerContext.tsx, playlistStorage.ts, shareTrack.ts, etc. Non-fatal but pollutes logs. Recommend moving out of app/. (pre-existing)"},
+      {"component": "deprecated style props", "issue": "'textShadow*'/'shadow*'/'props.pointerEvents'/'Image style.resizeMode' deprecation warnings still present. (pre-existing)"}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "None required for the persistence fix - it is correct and passes all web-testable acceptance criteria. Ship it.",
+    "OPTIONAL (unchanged from prior iterations): migrate expo-av to expo-audio/expo-video, and move non-route files out of app/ directory to silence expo-router warnings."
+  ],
+  "critical_code_review_comments": [
+    "playlistStorage.ts BACKUP_FILE guard: `Platform.OS !== 'web' && FileSystem.documentDirectory` correctly makes web a full no-op (writeBackup/readBackup return early when BACKUP_FILE is null). GOOD.",
+    "savePlaylists always writes to backup AFTER AsyncStorage.setItem (even inside a try/catch that only catches the AsyncStorage error). Backup writes even when AsyncStorage throws, which is the exact recovery scenario we want. GOOD.",
+    "getPlaylists recovery only fires when AsyncStorage is truly empty/unreadable (`data` is null OR `playlists.length === 0`). Won't overwrite legitimate empty state on native because when user has deleted all playlists, savePlaylists([]) has already written '[]' to the backup file, so readBackup returns [] and `backup.length > 0` is false. NO RESURRECTION. GOOD.",
+    "deletePlaylist -> filter -> savePlaylists(filtered): if filtered is [], both AsyncStorage and backup file get overwritten with []. Verified by simulating LS='[]' on web: 'No playlists yet' shown after reload. GOOD.",
+    "All CRUD functions (create/rename/delete/addTrack/removeTrack/getPlaylistById) route through getPlaylists() so the recovery seed happens on ANY read. GOOD.",
+    "expo-file-system import uses '/legacy' subpath which is the correct API for FileSystem.writeAsStringAsync/readAsStringAsync/getInfoAsync in SDK 54 (expo-file-system 19+). GOOD.",
+    "app.json expo-build-properties -> android.allowBackup:true correctly set (enables Google Auto Backup as a 3rd layer of defense across uninstall/reinstall). GOOD.",
+    "package.json includes expo-file-system ~19.0.23. GOOD."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a", "frontend": "100%"},
+  "seed_data_creation": "Seeded LS 'user_playlists' with test playlist during runtime; cleared before each test run.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Top tab bar (Home/Search/Library/Favorites/Profile) is at y<100, height<40 - use JS-based tab clicks with a y filter to disambiguate from screen-body text. RN Alert.alert on the web preview does NOT render as native window.confirm (Playwright's dialog handler cannot dismiss it), and the buttons ('Delete', 'Cancel') are rendered inside an off-tree overlay that is hard to locate. To validate delete-doesn't-resurrect on web, set localStorage.user_playlists = '[]' and reload; that simulates the exact state after a successful deletion. Ionicons render as font glyphs inside <div>: 0xf105=add-circle-outline, 0xf4a5=pencil (visible), pencil-outline shows as normal glyph (query by color rgb(71,85,105) for pencil-outline in library rows and rgb(220,38,38) for trash-outline). AudioPlayerContext.web.tsx is used on web preview - playback uses HTML5 audio and MiniPlayer appears above tab bar after play.",
+  "rca_of_issue": "This iteration validates a BUG FIX, not a new feature. Root cause per E1's analysis: on some Android devices, the AsyncStorage SQLite database (RKStorage) can be corrupted/cleared during Play Store app updates, wiping playlists that were saved locally. The fix implements defense-in-depth: (1) DUAL-WRITE - every savePlaylists also writes /documentDirectory/playlists_backup.json via expo-file-system/legacy on native; (2) AUTO-RECOVERY - getPlaylists falls back to the backup file and re-seeds AsyncStorage whenever the primary is empty/unreadable; (3) app.json now sets android.allowBackup:true so Google Auto Backup preserves data across uninstall/reinstall as a third safety net. Verification: (a) Static review confirms the dual-write and recovery logic is correct and cannot resurrect deleted playlists because deletePlaylist->savePlaylists([]) overwrites the backup with an empty array. (b) Web runtime tests confirm PersistTest playlist created via UI persists across full page reload with the added track (localStorage-backed on web). (c) Simulating post-delete state (LS='[]' or LS removed) after reload shows 'No playlists yet' - no resurrection. (d) Regression tests confirm rename, playback (MiniPlayer visible), and all 5 tabs work without crashes."
+}
