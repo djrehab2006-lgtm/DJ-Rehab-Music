@@ -461,6 +461,16 @@ export const HARDCODED_TRACKS: Track[] = [
     position: 29,
   },
   {
+    id: 'cxh-track-31',
+    title: "Country Boy Can Survive (Rehab Country Grammer Flip)",
+    artist: "DJ Rehab",
+    cdn_url: "https://DJ-Rehab-App.b-cdn.net/App%20Update/Country%20Boy%20Can%20Survive%20(Rehab%20Country%20Grammer%20Flip).mp3",
+    duration: 180,
+    folder_id: "country-x-hiphop",
+    cover_art: null,
+    position: 30,
+  },
+  {
     id: 'aug-track-1',
     title: "Luda Went Down To Georgia (Rehab Charile Daniels Band Flip)",
     artist: "DJ Rehab",
