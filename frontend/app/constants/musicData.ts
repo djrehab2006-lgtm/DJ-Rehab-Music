@@ -363,6 +363,16 @@ export const HARDCODED_TRACKS: Track[] = [
     position: 18,
   },
   {
+    id: 'sep26-track-20',
+    title: "My Own Prison (Rehab Goodie Mob Flip)",
+    artist: "DJ Rehab",
+    cdn_url: "https://DJ-Rehab-App.b-cdn.net/September%202026/My%20Own%20Prison%20(Rehab%20Goodie%20Mob%20Flip).mp3",
+    duration: 180,
+    folder_id: "september-2026-releases",
+    cover_art: null,
+    position: 19,
+  },
+  {
     id: 'cxh-track-1',
     title: "Check Yes or No (Rehab Bette Davis Eyes Flip)",
     artist: "DJ Rehab",
