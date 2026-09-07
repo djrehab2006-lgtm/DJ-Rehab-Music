@@ -16,7 +16,7 @@ Standalone Android music streaming app (Expo / React Native) for Google Play. No
 - User builds locally with EAS on Mac. **Must download latest code from Emergent before building.**
 
 ## Backlog
-- Add tracks to "Yacht Rock x Hip-Hop Mashups" folder (currently empty)
+- Yacht Rock x Hip-Hop Mashups folder removed (June 2026) — re-add when tracks are ready
 - Migrate web fallback from `expo-av` → `expo-audio`
 - Move non-route files out of `app/` to silence expo-router warnings
 - Optional: sleep timer, repeat modes, resume playback position
