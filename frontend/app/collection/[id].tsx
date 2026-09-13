@@ -92,6 +92,9 @@ export default function CollectionScreen() {
           onPress={handleTrackPress}
           activeOpacity={0.7}
         >
+          <View style={styles.trackNumber}>
+            <Text style={styles.trackNumberText}>{index + 1}</Text>
+          </View>
           <View style={styles.trackCover}>
             <Image source={TRACK_ICON} style={styles.trackImage} />
           </View>
@@ -348,14 +351,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   trackNumber: {
-    width: 32,
+    width: 24,
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 8,
   },
   trackNumberText: {
-    color: '#64748B',
-    fontSize: 16,
-    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontSize: 13,
+    fontWeight: '700',
   },
   trackCover: {
     width: 40,
