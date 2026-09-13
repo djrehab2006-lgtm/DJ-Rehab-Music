@@ -2,13 +2,20 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import { Audio } from 'expo-av';
 import { Sound } from 'expo-av/build/Audio';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  savePlaybackState,
+  loadPlaybackState,
+  clearPlaybackState,
+  resolveTracks,
+  SAVE_INTERVAL_MS,
+} from '../utils/playbackStateStorage';
 
 interface Track {
   id: string;
   title: string;
   artist: string;
   cdn_url: string;
-  cover_art?: string;
+  cover_art?: string | null;
   folder_id?: string;
 }
 
@@ -60,6 +67,10 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const isAutoPlayingRef = useRef(false);
   const currentIndexRef = useRef(currentIndex);
   const playlistRef = useRef(playlist);
+  const originalPlaylistRef = useRef(originalPlaylist);
+  const currentTrackRef = useRef(currentTrack);
+  const isShuffledRef = useRef(isShuffled);
+  const lastSaveRef = useRef(0);
 
   // Update refs when values change
   useEffect(() => {
@@ -70,10 +81,75 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     playlistRef.current = playlist;
   }, [playlist]);
 
-  // Configure audio session for background playback on mount
   useEffect(() => {
-    configureAudioSession();
+    originalPlaylistRef.current = originalPlaylist;
+  }, [originalPlaylist]);
+
+  useEffect(() => {
+    currentTrackRef.current = currentTrack;
+  }, [currentTrack]);
+
+  useEffect(() => {
+    isShuffledRef.current = isShuffled;
+  }, [isShuffled]);
+
+  // Persist "where the listener is" so the session can be resumed on next launch
+  const persistState = (positionMillis: number, track = currentTrackRef.current) => {
+    if (!track) return;
+    lastSaveRef.current = Date.now();
+    savePlaybackState({
+      trackId: track.id,
+      queueIds: playlistRef.current.map((t) => t.id),
+      originalQueueIds: originalPlaylistRef.current.map((t) => t.id),
+      isShuffled: isShuffledRef.current,
+      positionMillis: Math.max(0, Math.floor(positionMillis)),
+    });
+  };
+
+  // Configure audio session for background playback on mount, then restore
+  // the last session (paused at the saved position) if there is one.
+  useEffect(() => {
+    const init = async () => {
+      await configureAudioSession();
+      await restoreSession();
+    };
+    init();
   }, []);
+
+  const restoreSession = async () => {
+    try {
+      const saved = await loadPlaybackState();
+      if (!saved) return;
+      const tracks = resolveTracks(saved.queueIds);
+      if (tracks.length === 0) return;
+
+      const savedIndex = tracks.findIndex((t) => t.id === saved.trackId);
+      const index = savedIndex >= 0 ? savedIndex : 0;
+      const positionMillis = savedIndex >= 0 ? saved.positionMillis : 0;
+      const track = tracks[index];
+      const original = resolveTracks(saved.originalQueueIds);
+
+      setPlaylist(tracks);
+      playlistRef.current = tracks;
+      setOriginalPlaylist(original.length > 0 ? original : tracks);
+      originalPlaylistRef.current = original.length > 0 ? original : tracks;
+      setIsShuffled(saved.isShuffled);
+      isShuffledRef.current = saved.isShuffled;
+      setCurrentIndex(index);
+      currentIndexRef.current = index;
+      setCurrentTrack(track);
+      currentTrackRef.current = track;
+
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: track.cdn_url },
+        { shouldPlay: false, positionMillis },
+        onPlaybackStatusUpdate
+      );
+      soundRef.current = sound;
+    } catch (error) {
+      console.error('Error restoring playback session:', error);
+    }
+  };
 
   const configureAudioSession = async () => {
     try {
@@ -150,6 +226,9 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         setPlaylist(newPlaylist);
         setOriginalPlaylist(newPlaylist);
         playlistRef.current = newPlaylist;
+        originalPlaylistRef.current = newPlaylist;
+        setIsShuffled(false);
+        isShuffledRef.current = false;
         const index = newPlaylist.findIndex(t => t.id === track.id);
         setCurrentIndex(index >= 0 ? index : 0);
         currentIndexRef.current = index >= 0 ? index : 0;
@@ -165,6 +244,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       }
 
       setCurrentTrack(track);
+      currentTrackRef.current = track;
       setIsFavorite(favorites.has(track.id));
 
       // Create and load new sound
@@ -175,6 +255,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       );
 
       soundRef.current = sound;
+      persistState(0, track);
       setIsLoading(false);
     } catch (error) {
       console.error('Error playing track:', error);
@@ -191,6 +272,11 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         isLoaded: true,
       });
 
+      // Periodically remember the position while playing
+      if (status.isPlaying && Date.now() - lastSaveRef.current > SAVE_INTERVAL_MS) {
+        persistState(status.positionMillis || 0);
+      }
+
       // Auto-play next track when current track finishes
       if (status.didJustFinish && !status.isLooping && !isAutoPlayingRef.current) {
         isAutoPlayingRef.current = true;
@@ -203,6 +289,8 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
             isAutoPlayingRef.current = false;
           });
         } else {
+          // Queue finished: next launch starts this track from the top
+          persistState(0);
           isAutoPlayingRef.current = false;
         }
       }
@@ -217,7 +305,10 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const pauseTrack = async () => {
     try {
       if (soundRef.current) {
-        await soundRef.current.pauseAsync();
+        const status = await soundRef.current.pauseAsync();
+        if (status.isLoaded) {
+          persistState(status.positionMillis);
+        }
       }
     } catch (error) {
       console.error('Error pausing track:', error);
@@ -242,6 +333,8 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         soundRef.current = null;
       }
       setCurrentTrack(null);
+      currentTrackRef.current = null;
+      clearPlaybackState();
       setPlaybackStatus({
         isPlaying: false,
         positionMillis: 0,
@@ -307,6 +400,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         currentIndexRef.current = newIndex >= 0 ? newIndex : 0;
       }
       setIsShuffled(false);
+      isShuffledRef.current = false;
     } else {
       // Shuffle playlist keeping current track first
       const currentTrackItem = playlist[currentIndex];
@@ -324,6 +418,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       setCurrentIndex(0);
       currentIndexRef.current = 0;
       setIsShuffled(true);
+      isShuffledRef.current = true;
     }
   };
 

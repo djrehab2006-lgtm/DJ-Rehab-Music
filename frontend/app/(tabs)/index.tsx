@@ -10,11 +10,11 @@ import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-nativ
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 
-const PASTEL_COLORS = [
-  '#FFB3BA', // pastel red
-  '#FFD6E8', // pastel pink
-  '#FDF3B3', // pastel yellow
-  '#C8E6C9', // pastel green
+const FOLDER_COLORS = [
+  '#FF5252', // bright red
+  '#FF4FA3', // bright pink
+  '#FFD93D', // bright yellow
+  '#4ADE80', // bright green
 ];
 
 export default function HomeScreen() {
@@ -59,11 +59,11 @@ export default function HomeScreen() {
 
   const renderFolderItem = ({ item, drag, isActive, getIndex }: RenderItemParams<Folder>) => {
     const index = getIndex() ?? 0;
-    const pastelColor = PASTEL_COLORS[index % PASTEL_COLORS.length];
+    const cardColor = FOLDER_COLORS[index % FOLDER_COLORS.length];
     return (
       <ScaleDecorator>
         <TouchableOpacity 
-          style={[styles.listCard, { backgroundColor: pastelColor }, isActive && styles.listCardDragging]}
+          style={[styles.listCard, { backgroundColor: cardColor }, isActive && styles.listCardDragging]}
           onPress={() => router.push('/collection/' + item.id)}
           disabled={isActive}
         >
