@@ -6,18 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { HERO_BACKGROUND } from '../constants/heroBackground';
 import { HARDCODED_FOLDERS, HARDCODED_TRACKS, Folder, Track, FOLDER_ICON } from '../constants/musicData';
-
-// Tile gradients (top → bottom), cycled in order across the collection grid
-const TILE_GRADIENTS: [string, string][] = [
-  ['#5C6BC0', '#7E3FA5'], // indigo → purple
-  ['#E8834E', '#C43E2F'], // orange → red
-  ['#5DBE8C', '#2E7D5B'], // mint → green
-  ['#D98A9A', '#7A5560'], // rose → mauve
-  ['#A25AC5', '#5B3A8E'], // violet → deep purple
-  ['#8FA88E', '#3E5A4A'], // sage → forest
-  ['#D9707A', '#C97C3C'], // coral → orange
-  ['#7FA8D9', '#3E6DB5'], // sky → blue
-];
+import { CARD_GRADIENTS } from '../components/CardGradient';
 
 const GRID_PADDING = 20;
 const GRID_GAP = 16;
@@ -59,7 +48,7 @@ export default function HomeScreen() {
       activeOpacity={0.85}
     >
       <LinearGradient
-        colors={TILE_GRADIENTS[index % TILE_GRADIENTS.length]}
+        colors={CARD_GRADIENTS[index % CARD_GRADIENTS.length]}
         start={{ x: 0.2, y: 0 }}
         end={{ x: 0.8, y: 1 }}
         style={StyleSheet.absoluteFill}

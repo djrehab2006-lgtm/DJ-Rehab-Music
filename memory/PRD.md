@@ -5,7 +5,7 @@ Standalone Android music streaming app (Expo / React Native) for Google Play. No
 
 ## Core Features (Done)
 - Home screen (user mockup, June 2026): hero photo fading to near-black bg (#0B0B0F) with 'WELCOME TO' eyebrow + 'DJ Rehab Music'; 'Your Collections' header with count pill; 2-column square tile grid, each tile with one of 8 gradients (indigo→purple, orange→red, mint→green, rose→mauve, violet→purple, sage→forest, coral→orange, sky→blue), faded DJ REHAB logo watermark, white bold title, dark 'N TRACKS' pill; first tile has orange NEW badge. Drag-to-reorder folders removed (was never persisted).
-- Track rows (folder/search/playlist views) & Library playlist cards: bright diagonal gradients (red/pink/yellow/green) via `app/components/CardGradient.tsx`; compact rows; custom Blue Icon track art
+- Track rows (folder/search/playlist views) & Library playlist cards share the SAME 8-gradient palette as folder tiles (`CARD_GRADIENTS` in `app/components/CardGradient.tsx`) with white bold 15px titles / 80% white subtitles / white icons; compact rows; custom Blue Icon track art
 - Background / lock-screen playback via patched `react-native-track-player` (Android); `expo-av` fallback on web
 - Local favorites & playlists (AsyncStorage + expo-file-system backup)
 - Resume Playback: last track, position, queue & shuffle state saved (AsyncStorage `last_playback_state`, via app/utils/playbackStateStorage.ts); restored PAUSED in mini-player on launch (native syncs with live TrackPlayer queue if still running)

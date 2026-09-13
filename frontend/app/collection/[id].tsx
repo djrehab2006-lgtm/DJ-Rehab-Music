@@ -109,14 +109,14 @@ export default function CollectionScreen() {
           onPress={() => shareTrack(item.title)}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="share-social-outline" size={20} color="#334155" />
+          <Ionicons name="share-social-outline" size={20} color="#FFFFFF" />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.addToPlaylistBtn}
           onPress={handleAddToPlaylist}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="add-circle-outline" size={22} color="#334155" />
+          <Ionicons name="add-circle-outline" size={22} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
     );
@@ -376,15 +376,19 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   trackTitle: {
-    color: '#0F172A',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
     marginBottom: 2,
-    lineHeight: 18,
+    lineHeight: 19,
+    textShadowColor: 'rgba(0, 0, 0, 0.35)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   trackArtist: {
-    color: '#475569',
+    color: 'rgba(255, 255, 255, 0.8)',
     fontSize: 11,
+    fontWeight: '600',
   },
   addToPlaylistBtn: {
     padding: 8,

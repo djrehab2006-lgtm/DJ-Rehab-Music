@@ -91,7 +91,7 @@ export default function LibraryScreen() {
     >
       <CardGradient index={index} />
       <View style={styles.playlistIcon}>
-        <Ionicons name="list" size={28} color="#334155" />
+        <Ionicons name="list" size={28} color="#FFFFFF" />
       </View>
       <View style={styles.playlistInfo}>
         <Text style={styles.playlistName} numberOfLines={1}>{item.name}</Text>
@@ -103,17 +103,17 @@ export default function LibraryScreen() {
           style={styles.actionBtn}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="pencil-outline" size={18} color="#475569" />
+          <Ionicons name="pencil-outline" size={18} color="#FFFFFF" />
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => handleDeletePlaylist(item)}
           style={styles.actionBtn}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="trash-outline" size={18} color="#DC2626" />
+          <Ionicons name="trash-outline" size={18} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
-      <Ionicons name="chevron-forward" size={20} color="#334155" />
+      <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
     </TouchableOpacity>
   );
 
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
@@ -306,14 +306,18 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   playlistName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#0F172A',
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFFFFF',
     marginBottom: 3,
+    textShadowColor: 'rgba(0, 0, 0, 0.35)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   playlistMeta: {
-    fontSize: 13,
-    color: '#475569',
+    fontSize: 12,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   playlistActions: {
     flexDirection: 'row',
