@@ -21,7 +21,7 @@ import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { HARDCODED_FOLDERS, HARDCODED_TRACKS, Folder, Track, FOLDER_ICON, TRACK_ICON } from '../constants/musicData';
 import { AddToPlaylistModal } from '../components/AddToPlaylistModal';
 import { shareTrack } from '../utils/shareTrack';
-import { CARD_COLORS } from '../constants/cardColors';
+import { CardGradient } from '../components/CardGradient';
 
 export default function CollectionScreen() {
   const router = useRouter();
@@ -68,7 +68,6 @@ export default function CollectionScreen() {
 
   const renderTrackItem = ({ item, index }: { item: Track; index: number }) => {
     const isPlaying = currentTrack?.id === item.id;
-    const cardColor = CARD_COLORS[index % CARD_COLORS.length];
     
     const handleTrackPress = () => {
       playTrack(item, tracks);
@@ -83,11 +82,11 @@ export default function CollectionScreen() {
       <View
         style={[
           styles.trackCard,
-          { backgroundColor: cardColor },
           isPlaying && styles.trackCardPlaying,
         ]}
         pointerEvents="box-none"
       >
+        <CardGradient index={index} />
         <TouchableOpacity
           style={styles.trackPressable}
           onPress={handleTrackPress}
@@ -305,6 +304,7 @@ const styles = StyleSheet.create({
     marginVertical: 2,
     borderRadius: 10,
     paddingRight: 8,
+    overflow: 'hidden',
   },
   trackCardPlaying: {
     borderWidth: 2,

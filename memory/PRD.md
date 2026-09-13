@@ -4,7 +4,7 @@
 Standalone Android music streaming app (Expo / React Native) for Google Play. No backend — all music hardcoded in `frontend/app/constants/musicData.ts`.
 
 ## Core Features (Done)
-- Custom UI: all folder, track, search-result & playlist cards cycle bright red/pink/yellow/green from `app/constants/cardColors.ts` (CARD_COLORS); compact rows; custom Blue Icon track art
+- Custom UI: all folder, track, search-result & playlist cards use bright diagonal gradients (red/pink/yellow/green) via `app/components/CardGradient.tsx` (expo-linear-gradient, absoluteFill inside overflow-hidden card); compact rows; custom Blue Icon track art
 - Background / lock-screen playback via patched `react-native-track-player` (Android); `expo-av` fallback on web
 - Local favorites & playlists (AsyncStorage + expo-file-system backup)
 - Resume Playback: last track, position, queue & shuffle state saved (AsyncStorage `last_playback_state`, via app/utils/playbackStateStorage.ts); restored PAUSED in mini-player on launch (native syncs with live TrackPlayer queue if still running)

@@ -14,7 +14,7 @@ import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getPlaylists, createPlaylist, deletePlaylist, renamePlaylist, Playlist } from '../utils/playlistStorage';
-import { CARD_COLORS } from '../constants/cardColors';
+import { CardGradient } from '../components/CardGradient';
 
 export default function LibraryScreen() {
   const router = useRouter();
@@ -85,10 +85,11 @@ export default function LibraryScreen() {
 
   const renderPlaylistItem = ({ item, index }: { item: Playlist; index: number }) => (
     <TouchableOpacity
-      style={[styles.playlistCard, { backgroundColor: CARD_COLORS[index % CARD_COLORS.length] }]}
+      style={styles.playlistCard}
       onPress={() => router.push(`/playlist/${item.id}`)}
       activeOpacity={0.7}
     >
+      <CardGradient index={index} />
       <View style={styles.playlistIcon}>
         <Ionicons name="list" size={28} color="#334155" />
       </View>
@@ -289,6 +290,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 14,
     marginBottom: 10,
+    overflow: 'hidden',
   },
   playlistIcon: {
     width: 52,

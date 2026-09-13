@@ -17,7 +17,7 @@ import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { HARDCODED_TRACKS, Track, TRACK_ICON } from '../constants/musicData';
 import { getPlaylistById, removeTrackFromPlaylist, renamePlaylist, Playlist } from '../utils/playlistStorage';
 import { shareTrack } from '../utils/shareTrack';
-import { CARD_COLORS } from '../constants/cardColors';
+import { CardGradient } from '../components/CardGradient';
 
 export default function PlaylistDetailScreen() {
   const router = useRouter();
@@ -90,16 +90,15 @@ export default function PlaylistDetailScreen() {
 
   const renderTrackItem = ({ item, index }: { item: Track; index: number }) => {
     const isPlaying = currentTrack?.id === item.id;
-    const cardColor = CARD_COLORS[index % CARD_COLORS.length];
 
     return (
       <View
         style={[
           styles.trackCard,
-          { backgroundColor: cardColor },
           isPlaying && styles.trackCardPlaying,
         ]}
       >
+        <CardGradient index={index} />
         <TouchableOpacity
           style={styles.trackPressable}
           onPress={() => playTrack(item, tracks)}
@@ -322,6 +321,7 @@ const styles = StyleSheet.create({
     marginVertical: 2,
     borderRadius: 10,
     paddingRight: 12,
+    overflow: 'hidden',
   },
   trackCardPlaying: {
     borderWidth: 2,

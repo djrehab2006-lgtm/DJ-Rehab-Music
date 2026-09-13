@@ -9,7 +9,7 @@ import { HARDCODED_FOLDERS, HARDCODED_TRACKS, Folder, Track, FOLDER_ICON } from 
 import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
-import { CARD_COLORS } from '../constants/cardColors';
+import { CardGradient } from '../components/CardGradient';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -53,14 +53,14 @@ export default function HomeScreen() {
 
   const renderFolderItem = ({ item, drag, isActive, getIndex }: RenderItemParams<Folder>) => {
     const index = getIndex() ?? 0;
-    const cardColor = CARD_COLORS[index % CARD_COLORS.length];
     return (
       <ScaleDecorator>
         <TouchableOpacity 
-          style={[styles.listCard, { backgroundColor: cardColor }, isActive && styles.listCardDragging]}
+          style={[styles.listCard, isActive && styles.listCardDragging]}
           onPress={() => router.push('/collection/' + item.id)}
           disabled={isActive}
         >
+          <CardGradient index={index} />
           <Image source={FOLDER_ICON} style={styles.listImage} />
           <View style={styles.listTextContainer}>
             <Text style={styles.listName} numberOfLines={1}>{item.name}</Text>
@@ -158,6 +158,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 8,
     borderRadius: 12,
+    overflow: 'hidden',
   },
   listCardDragging: {
     shadowColor: '#5BA3D9',

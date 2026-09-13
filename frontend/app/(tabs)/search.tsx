@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { HARDCODED_TRACKS, Track, TRACK_ICON } from '../constants/musicData';
 import { shareTrack } from '../utils/shareTrack';
-import { CARD_COLORS } from '../constants/cardColors';
+import { CardGradient } from '../components/CardGradient';
 
 export default function SearchScreen() {
   const { playTrack, currentTrack } = useAudioPlayer();
@@ -67,14 +67,14 @@ export default function SearchScreen() {
             </Text>
             {filteredTracks.map((track, index) => {
               const isPlaying = currentTrack?.id === track.id;
-              const cardColor = CARD_COLORS[index % CARD_COLORS.length];
               return (
                 <TouchableOpacity
                   key={track.id}
-                  style={[styles.trackCard, { backgroundColor: cardColor }, isPlaying && styles.trackCardPlaying]}
+                  style={[styles.trackCard, isPlaying && styles.trackCardPlaying]}
                   onPress={() => handleTrackPress(track)}
                   activeOpacity={0.7}
                 >
+                  <CardGradient index={index} />
                   <View style={styles.trackCover}>
                     <Image source={TRACK_ICON} style={styles.trackImage} />
                   </View>
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: 'center', paddingVertical: 80 },
   emptyText: { fontSize: 18, color: '#94A3B8', marginTop: 16, marginBottom: 8 },
   emptySubtext: { fontSize: 14, color: '#64748B' },
-  trackCard: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 6, backgroundColor: '#1E293B', marginHorizontal: 16, marginVertical: 2, borderRadius: 10 },
+  trackCard: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 6, backgroundColor: '#1E293B', marginHorizontal: 16, marginVertical: 2, borderRadius: 10, overflow: 'hidden' },
   trackCardPlaying: { borderWidth: 2, borderColor: '#2E7BBF' },
   trackCover: { width: 36, height: 36, borderRadius: 6, backgroundColor: 'rgba(255, 255, 255, 0.5)', justifyContent: 'center', alignItems: 'center', marginRight: 10, overflow: 'hidden' },
   trackImage: { width: '100%', height: '100%', borderRadius: 8 },
