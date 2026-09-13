@@ -9,13 +9,7 @@ import { HARDCODED_FOLDERS, HARDCODED_TRACKS, Folder, Track, FOLDER_ICON } from 
 import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
-
-const FOLDER_COLORS = [
-  '#FF5252', // bright red
-  '#FF4FA3', // bright pink
-  '#FFD93D', // bright yellow
-  '#4ADE80', // bright green
-];
+import { CARD_COLORS } from '../constants/cardColors';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -59,7 +53,7 @@ export default function HomeScreen() {
 
   const renderFolderItem = ({ item, drag, isActive, getIndex }: RenderItemParams<Folder>) => {
     const index = getIndex() ?? 0;
-    const cardColor = FOLDER_COLORS[index % FOLDER_COLORS.length];
+    const cardColor = CARD_COLORS[index % CARD_COLORS.length];
     return (
       <ScaleDecorator>
         <TouchableOpacity 

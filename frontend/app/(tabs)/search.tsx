@@ -5,13 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { HARDCODED_TRACKS, Track, TRACK_ICON } from '../constants/musicData';
 import { shareTrack } from '../utils/shareTrack';
-
-const PASTEL_COLORS = [
-  '#FFB3BA', // pastel red
-  '#FFD6E8', // pastel pink
-  '#FDF3B3', // pastel yellow
-  '#C8E6C9', // pastel green
-];
+import { CARD_COLORS } from '../constants/cardColors';
 
 export default function SearchScreen() {
   const { playTrack, currentTrack } = useAudioPlayer();
@@ -73,11 +67,11 @@ export default function SearchScreen() {
             </Text>
             {filteredTracks.map((track, index) => {
               const isPlaying = currentTrack?.id === track.id;
-              const pastelColor = PASTEL_COLORS[index % PASTEL_COLORS.length];
+              const cardColor = CARD_COLORS[index % CARD_COLORS.length];
               return (
                 <TouchableOpacity
                   key={track.id}
-                  style={[styles.trackCard, { backgroundColor: pastelColor }, isPlaying && styles.trackCardPlaying]}
+                  style={[styles.trackCard, { backgroundColor: cardColor }, isPlaying && styles.trackCardPlaying]}
                   onPress={() => handleTrackPress(track)}
                   activeOpacity={0.7}
                 >

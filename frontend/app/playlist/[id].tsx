@@ -17,13 +17,7 @@ import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { HARDCODED_TRACKS, Track, TRACK_ICON } from '../constants/musicData';
 import { getPlaylistById, removeTrackFromPlaylist, renamePlaylist, Playlist } from '../utils/playlistStorage';
 import { shareTrack } from '../utils/shareTrack';
-
-const PASTEL_COLORS = [
-  '#FFB3BA', // pastel red
-  '#FFD6E8', // pastel pink
-  '#FDF3B3', // pastel yellow
-  '#C8E6C9', // pastel green
-];
+import { CARD_COLORS } from '../constants/cardColors';
 
 export default function PlaylistDetailScreen() {
   const router = useRouter();
@@ -96,13 +90,13 @@ export default function PlaylistDetailScreen() {
 
   const renderTrackItem = ({ item, index }: { item: Track; index: number }) => {
     const isPlaying = currentTrack?.id === item.id;
-    const pastelColor = PASTEL_COLORS[index % PASTEL_COLORS.length];
+    const cardColor = CARD_COLORS[index % CARD_COLORS.length];
 
     return (
       <View
         style={[
           styles.trackCard,
-          { backgroundColor: pastelColor },
+          { backgroundColor: cardColor },
           isPlaying && styles.trackCardPlaying,
         ]}
       >
