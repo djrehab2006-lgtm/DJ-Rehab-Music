@@ -19,7 +19,7 @@ Standalone Android music streaming app (Expo / React Native) for Google Play. No
 
 ## Backlog
 - Yacht Rock x Hip-Hop Mashups folder removed (June 2026) — re-add when tracks are ready
-- "Rock x Hip-Hop" folder (id `rock-x-hiphop`, position 3, between Country X Hip-Hop and August Releases) created June 2026 — currently EMPTY, awaiting tracks
+- "Rock x Hip-Hop" folder (id `rock-x-hiphop`, position 3, between Country X Hip-Hop and August Releases) created June 2026 — 39 tracks added (ids `rxh-track-1..39`)
 - Migrate web fallback from `expo-av` → `expo-audio`
 - Move non-route files out of `app/` to silence expo-router warnings
 - Optional: sleep timer, repeat modes
