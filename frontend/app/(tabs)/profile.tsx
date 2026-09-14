@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Linking, Alert, Share } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Linking, Alert, Share, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 
 export default function ProfileScreen() {
   const [showContactModal, setShowContactModal] = useState(false);
+  const { crossfadeEnabled, setCrossfadeEnabled } = useAudioPlayer();
 
   const handleShare = async () => {
     try {
@@ -70,6 +72,27 @@ export default function ProfileScreen() {
             <Ionicons name="share-social-outline" size={24} color="#5BA3D9" />
             <Text style={styles.actionButtonText}>Share App</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* Playback Settings */}
+        <View style={styles.infoSection}>
+          <Text style={styles.sectionTitle}>Playback</Text>
+          <View style={styles.settingRow}>
+            <View style={styles.settingIcon}>
+              <Ionicons name="swap-horizontal" size={22} color="#5BA3D9" />
+            </View>
+            <View style={styles.settingText}>
+              <Text style={styles.settingTitle}>Crossfade</Text>
+              <Text style={styles.settingSubtitle}>Smooth 4-second fade between tracks</Text>
+            </View>
+            <Switch
+              value={crossfadeEnabled}
+              onValueChange={setCrossfadeEnabled}
+              trackColor={{ false: '#334155', true: '#5BA3D9' }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor="#334155"
+            />
+          </View>
         </View>
 
         <View style={styles.infoSection}>
@@ -176,6 +199,27 @@ const styles = StyleSheet.create({
     color: '#5BA3D9',
   },
   infoSection: { marginBottom: 24 },
+  settingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1E293B',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  settingIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(91, 163, 217, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  settingText: { flex: 1, marginRight: 12 },
+  settingTitle: { fontSize: 16, fontWeight: '600', color: '#FFFFFF', marginBottom: 2 },
+  settingSubtitle: { fontSize: 12, color: '#94A3B8' },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 12 },
   infoText: { fontSize: 14, color: '#94A3B8', lineHeight: 22 },
   featureItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },

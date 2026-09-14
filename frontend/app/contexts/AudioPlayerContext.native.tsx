@@ -15,6 +15,13 @@ import {
   resolveTracks,
   SAVE_INTERVAL_MS,
 } from '../utils/playbackStateStorage';
+import {
+  CROSSFADE_MS,
+  CROSSFADE_SEC,
+  FADE_TICK_MS,
+  loadCrossfadeEnabled,
+  saveCrossfadeEnabled,
+} from '../utils/crossfadeSettings';
 
 // Local track art used for lock screen / notification artwork
 const TRACK_ARTWORK = require('../../assets/track-icon.png');
@@ -60,6 +67,8 @@ interface AudioPlayerContextType {
   shufflePlaylist: () => void;
   hasNext: boolean;
   hasPrevious: boolean;
+  crossfadeEnabled: boolean;
+  setCrossfadeEnabled: (enabled: boolean) => void;
 }
 
 const AudioPlayerContext = createContext<AudioPlayerContextType | undefined>(undefined);
@@ -138,6 +147,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const [isFavorite, setIsFavorite] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [playerReady, setPlayerReady] = useState(false);
+  const [crossfadeEnabled, setCrossfadeEnabledState] = useState(true);
 
   const currentIndexRef = useRef(currentIndex);
   const playlistRef = useRef(playlist);
@@ -147,6 +157,78 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const lastSaveRef = useRef(0);
   const isRestoringRef = useRef(false);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Crossfade (fade-out → fade-in) state
+  const crossfadeEnabledRef = useRef(true);
+  const fadeModeRef = useRef<'out' | 'in' | null>(null);
+  const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const cancelFade = useCallback((restoreVolume: boolean) => {
+    if (fadeIntervalRef.current) {
+      clearInterval(fadeIntervalRef.current);
+      fadeIntervalRef.current = null;
+    }
+    fadeModeRef.current = null;
+    if (restoreVolume) {
+      TrackPlayer.setVolume(1).catch(() => {});
+    }
+  }, []);
+
+  // Fade the outgoing track to silence over its last CROSSFADE_SEC seconds
+  const startFadeOut = useCallback(() => {
+    cancelFade(false);
+    fadeModeRef.current = 'out';
+    fadeIntervalRef.current = setInterval(async () => {
+      try {
+        const { position, duration } = await TrackPlayer.getProgress();
+        const remaining = duration - position;
+        if (remaining > CROSSFADE_SEC + 0.5) {
+          // Listener seeked back out of the fade window
+          cancelFade(true);
+          return;
+        }
+        const volume = Math.min(1, Math.max(0, remaining / CROSSFADE_SEC));
+        await TrackPlayer.setVolume(volume);
+      } catch {
+        // player not ready
+      }
+    }, FADE_TICK_MS);
+  }, [cancelFade]);
+
+  // Bring the incoming track up from silence over CROSSFADE_MS
+  const startFadeIn = useCallback(() => {
+    cancelFade(false);
+    fadeModeRef.current = 'in';
+    const startedAt = Date.now();
+    TrackPlayer.setVolume(0).catch(() => {});
+    fadeIntervalRef.current = setInterval(async () => {
+      const volume = Math.min(1, (Date.now() - startedAt) / CROSSFADE_MS);
+      try {
+        await TrackPlayer.setVolume(volume);
+      } catch {
+        // player not ready
+      }
+      if (volume >= 1) {
+        cancelFade(false);
+      }
+    }, FADE_TICK_MS);
+  }, [cancelFade]);
+
+  const setCrossfadeEnabled = useCallback((enabled: boolean) => {
+    setCrossfadeEnabledState(enabled);
+    crossfadeEnabledRef.current = enabled;
+    saveCrossfadeEnabled(enabled);
+    if (!enabled) {
+      cancelFade(true);
+    }
+  }, [cancelFade]);
+
+  useEffect(() => {
+    loadCrossfadeEnabled().then((enabled) => {
+      setCrossfadeEnabledState(enabled);
+      crossfadeEnabledRef.current = enabled;
+    });
+  }, []);
 
   // Update refs when values change
   useEffect(() => {
@@ -205,6 +287,8 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const restoreSession = async () => {
     isRestoringRef.current = true;
     try {
+      // Always start a session at full volume
+      TrackPlayer.setVolume(1).catch(() => {});
       const saved = await loadPlaybackState();
       const liveQueue = await TrackPlayer.getQueue();
 
@@ -284,6 +368,19 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         if (state.state === State.Playing && Date.now() - lastSaveRef.current > SAVE_INTERVAL_MS) {
           persistState(positionMillis);
         }
+
+        // Start fading out when the track enters its last few seconds (and another track follows)
+        const hasNextTrack = currentIndexRef.current < playlistRef.current.length - 1;
+        if (
+          crossfadeEnabledRef.current &&
+          state.state === State.Playing &&
+          fadeModeRef.current === null &&
+          hasNextTrack &&
+          progress.duration > 0 &&
+          progress.duration - progress.position <= CROSSFADE_SEC
+        ) {
+          startFadeOut();
+        }
       } catch {
         // Player might not be ready yet
       }
@@ -293,6 +390,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       if (progressIntervalRef.current) {
         clearInterval(progressIntervalRef.current);
       }
+      cancelFade(false);
     };
   }, [playerReady]);
 
@@ -303,6 +401,13 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     const trackChangedListener = TrackPlayer.addEventListener(
       Event.PlaybackActiveTrackChanged,
       async (event) => {
+        // Volume handling for the incoming track
+        if (fadeModeRef.current === 'out' && crossfadeEnabledRef.current) {
+          startFadeIn();
+        } else {
+          cancelFade(true);
+        }
+
         if (event.track) {
           // Find the track in our playlist
           const trackId = event.track.id;
@@ -359,6 +464,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
     // When the queue finishes, next launch should start the last track from the top
     const queueEndedListener = TrackPlayer.addEventListener(Event.PlaybackQueueEnded, () => {
+      cancelFade(true);
       persistState(0);
     });
 
@@ -367,7 +473,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       stateChangedListener.remove();
       queueEndedListener.remove();
     };
-  }, [playerReady, favorites, persistState]);
+  }, [playerReady, favorites, persistState, startFadeIn, cancelFade]);
 
   // Load favorites from storage
   useEffect(() => {
@@ -441,6 +547,9 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       currentTrackRef.current = track;
       setIsFavorite(favorites.has(track.id));
 
+      // Manual selection always starts at full volume
+      cancelFade(true);
+
       // Reset the queue and add all tracks
       await TrackPlayer.reset();
 
@@ -459,7 +568,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       console.error('Error playing track:', error);
       setIsLoading(false);
     }
-  }, [favorites, persistState]);
+  }, [favorites, persistState, cancelFade]);
 
   const pauseTrack = useCallback(async () => {
     try {
@@ -479,6 +588,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
   const stopTrack = useCallback(async () => {
     try {
+      cancelFade(true);
       await TrackPlayer.reset();
       setCurrentTrack(null);
       currentTrackRef.current = null;
@@ -492,7 +602,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     } catch (error) {
       console.error('Error stopping track:', error);
     }
-  }, []);
+  }, [cancelFade]);
 
   const seekTo = useCallback(async (positionMillis: number) => {
     try {
@@ -630,6 +740,8 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         shufflePlaylist,
         hasNext,
         hasPrevious,
+        crossfadeEnabled,
+        setCrossfadeEnabled,
       }}
     >
       {children}
