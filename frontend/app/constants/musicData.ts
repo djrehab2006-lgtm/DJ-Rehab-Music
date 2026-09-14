@@ -374,9 +374,9 @@ export const HARDCODED_TRACKS: Track[] = [
   },
   {
     id: 'sep26-track-21',
-    title: "No Sleep Till Brooklyn (Rehab Party Up Flip)",
+    title: "No Sleep Till' Brooklyn (Rehab DMX Flip)",
     artist: "DJ Rehab",
-    cdn_url: "https://DJ-Rehab-App.b-cdn.net/2nd%20Sept%20Update/No%20Sleep%20Till%20Brooklyn%20(Rehab%20Party%20Up%20Flip).mp3",
+    cdn_url: "https://DJ-Rehab-App.b-cdn.net/No%20Sleep%20Till'%20Brooklyn%20(Rehab%20DMX%20Flip).mp3",
     duration: 180,
     folder_id: "september-2026-releases",
     cover_art: null,
