@@ -18,7 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
-import { HARDCODED_FOLDERS, HARDCODED_TRACKS, Folder, Track, FOLDER_ICON, TRACK_ICON } from '../constants/musicData';
+import { HARDCODED_FOLDERS, HARDCODED_TRACKS, Folder, Track, FOLDER_ICON } from '../constants/musicData';
 import { AddToPlaylistModal } from '../components/AddToPlaylistModal';
 import { shareTrack } from '../utils/shareTrack';
 import { CardGradient } from '../components/CardGradient';
@@ -94,9 +94,6 @@ export default function CollectionScreen() {
         >
           <View style={styles.trackNumber}>
             <Text style={styles.trackNumberText}>{index + 1}</Text>
-          </View>
-          <View style={styles.trackCover}>
-            <Image source={TRACK_ICON} style={styles.trackImage} />
           </View>
           <View style={styles.trackInfo}>
             <Text style={styles.trackTitle} numberOfLines={2}>

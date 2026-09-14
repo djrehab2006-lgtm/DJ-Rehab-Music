@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
-import { HARDCODED_TRACKS, Track, TRACK_ICON } from '../constants/musicData';
+import { HARDCODED_TRACKS, Track } from '../constants/musicData';
 import { shareTrack } from '../utils/shareTrack';
 
 export default function FavoritesScreen() {
@@ -105,9 +105,6 @@ export default function FavoritesScreen() {
                 >
                   <View style={styles.trackNumber}>
                     <Text style={styles.trackNumberText}>{index + 1}</Text>
-                  </View>
-                  <View style={styles.trackCover}>
-                    <Image source={TRACK_ICON} style={styles.trackImage} />
                   </View>
                   <View style={styles.trackInfo}>
                     <Text style={styles.trackTitle} numberOfLines={1}>{track.title}</Text>

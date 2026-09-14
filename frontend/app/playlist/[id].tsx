@@ -8,13 +8,12 @@ import {
   Alert,
   TextInput,
   Modal,
-  Image,
-} from 'react-native';
+  } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
-import { HARDCODED_TRACKS, Track, TRACK_ICON } from '../constants/musicData';
+import { HARDCODED_TRACKS, Track } from '../constants/musicData';
 import { getPlaylistById, removeTrackFromPlaylist, renamePlaylist, Playlist } from '../utils/playlistStorage';
 import { shareTrack } from '../utils/shareTrack';
 import { CardGradient } from '../components/CardGradient';
@@ -106,9 +105,6 @@ export default function PlaylistDetailScreen() {
         >
           <View style={styles.trackNumber}>
             <Text style={styles.trackNumberText}>{index + 1}</Text>
-          </View>
-          <View style={styles.trackCover}>
-            <Image source={TRACK_ICON} style={styles.trackImage} />
           </View>
           <View style={styles.trackInfo}>
             <Text style={styles.trackTitle} numberOfLines={2}>{item.title}</Text>

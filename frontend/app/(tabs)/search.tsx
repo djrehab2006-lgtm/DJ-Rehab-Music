@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
-import { HARDCODED_TRACKS, Track, TRACK_ICON } from '../constants/musicData';
+import { HARDCODED_TRACKS, Track } from '../constants/musicData';
 import { shareTrack } from '../utils/shareTrack';
 import { CardGradient } from '../components/CardGradient';
 
@@ -75,9 +75,6 @@ export default function SearchScreen() {
                   activeOpacity={0.7}
                 >
                   <CardGradient index={index} />
-                  <View style={styles.trackCover}>
-                    <Image source={TRACK_ICON} style={styles.trackImage} />
-                  </View>
                   <View style={styles.trackInfo}>
                     <Text style={styles.trackTitle} numberOfLines={2}>{track.title}</Text>
                     <Text style={styles.trackArtist} numberOfLines={1}>{track.artist}</Text>
