@@ -384,9 +384,9 @@ export const HARDCODED_TRACKS: Track[] = [
   },
   {
     id: 'sep26-track-22',
-    title: "Baby's Got Her Blue Jeans On (Rehab Freek-A-Leel Flip)",
+    title: "Baby's Got Her Blue Jeans On (Rehab Freek A Leek Flip)",
     artist: "DJ Rehab",
-    cdn_url: "https://DJ-Rehab-App.b-cdn.net/2nd%20Sept%20Update/Baby's%20Got%20Her%20Blue%20Jeans%20On%20(Rehab%20Freek-A-Leel%20Flip).mp3",
+    cdn_url: "https://DJ-Rehab-App.b-cdn.net/Baby's%20Got%20Her%20Blue%20Jeans%20On%20(Rehab%20Freek%20A%20Leek%20Flip).mp3",
     duration: 180,
     folder_id: "september-2026-releases",
     cover_art: null,
