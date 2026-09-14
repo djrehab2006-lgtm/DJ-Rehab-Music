@@ -47,7 +47,7 @@ export default function SearchScreen() {
         )}
       </View>
 
-      <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         {searchQuery.trim() === '' ? (
           <View style={styles.emptyState}>
             <Ionicons name="search-outline" size={64} color="#64748B" />
@@ -112,6 +112,7 @@ const styles = StyleSheet.create({
   searchIcon: { marginRight: 12 },
   searchInput: { flex: 1, color: '#FFFFFF', fontSize: 16 },
   scrollView: { flex: 1 },
+  scrollContent: { paddingBottom: 120 },
   resultsCount: { paddingHorizontal: 20, paddingVertical: 12, fontSize: 14, color: '#94A3B8' },
   emptyState: { alignItems: 'center', paddingVertical: 80 },
   emptyText: { fontSize: 18, color: '#94A3B8', marginTop: 16, marginBottom: 8 },

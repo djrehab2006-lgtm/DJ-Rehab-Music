@@ -5,15 +5,16 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
-  Platform,
   Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { TRACK_ICON } from '../constants/musicData';
 
 export function MiniPlayer() {
+  const insets = useSafeAreaInsets();
   const {
     currentTrack,
     playbackStatus,
@@ -87,6 +88,7 @@ export function MiniPlayer() {
       style={[
         styles.container,
         {
+          paddingBottom: insets.bottom,
           transform: [{ translateY }],
         },
       ]}
@@ -191,7 +193,7 @@ export function MiniPlayer() {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 88 : 65,
+    bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: '#1E293B',
