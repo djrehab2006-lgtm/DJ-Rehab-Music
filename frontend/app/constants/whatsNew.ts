@@ -15,7 +15,7 @@ export const WHATS_NEW_ITEMS: WhatsNewItem[] = [
   {
     icon: 'folder-open',
     title: 'Fresh folders',
-    text: 'September 2026 Releases (28 tracks) and the brand-new Rock x Hip-Hop collection (39 tracks).',
+    text: 'October 2026 New Releases (16 tracks), September 2026 Releases (28 tracks) and the Rock x Hip-Hop collection (39 tracks).',
   },
   {
     icon: 'swap-horizontal',
