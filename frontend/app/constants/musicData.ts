@@ -5282,16 +5282,6 @@ export const HARDCODED_TRACKS: Track[] = [
     position: 8,
   },
   {
-    id: 'oct26-track-10',
-    title: "My Maria (Rehab Laffy Taffy Flip)",
-    artist: "DJ Rehab",
-    cdn_url: "https://DJ-Rehab-App.b-cdn.net/October%202026/My%20Maria%20(Rehab%20Laffy%20Taffy%20Flip).mp3",
-    duration: 180,
-    folder_id: "october-2026-new-releases",
-    cover_art: null,
-    position: 9,
-  },
-  {
     id: 'oct26-track-11',
     title: "Mama Said Knock You Out (Rehab Rocky Flip)",
     artist: "DJ Rehab",
@@ -5299,7 +5289,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "october-2026-new-releases",
     cover_art: null,
-    position: 10,
+    position: 9,
   },
   {
     id: 'oct26-track-12',
@@ -5309,7 +5299,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "october-2026-new-releases",
     cover_art: null,
-    position: 11,
+    position: 10,
   },
   {
     id: 'oct26-track-13',
@@ -5319,7 +5309,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "october-2026-new-releases",
     cover_art: null,
-    position: 12,
+    position: 11,
   },
   {
     id: 'oct26-track-14',
@@ -5329,7 +5319,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "october-2026-new-releases",
     cover_art: null,
-    position: 13,
+    position: 12,
   },
   {
     id: 'oct26-track-15',
@@ -5339,7 +5329,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "october-2026-new-releases",
     cover_art: null,
-    position: 14,
+    position: 13,
   },
   {
     id: 'oct26-track-16',
@@ -5349,7 +5339,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "october-2026-new-releases",
     cover_art: null,
-    position: 15,
+    position: 14,
   },
   {
     id: 'hal-track-1',

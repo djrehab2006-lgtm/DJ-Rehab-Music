@@ -24,7 +24,7 @@ Standalone Android music streaming app (Expo / React Native) for Google Play. No
 ## Backlog
 - Yacht Rock x Hip-Hop Mashups folder removed (June 2026) — re-add when tracks are ready
 - "Halloween" folder (id `halloween`, position 0 / top, fixed orange gradient via new optional `Folder.gradient` field — fixed-gradient tiles do not consume a palette slot) created June 2026 — 38 tracks (ids `hal-track-1..38`; tracks 19-38 have artist "DJ Kelly Lynn")
-- "October 2026 New Releases" folder (id `october-2026-new-releases`, position 0 / top, NEW badge) created June 2026 — 16 tracks added (ids `oct26-track-1..16`)
+- "October 2026 New Releases" folder (id `october-2026-new-releases`, position 0 / top, NEW badge) created June 2026 — 15 tracks (ids `oct26-track-1..16`, track 10 "My Maria" removed June 2026)
 - "Rock x Hip-Hop" folder (id `rock-x-hiphop`, position 3, between Country X Hip-Hop and August Releases) created June 2026 — 39 tracks added (ids `rxh-track-1..39`)
 - Migrate web fallback from `expo-av` → `expo-audio`
 - Move non-route files out of `app/` to silence expo-router warnings
