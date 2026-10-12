@@ -41,7 +41,10 @@ export default function HomeScreen() {
     return tracks.filter(track => track.folder_id === folderId).length;
   };
 
-  const renderTile = (item: Folder, index: number) => (
+  const renderTile = (item: Folder, index: number) => {
+    // Folders with a fixed gradient don't consume a palette slot, so the rest keep their colors
+    const paletteIndex = index - folders.slice(0, index).filter((f) => f.gradient).length;
+    return (
     <TouchableOpacity
       key={item.id}
       style={[styles.tile, { width: tileSize, height: tileSize }]}
@@ -49,7 +52,7 @@ export default function HomeScreen() {
       activeOpacity={0.85}
     >
       <LinearGradient
-        colors={CARD_GRADIENTS[index % CARD_GRADIENTS.length]}
+        colors={item.gradient ?? CARD_GRADIENTS[paletteIndex % CARD_GRADIENTS.length]}
         start={{ x: 0.2, y: 0 }}
         end={{ x: 0.8, y: 1 }}
         style={StyleSheet.absoluteFill}
@@ -69,7 +72,8 @@ export default function HomeScreen() {
         </View>
       </View>
     </TouchableOpacity>
-  );
+    );
+  };
 
   if (loading) {
     return (
