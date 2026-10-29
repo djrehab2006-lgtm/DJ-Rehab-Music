@@ -6,19 +6,19 @@ Standalone Android music streaming app (Expo / React Native) for Google Play. No
 ## Core Features (Done)
 - Home screen (user mockup, June 2026): hero photo fading to near-black bg (#0B0B0F) with 'WELCOME TO' eyebrow + 'DJ Rehab Music'; 'Your Collections' header with count pill; 2-column square tile grid, each tile with one of 8 gradients (indigo→purple, orange→red, mint→green, rose→mauve, violet→purple, sage→forest, coral→orange, sky→blue), faded DJ REHAB logo watermark, white bold title, dark 'N TRACKS' pill; first tile has orange NEW badge. Drag-to-reorder folders removed (was never persisted).
 - Track rows (folder/search/playlist views) & Library playlist cards share the SAME 8-gradient palette as folder tiles (`CARD_GRADIENTS` in `app/components/CardGradient.tsx`) with white bold 15px titles / 80% white subtitles / white icons; compact rows; folder tracks numbered. Track-row DJ Rehab icon REMOVED (June 2026) from folder/search/playlist/favorites rows; Blue Icon still used in mini player + lock screen
-- Background / lock-screen playback via patched `react-native-track-player` (Android); `expo-av` fallback on web
-- Local favorites & playlists (AsyncStorage + expo-file-system backup)
-- Resume Playback: last track, position, queue & shuffle state saved (AsyncStorage `last_playback_state`, via app/utils/playbackStateStorage.ts); restored PAUSED in mini-player on launch (native syncs with live TrackPlayer queue if still running)
+- Audio engine (June 2026, SDK 58): `expo-audio` `createAudioPlaylist` (ExoPlayer on Android, <audio> on web) in ONE unified `app/contexts/AudioPlayerContext.tsx`. Background playback + lock-screen/notification controls (play/pause/next/prev, artwork = assets/track-icon.png via expo-asset) through `setActiveForLockScreen`; config plugin `expo-audio` with `enableBackgroundPlayback: true`, mic/RECORD_AUDIO disabled. `react-native-track-player`, `expo-av`, patch-package, index.native.js, service.js, player.tsx, context/AudioContext.tsx all REMOVED.
+- Local favorites & playlists (AsyncStorage + expo-file-system backup). Favorites: single source of truth is the audio context (`favoriteIds`/`removeFavorite`, AsyncStorage key `favorites`); Favorites tab reads from context (June 2026 fix — tab previously read a different key and was always empty)
+- Resume Playback: last track, position, queue & shuffle state saved (AsyncStorage `last_playback_state`, via app/utils/playbackStateStorage.ts); restored PAUSED in mini-player on launch
 - Local search over musicData
 - Share button (native share sheet → Google Play URL)
 - Target/compile SDK 36
 
-- Crossfade (June 2026): fixed 4s fade-out of outgoing track (last 4s, only if a next track exists) → 4s fade-in of the next track on AUTOMATIC transitions; manual taps/skips start at full volume. Toggle in Profile → Playback (AsyncStorage `crossfade_enabled`, default ON). Native uses TrackPlayer.setVolume, web uses Sound.setVolumeAsync; 100ms fade ticks. Constants in `app/utils/crossfadeSettings.ts`. True overlapping crossfade NOT possible with single-player RNTP.
+- Crossfade (June 2026): fixed 4s fade-out of outgoing track (last 4s, only if a next track exists) → 4s fade-in of the next track on AUTOMATIC transitions; manual taps/skips start at full volume. Toggle in Profile → Playback (AsyncStorage `crossfade_enabled`, default ON). Volume via `playlist.volume`; 100ms fade ticks. Constants in `app/utils/crossfadeSettings.ts`. True overlapping crossfade NOT possible with a single playlist player.
 
 - What's New pop-up: built then REMOVED at user request (June 2026). Files deleted (WhatsNewModal.tsx, whatsNew.ts). Do not re-add unless asked.
 
 ## Build Info
-- `app.json` → `expo.android.versionCode`: **5000** (bumped June 2026)
+- `app.json` → `expo.android.versionCode`: **5001** (bumped June 2026 after expo-audio migration)
 - User builds locally with EAS on Mac. **Must download latest code from Emergent before building.**
 
 ## Backlog
@@ -27,6 +27,7 @@ Standalone Android music streaming app (Expo / React Native) for Google Play. No
 - "Halloween" folder (id `halloween`, position 0 / top, fixed orange gradient via new optional `Folder.gradient` field — fixed-gradient tiles do not consume a palette slot) created June 2026 — 44 tracks (ids `hal-track-1..44`; DJ Kelly Lynn tracks credited to "DJ Kelly Lynn")
 - "October 2026 New Releases" folder (id `october-2026-new-releases`, position 0 / top, NEW badge) created June 2026 — 22 tracks (ids `oct26-track-1..23`; oct26-track-10 removed; 17-23 added from "October 2nd Update")
 - "Rock x Hip-Hop" folder (id `rock-x-hiphop`, position 3, between Country X Hip-Hop and August Releases) created June 2026 — 39 tracks added (ids `rxh-track-1..39`)
-- Migrate web fallback from `expo-av` → `expo-audio`
 - Move non-route files out of `app/` to silence expo-router warnings
 - Optional: sleep timer, repeat modes
+- Optional polish (from iteration_9 test): auto-skip / message when a track URL fails to load; shuffle tapped before any playback is a no-op
+- ⚠️ expo-audio lock-screen controls + sustained background playback can only be verified on a real Android build (not web / Expo Go)

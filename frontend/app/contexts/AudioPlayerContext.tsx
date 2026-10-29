@@ -1,7 +1,16 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { Audio } from 'expo-av';
-import { Sound } from 'expo-av/build/Audio';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import { AppState } from 'react-native';
+import {
+  createAudioPlaylist,
+  setAudioModeAsync,
+  type AudioPlaylist,
+  type AudioPlaylistStatus,
+  type AudioMetadata,
+  type AudioLockScreenOptions,
+} from 'expo-audio';
+import { Asset } from 'expo-asset';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { TRACK_ICON } from '../constants/musicData';
 import {
   savePlaybackState,
   loadPlaybackState,
@@ -11,6 +20,7 @@ import {
 } from '../utils/playbackStateStorage';
 import {
   CROSSFADE_MS,
+  CROSSFADE_SEC,
   FADE_TICK_MS,
   loadCrossfadeEnabled,
   saveCrossfadeEnabled,
@@ -44,6 +54,8 @@ interface AudioPlayerContextType {
   stopTrack: () => Promise<void>;
   seekTo: (positionMillis: number) => Promise<void>;
   toggleFavorite: () => void;
+  favoriteIds: string[];
+  removeFavorite: (trackId: string) => void;
   playNext: () => Promise<void>;
   playPrevious: () => Promise<void>;
   shufflePlaylist: () => void;
@@ -55,10 +67,21 @@ interface AudioPlayerContextType {
 
 const AudioPlayerContext = createContext<AudioPlayerContextType | undefined>(undefined);
 
+const LOCK_SCREEN_OPTIONS: AudioLockScreenOptions = {
+  showNextTrack: true,
+  showPreviousTrack: true,
+  showSeekForward: false,
+  showSeekBackward: false,
+};
+
+const toSource = (t: Track) => ({ uri: t.cdn_url, name: t.title });
+
+const sameQueue = (a: Track[], b: Track[]) =>
+  a.length === b.length && a.every((t, i) => t.id === b[i].id);
+
 export function AudioPlayerProvider({ children }: { children: React.ReactNode }) {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [playlist, setPlaylist] = useState<Track[]>([]);
-  const [originalPlaylist, setOriginalPlaylist] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [isShuffled, setIsShuffled] = useState<boolean>(false);
   const [playbackStatus, setPlaybackStatus] = useState<PlaybackStatus>({
@@ -70,86 +93,100 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const [isLoading, setIsLoading] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [crossfadeEnabled, setCrossfadeEnabledState] = useState(true);
 
-  const soundRef = useRef<Sound | null>(null);
-  const isAutoPlayingRef = useRef(false);
-  const currentIndexRef = useRef(currentIndex);
-  const playlistRef = useRef(playlist);
-  const originalPlaylistRef = useRef(originalPlaylist);
-  const currentTrackRef = useRef(currentTrack);
-  const isShuffledRef = useRef(isShuffled);
+  // Single long-lived native playlist (ExoPlayer on Android, <audio> on web)
+  const playerRef = useRef<AudioPlaylist | null>(null);
+  const queueRef = useRef<Track[]>([]); // mirrors the native playlist order
+  const originalPlaylistRef = useRef<Track[]>([]);
+  const currentIndexRef = useRef(-1);
+  const currentTrackRef = useRef<Track | null>(null);
+  const isShuffledRef = useRef(false);
+  const favoritesRef = useRef(favorites);
   const lastSaveRef = useRef(0);
+  const isRestoringRef = useRef(false);
+  const rebuildingRef = useRef(false); // suppress native events while the queue is rebuilt
+  const endedRef = useRef(false); // whole queue finished
+  const pendingSeekSecRef = useRef<number | null>(null); // restore position once loaded
+  const artworkUrlRef = useRef<string | undefined>(undefined);
 
   // Crossfade (fade-out → fade-in) state
-  const [crossfadeEnabled, setCrossfadeEnabledState] = useState(true);
   const crossfadeEnabledRef = useRef(true);
   const fadeModeRef = useRef<'out' | 'in' | null>(null);
   const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const pendingFadeInRef = useRef(false);
 
-  const cancelFade = (restoreVolume: boolean) => {
+  useEffect(() => {
+    favoritesRef.current = favorites;
+  }, [favorites]);
+
+  const setVolume = (volume: number) => {
+    const player = playerRef.current;
+    if (!player) return;
+    try {
+      player.volume = volume;
+    } catch {
+      // player released
+    }
+  };
+
+  const cancelFade = useCallback((restoreVolume: boolean) => {
     if (fadeIntervalRef.current) {
       clearInterval(fadeIntervalRef.current);
       fadeIntervalRef.current = null;
     }
     fadeModeRef.current = null;
-    if (restoreVolume && soundRef.current) {
-      soundRef.current.setVolumeAsync(1).catch(() => {});
+    if (restoreVolume) {
+      setVolume(1);
     }
-  };
+  }, []);
 
-  // Fade the outgoing track to silence over its last CROSSFADE_MS
-  const startFadeOut = () => {
+  // Fade the outgoing track to silence over its last CROSSFADE_SEC seconds
+  const startFadeOut = useCallback(() => {
     cancelFade(false);
     fadeModeRef.current = 'out';
-    fadeIntervalRef.current = setInterval(async () => {
-      const sound = soundRef.current;
-      if (!sound) {
+    fadeIntervalRef.current = setInterval(() => {
+      const player = playerRef.current;
+      if (!player) {
         cancelFade(false);
         return;
       }
       try {
-        const status = await sound.getStatusAsync();
-        if (!status.isLoaded || !status.durationMillis) return;
-        const remaining = status.durationMillis - status.positionMillis;
-        if (remaining > CROSSFADE_MS + 500) {
+        const remaining = player.duration - player.currentTime;
+        if (remaining > CROSSFADE_SEC + 0.5) {
           // Listener seeked back out of the fade window
           cancelFade(true);
           return;
         }
-        await sound.setVolumeAsync(Math.min(1, Math.max(0, remaining / CROSSFADE_MS)));
+        player.volume = Math.min(1, Math.max(0, remaining / CROSSFADE_SEC));
       } catch {
-        // sound unloaded
+        // player not ready
       }
     }, FADE_TICK_MS);
-  };
+  }, [cancelFade]);
 
   // Bring the incoming track up from silence over CROSSFADE_MS
-  const startFadeIn = () => {
+  const startFadeIn = useCallback(() => {
     cancelFade(false);
     fadeModeRef.current = 'in';
     const startedAt = Date.now();
-    fadeIntervalRef.current = setInterval(async () => {
+    setVolume(0);
+    fadeIntervalRef.current = setInterval(() => {
       const volume = Math.min(1, (Date.now() - startedAt) / CROSSFADE_MS);
-      try {
-        await soundRef.current?.setVolumeAsync(volume);
-      } catch {
-        // sound unloaded
-      }
+      setVolume(volume);
       if (volume >= 1) {
         cancelFade(false);
       }
     }, FADE_TICK_MS);
-  };
+  }, [cancelFade]);
 
-  const setCrossfadeEnabled = (enabled: boolean) => {
+  const setCrossfadeEnabled = useCallback((enabled: boolean) => {
     setCrossfadeEnabledState(enabled);
     crossfadeEnabledRef.current = enabled;
     saveCrossfadeEnabled(enabled);
     if (!enabled) {
       cancelFade(true);
     }
-  };
+  }, [cancelFade]);
 
   useEffect(() => {
     loadCrossfadeEnabled().then((enabled) => {
@@ -158,51 +195,209 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     });
   }, []);
 
-  // Update refs when values change
-  useEffect(() => {
-    currentIndexRef.current = currentIndex;
-  }, [currentIndex]);
-
-  useEffect(() => {
-    playlistRef.current = playlist;
-  }, [playlist]);
-
-  useEffect(() => {
-    originalPlaylistRef.current = originalPlaylist;
-  }, [originalPlaylist]);
-
-  useEffect(() => {
-    currentTrackRef.current = currentTrack;
-  }, [currentTrack]);
-
-  useEffect(() => {
-    isShuffledRef.current = isShuffled;
-  }, [isShuffled]);
+  const hasNext = currentIndex < playlist.length - 1;
+  const hasPrevious = currentIndex > 0;
 
   // Persist "where the listener is" so the session can be resumed on next launch
-  const persistState = (positionMillis: number, track = currentTrackRef.current) => {
-    if (!track) return;
+  const persistState = useCallback((positionMillis: number, track = currentTrackRef.current) => {
+    if (!track || isRestoringRef.current) return;
     lastSaveRef.current = Date.now();
     savePlaybackState({
       trackId: track.id,
-      queueIds: playlistRef.current.map((t) => t.id),
+      queueIds: queueRef.current.map((t) => t.id),
       originalQueueIds: originalPlaylistRef.current.map((t) => t.id),
       isShuffled: isShuffledRef.current,
       positionMillis: Math.max(0, Math.floor(positionMillis)),
     });
-  };
-
-  // Configure audio session for background playback on mount, then restore
-  // the last session (paused at the saved position) if there is one.
-  useEffect(() => {
-    const init = async () => {
-      await configureAudioSession();
-      await restoreSession();
-    };
-    init();
   }, []);
 
+  const applyQueueState = (tracks: Track[], original: Track[], shuffled: boolean, index: number) => {
+    setPlaylist(tracks);
+    queueRef.current = tracks;
+    originalPlaylistRef.current = original.length > 0 ? original : tracks;
+    setIsShuffled(shuffled);
+    isShuffledRef.current = shuffled;
+    setCurrentIndex(index);
+    currentIndexRef.current = index;
+    setCurrentTrack(tracks[index] ?? null);
+    currentTrackRef.current = tracks[index] ?? null;
+  };
+
+  const setActiveTrack = (index: number) => {
+    const track = queueRef.current[index];
+    if (!track) return;
+    setCurrentIndex(index);
+    currentIndexRef.current = index;
+    setCurrentTrack(track);
+    currentTrackRef.current = track;
+    setIsFavorite(favoritesRef.current.has(track.id));
+  };
+
+  // ---- Lock screen / notification -------------------------------------------------
+
+  const metadataFor = (track: Track): AudioMetadata => ({
+    title: track.title,
+    artist: track.artist,
+    albumTitle: 'DJ Rehab Music',
+    artworkUrl: track.cover_art || artworkUrlRef.current,
+  });
+
+  const activateLockScreen = (track: Track) => {
+    try {
+      playerRef.current?.setActiveForLockScreen(true, metadataFor(track), LOCK_SCREEN_OPTIONS);
+    } catch (error) {
+      console.warn('Lock screen controls unavailable:', error);
+    }
+  };
+
+  const updateLockScreen = (track: Track) => {
+    try {
+      playerRef.current?.updateLockScreenMetadata(metadataFor(track));
+    } catch {
+      // not active
+    }
+  };
+
+  // ---- Native playlist -------------------------------------------------------------
+
+  const onStatus = useCallback((status: AudioPlaylistStatus) => {
+    if (rebuildingRef.current) return;
+    const player = playerRef.current;
+    const positionMillis = Math.floor(status.currentTime * 1000);
+    const durationMillis = Math.floor(status.duration * 1000);
+
+    setPlaybackStatus({
+      isPlaying: status.playing,
+      positionMillis,
+      durationMillis,
+      isLoaded: status.isLoaded,
+    });
+
+    if (status.isLoaded || status.playing) {
+      setIsLoading(false);
+    }
+    if (status.playing) {
+      endedRef.current = false;
+    }
+
+    // Apply a restored position once the track is actually loaded
+    if (pendingSeekSecRef.current !== null && status.isLoaded && player) {
+      const target = pendingSeekSecRef.current;
+      pendingSeekSecRef.current = null;
+      if (Math.abs(status.currentTime - target) > 1) {
+        player.seekTo(target).catch(() => {});
+      }
+    }
+
+    const error = (status as any).error;
+    if (error) {
+      console.error('Playback error:', error);
+      setIsLoading(false);
+    }
+
+    // Periodically remember the position while playing
+    if (status.playing && Date.now() - lastSaveRef.current > SAVE_INTERVAL_MS) {
+      persistState(positionMillis);
+    }
+
+    // Start fading out when the track enters its last few seconds (and another track follows)
+    const hasNextTrack = currentIndexRef.current < queueRef.current.length - 1;
+    if (
+      crossfadeEnabledRef.current &&
+      status.playing &&
+      fadeModeRef.current === null &&
+      hasNextTrack &&
+      status.duration > 0 &&
+      status.duration - status.currentTime <= CROSSFADE_SEC
+    ) {
+      startFadeOut();
+    }
+
+    // Whole queue finished: next launch should start the last track from the top
+    if (status.didJustFinish && status.trackCount > 0) {
+      endedRef.current = true;
+      cancelFade(true);
+      persistState(0);
+      setPlaybackStatus((prev) => ({ ...prev, isPlaying: false }));
+    }
+  }, [persistState, startFadeOut, cancelFade]);
+
+  const onTrackChanged = useCallback(() => {
+    if (rebuildingRef.current) return;
+    const player = playerRef.current;
+    if (!player) return;
+    // Read the live index: stale events from a queue rebuild then resolve correctly
+    const index = player.currentIndex;
+    const track = queueRef.current[index];
+    if (!track) return;
+
+    // Volume handling for the incoming track
+    if (fadeModeRef.current === 'out' && crossfadeEnabledRef.current) {
+      startFadeIn();
+    } else {
+      cancelFade(true);
+    }
+
+    if (currentTrackRef.current?.id !== track.id) {
+      setActiveTrack(index);
+      updateLockScreen(track);
+      persistState(0, track);
+    }
+  }, [startFadeIn, cancelFade, persistState]);
+
+  const statusSubRef = useRef<{ remove: () => void } | null>(null);
+  const trackSubRef = useRef<{ remove: () => void } | null>(null);
+
+  const ensurePlayer = (): AudioPlaylist => {
+    if (playerRef.current) return playerRef.current;
+    const player = createAudioPlaylist({ loop: 'none', updateInterval: 500 });
+    statusSubRef.current = player.addListener('playlistStatusUpdate', onStatus);
+    trackSubRef.current = player.addListener('trackChanged', onTrackChanged);
+    playerRef.current = player;
+    return player;
+  };
+
+  // Replace the whole native queue (stops whatever is playing)
+  const loadQueue = (player: AudioPlaylist, tracks: Track[]) => {
+    rebuildingRef.current = true;
+    try {
+      player.clear();
+      tracks.forEach((t) => player.add(toSource(t)));
+    } finally {
+      rebuildingRef.current = false;
+    }
+  };
+
+  // Reorder the native queue around the current track without interrupting playback
+  const reorderQueue = (player: AudioPlaylist, newQueue: Track[], keepPlaying: Track | null) => {
+    rebuildingRef.current = true;
+    try {
+      const target = keepPlaying ? newQueue.findIndex((t) => t.id === keepPlaying.id) : -1;
+      if (target < 0) {
+        player.clear();
+        newQueue.forEach((t) => player.add(toSource(t)));
+        return;
+      }
+      const keepIndex = player.currentIndex;
+      for (let i = player.trackCount - 1; i >= 0; i--) {
+        if (i !== keepIndex) player.remove(i);
+      }
+      // The current track is now alone at index 0
+      for (let i = 0; i < target; i++) {
+        player.insert(toSource(newQueue[i]), i);
+      }
+      for (let i = target + 1; i < newQueue.length; i++) {
+        player.add(toSource(newQueue[i]));
+      }
+    } finally {
+      rebuildingRef.current = false;
+    }
+  };
+
+  // ---- Session restore -------------------------------------------------------------
+
   const restoreSession = async () => {
+    isRestoringRef.current = true;
     try {
       const saved = await loadPlaybackState();
       if (!saved) return;
@@ -211,56 +406,90 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
       const savedIndex = tracks.findIndex((t) => t.id === saved.trackId);
       const index = savedIndex >= 0 ? savedIndex : 0;
-      const positionMillis = savedIndex >= 0 ? saved.positionMillis : 0;
-      const track = tracks[index];
-      const original = resolveTracks(saved.originalQueueIds);
+      const positionSec = savedIndex >= 0 ? saved.positionMillis / 1000 : 0;
 
-      setPlaylist(tracks);
-      playlistRef.current = tracks;
-      setOriginalPlaylist(original.length > 0 ? original : tracks);
-      originalPlaylistRef.current = original.length > 0 ? original : tracks;
-      setIsShuffled(saved.isShuffled);
-      isShuffledRef.current = saved.isShuffled;
-      setCurrentIndex(index);
-      currentIndexRef.current = index;
-      setCurrentTrack(track);
-      currentTrackRef.current = track;
+      applyQueueState(tracks, resolveTracks(saved.originalQueueIds), saved.isShuffled, index);
+      setIsFavorite(favoritesRef.current.has(tracks[index].id));
 
-      const { sound } = await Audio.Sound.createAsync(
-        { uri: track.cdn_url },
-        { shouldPlay: false, positionMillis },
-        onPlaybackStatusUpdate
-      );
-      soundRef.current = sound;
+      const player = ensurePlayer();
+      loadQueue(player, tracks);
+      player.skipTo(index);
+      if (positionSec > 0) {
+        pendingSeekSecRef.current = positionSec;
+        await player.seekTo(positionSec);
+      }
+      setPlaybackStatus({
+        isPlaying: false,
+        positionMillis: Math.floor(positionSec * 1000),
+        durationMillis: 0,
+        isLoaded: false,
+      });
     } catch (error) {
       console.error('Error restoring playback session:', error);
+    } finally {
+      isRestoringRef.current = false;
     }
   };
 
-  const configureAudioSession = async () => {
-    try {
-      await Audio.setAudioModeAsync({
-        staysActiveInBackground: true,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: false,
-        playThroughEarpieceAndroid: false,
-        allowsRecordingIOS: false,
-        interruptionModeIOS: 0,
-        interruptionModeAndroid: 1,
-      });
-      console.log('Audio session configured for background playback');
-    } catch (error) {
-      console.error('Error configuring audio session:', error);
-    }
-  };
+  // Configure the audio session, prepare lock screen artwork, then restore the last session
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await setAudioModeAsync({
+          playsInSilentMode: true,
+          shouldPlayInBackground: true,
+          interruptionMode: 'doNotMix',
+        });
+      } catch (error) {
+        console.error('Error configuring audio session:', error);
+      }
+      try {
+        const asset = await Asset.fromModule(TRACK_ICON).downloadAsync();
+        artworkUrlRef.current = asset.localUri ?? asset.uri;
+      } catch {
+        // artwork is optional
+      }
+      await restoreSession();
+    };
+    init();
 
-  const hasNext = currentIndex < playlist.length - 1;
-  const hasPrevious = currentIndex > 0;
+    return () => {
+      cancelFade(false);
+      statusSubRef.current?.remove();
+      trackSubRef.current?.remove();
+      const player = playerRef.current;
+      playerRef.current = null;
+      if (player) {
+        try {
+          player.clearLockScreenControls();
+          player.destroy();
+          player.release();
+        } catch {
+          // already released
+        }
+      }
+    };
+  }, []);
 
   // Load favorites from storage
   useEffect(() => {
     loadFavorites();
   }, []);
+
+  // Save the exact position when the app goes to the background
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state !== 'background' && state !== 'inactive') return;
+      const player = playerRef.current;
+      if (!player) return;
+      try {
+        persistState(player.currentTime * 1000);
+      } catch {
+        // player not ready
+      }
+    });
+    return () => sub.remove();
+  }, [persistState]);
 
   const loadFavorites = async () => {
     try {
@@ -288,162 +517,91 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   }, [currentTrack, favorites]);
 
-  const configureAudio = async () => {
-    try {
-      await Audio.setAudioModeAsync({
-        playsInSilentModeIOS: true,
-        staysActiveInBackground: true,
-        shouldDuckAndroid: false,
-        playThroughEarpieceAndroid: false,
-        interruptionModeIOS: 0,
-        interruptionModeAndroid: 1,
-      });
-    } catch (error) {
-      console.error('Error configuring audio:', error);
-    }
-  };
+  // ---- Controls --------------------------------------------------------------------
 
-  const playTrack = async (track: Track, newPlaylist?: Track[]) => {
+  const playTrack = useCallback(async (track: Track, newPlaylist?: Track[]) => {
     try {
       setIsLoading(true);
+      const player = ensurePlayer();
 
-      // Update playlist if provided
-      if (newPlaylist && newPlaylist.length > 0) {
-        setPlaylist(newPlaylist);
-        setOriginalPlaylist(newPlaylist);
-        playlistRef.current = newPlaylist;
-        originalPlaylistRef.current = newPlaylist;
-        setIsShuffled(false);
-        isShuffledRef.current = false;
-        const index = newPlaylist.findIndex(t => t.id === track.id);
-        setCurrentIndex(index >= 0 ? index : 0);
-        currentIndexRef.current = index >= 0 ? index : 0;
+      let queue = queueRef.current;
+      const needsRebuild =
+        (newPlaylist && newPlaylist.length > 0 && (isShuffledRef.current || !sameQueue(newPlaylist, queue))) ||
+        player.trackCount !== queue.length;
+
+      if (newPlaylist && newPlaylist.length > 0 && needsRebuild) {
+        queue = newPlaylist;
+        const index = Math.max(0, queue.findIndex((t) => t.id === track.id));
+        applyQueueState(queue, queue, false, index);
+        loadQueue(player, queue);
+      } else if (needsRebuild) {
+        loadQueue(player, queue);
       }
 
-      // Configure audio for background playback
-      await configureAudio();
+      const index = Math.max(0, queue.findIndex((t) => t.id === track.id));
+      setActiveTrack(index);
 
-      // Fade in only when arriving via an automatic crossfade transition
-      const fadeIn = pendingFadeInRef.current;
-      pendingFadeInRef.current = false;
-      cancelFade(false);
+      // Manual selection always starts at full volume
+      cancelFade(true);
+      endedRef.current = false;
+      pendingSeekSecRef.current = null;
 
-      // Unload previous sound
-      if (soundRef.current) {
-        await soundRef.current.unloadAsync();
-        soundRef.current = null;
-      }
-
-      setCurrentTrack(track);
-      currentTrackRef.current = track;
-      setIsFavorite(favorites.has(track.id));
-
-      // Create and load new sound
-      const { sound } = await Audio.Sound.createAsync(
-        { uri: track.cdn_url },
-        { shouldPlay: true, volume: fadeIn ? 0 : 1 },
-        onPlaybackStatusUpdate
-      );
-
-      soundRef.current = sound;
-      if (fadeIn) {
-        startFadeIn();
-      }
-      persistState(0, track);
-      setIsLoading(false);
+      player.skipTo(index);
+      activateLockScreen(queue[index]);
+      player.play();
+      persistState(0, queue[index]);
     } catch (error) {
       console.error('Error playing track:', error);
       setIsLoading(false);
     }
-  };
+  }, [persistState, cancelFade]);
 
-  const onPlaybackStatusUpdate = (status: any) => {
-    if (status.isLoaded) {
-      setPlaybackStatus({
-        isPlaying: status.isPlaying,
-        positionMillis: status.positionMillis || 0,
-        durationMillis: status.durationMillis || 0,
-        isLoaded: true,
-      });
-
-      // Periodically remember the position while playing
-      if (status.isPlaying && Date.now() - lastSaveRef.current > SAVE_INTERVAL_MS) {
-        persistState(status.positionMillis || 0);
-      }
-
-      // Start fading out when the track enters its last few seconds (and another track follows)
-      const hasNextTrack = currentIndexRef.current < playlistRef.current.length - 1;
-      if (
-        crossfadeEnabledRef.current &&
-        status.isPlaying &&
-        fadeModeRef.current === null &&
-        hasNextTrack &&
-        status.durationMillis &&
-        status.durationMillis - status.positionMillis <= CROSSFADE_MS
-      ) {
-        startFadeOut();
-      }
-
-      // Auto-play next track when current track finishes
-      if (status.didJustFinish && !status.isLooping && !isAutoPlayingRef.current) {
-        isAutoPlayingRef.current = true;
-        const nextIdx = currentIndexRef.current + 1;
-        if (nextIdx < playlistRef.current.length) {
-          const nextTrack = playlistRef.current[nextIdx];
-          // Carry the crossfade into the next track
-          pendingFadeInRef.current = fadeModeRef.current === 'out' && crossfadeEnabledRef.current;
-          cancelFade(false);
-          setCurrentIndex(nextIdx);
-          currentIndexRef.current = nextIdx;
-          playTrack(nextTrack).finally(() => {
-            isAutoPlayingRef.current = false;
-          });
-        } else {
-          // Queue finished: next launch starts this track from the top
-          cancelFade(false);
-          persistState(0);
-          isAutoPlayingRef.current = false;
-        }
-      }
-    } else {
-      setPlaybackStatus(prev => ({
-        ...prev,
-        isLoaded: false,
-      }));
-    }
-  };
-
-  const pauseTrack = async () => {
+  const pauseTrack = useCallback(async () => {
+    const player = playerRef.current;
+    if (!player) return;
     try {
-      if (soundRef.current) {
-        const status = await soundRef.current.pauseAsync();
-        if (status.isLoaded) {
-          persistState(status.positionMillis);
-        }
-      }
+      player.pause();
+      persistState(player.currentTime * 1000);
     } catch (error) {
       console.error('Error pausing track:', error);
     }
-  };
+  }, [persistState]);
 
-  const resumeTrack = async () => {
+  const resumeTrack = useCallback(async () => {
+    const player = playerRef.current;
+    const track = currentTrackRef.current;
+    if (!player || !track) return;
     try {
-      if (soundRef.current) {
-        await soundRef.current.playAsync();
+      if (endedRef.current) {
+        // Queue already finished: restart the current track from the top
+        endedRef.current = false;
+        player.skipTo(Math.max(0, currentIndexRef.current));
       }
+      activateLockScreen(track);
+      player.play();
     } catch (error) {
       console.error('Error resuming track:', error);
     }
-  };
+  }, []);
 
-  const stopTrack = async () => {
+  const stopTrack = useCallback(async () => {
+    const player = playerRef.current;
     try {
-      cancelFade(false);
-      if (soundRef.current) {
-        await soundRef.current.stopAsync();
-        await soundRef.current.unloadAsync();
-        soundRef.current = null;
+      cancelFade(true);
+      if (player) {
+        rebuildingRef.current = true;
+        try {
+          player.pause();
+          player.clearLockScreenControls();
+          player.clear();
+        } finally {
+          rebuildingRef.current = false;
+        }
       }
+      queueRef.current = [];
+      setPlaylist([]);
+      setCurrentIndex(-1);
+      currentIndexRef.current = -1;
       setCurrentTrack(null);
       currentTrackRef.current = null;
       clearPlaybackState();
@@ -456,19 +614,21 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     } catch (error) {
       console.error('Error stopping track:', error);
     }
-  };
+  }, [cancelFade]);
 
-  const seekTo = async (positionMillis: number) => {
+  const seekTo = useCallback(async (positionMillis: number) => {
+    const player = playerRef.current;
+    if (!player) return;
     try {
-      if (soundRef.current) {
-        await soundRef.current.setPositionAsync(positionMillis);
-      }
+      pendingSeekSecRef.current = null;
+      await player.seekTo(positionMillis / 1000);
+      setPlaybackStatus((prev) => ({ ...prev, positionMillis }));
     } catch (error) {
       console.error('Error seeking:', error);
     }
-  };
+  }, []);
 
-  const toggleFavorite = () => {
+  const toggleFavorite = useCallback(() => {
     if (!currentTrack) return;
 
     const newFavorites = new Set(favorites);
@@ -481,68 +641,82 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
     setFavorites(newFavorites);
     saveFavorites(newFavorites);
+  }, [currentTrack, favorites]);
+
+  const removeFavorite = useCallback((trackId: string) => {
+    const newFavorites = new Set(favorites);
+    newFavorites.delete(trackId);
+    setFavorites(newFavorites);
+    saveFavorites(newFavorites);
+  }, [favorites]);
+
+  const skipTo = (index: number) => {
+    const player = playerRef.current;
+    const track = queueRef.current[index];
+    if (!player || !track) return;
+    setIsLoading(true);
+    cancelFade(true);
+    endedRef.current = false;
+    setActiveTrack(index);
+    player.skipTo(index);
+    activateLockScreen(track);
+    player.play();
+    persistState(0, track);
   };
 
-  const playNext = async () => {
-    if (currentIndex < playlist.length - 1) {
-      const nextTrack = playlist[currentIndex + 1];
-      setCurrentIndex(currentIndex + 1);
-      currentIndexRef.current = currentIndex + 1;
-      await playTrack(nextTrack);
+  const playNext = useCallback(async () => {
+    if (currentIndexRef.current < queueRef.current.length - 1) {
+      skipTo(currentIndexRef.current + 1);
     }
-  };
+  }, [persistState, cancelFade]);
 
-  const playPrevious = async () => {
-    if (currentIndex > 0) {
-      const prevTrack = playlist[currentIndex - 1];
-      setCurrentIndex(currentIndex - 1);
-      currentIndexRef.current = currentIndex - 1;
-      await playTrack(prevTrack);
+  const playPrevious = useCallback(async () => {
+    if (currentIndexRef.current > 0) {
+      skipTo(currentIndexRef.current - 1);
     }
-  };
+  }, [persistState, cancelFade]);
 
-  const shufflePlaylist = () => {
-    if (isShuffled) {
+  const shufflePlaylist = useCallback(() => {
+    const player = playerRef.current;
+    const current = currentTrackRef.current;
+    const queue = queueRef.current;
+
+    let newQueue: Track[];
+    let shuffled: boolean;
+    if (isShuffledRef.current) {
       // Restore original order
-      setPlaylist(originalPlaylist);
-      playlistRef.current = originalPlaylist;
-      if (currentTrack) {
-        const newIndex = originalPlaylist.findIndex(t => t.id === currentTrack.id);
-        setCurrentIndex(newIndex >= 0 ? newIndex : 0);
-        currentIndexRef.current = newIndex >= 0 ? newIndex : 0;
-      }
-      setIsShuffled(false);
-      isShuffledRef.current = false;
+      newQueue = originalPlaylistRef.current;
+      shuffled = false;
     } else {
-      // Shuffle playlist keeping current track first
-      const currentTrackItem = playlist[currentIndex];
-      const otherTracks = playlist.filter((_, i) => i !== currentIndex);
-
-      // Fisher-Yates shuffle
-      for (let i = otherTracks.length - 1; i > 0; i--) {
+      // Shuffle keeping the current track first
+      const others = queue.filter((t) => t.id !== current?.id);
+      for (let i = others.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [otherTracks[i], otherTracks[j]] = [otherTracks[j], otherTracks[i]];
+        [others[i], others[j]] = [others[j], others[i]];
       }
-
-      const shuffled = currentTrackItem ? [currentTrackItem, ...otherTracks] : otherTracks;
-      setPlaylist(shuffled);
-      playlistRef.current = shuffled;
-      setCurrentIndex(0);
-      currentIndexRef.current = 0;
-      setIsShuffled(true);
-      isShuffledRef.current = true;
+      newQueue = current ? [current, ...others] : others;
+      shuffled = true;
     }
-  };
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      cancelFade(false);
-      if (soundRef.current) {
-        soundRef.current.unloadAsync();
+    const newIndex = current ? Math.max(0, newQueue.findIndex((t) => t.id === current.id)) : 0;
+    setPlaylist(newQueue);
+    queueRef.current = newQueue;
+    setIsShuffled(shuffled);
+    isShuffledRef.current = shuffled;
+    setCurrentIndex(newIndex);
+    currentIndexRef.current = newIndex;
+
+    if (player) {
+      try {
+        reorderQueue(player, newQueue, current);
+      } catch (error) {
+        console.error('Error reordering queue:', error);
       }
-    };
-  }, []);
+    }
+    if (current) {
+      persistState(player ? player.currentTime * 1000 : 0, current);
+    }
+  }, [persistState]);
 
   return (
     <AudioPlayerContext.Provider
@@ -558,6 +732,8 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         stopTrack,
         seekTo,
         toggleFavorite,
+        favoriteIds: [...favorites],
+        removeFavorite,
         playNext,
         playPrevious,
         shufflePlaylist,

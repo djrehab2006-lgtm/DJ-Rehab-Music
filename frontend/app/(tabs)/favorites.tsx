@@ -1,84 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
-import { HARDCODED_TRACKS, Track } from '../constants/musicData';
+import { HARDCODED_TRACKS } from '../constants/musicData';
 import { shareTrack } from '../utils/shareTrack';
 
 export default function FavoritesScreen() {
-  const { playTrack, currentTrack } = useAudioPlayer();
-  const [favoriteTracks, setFavoriteTracks] = useState<Track[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { playTrack, currentTrack, favoriteIds, removeFavorite } = useAudioPlayer();
 
-  useEffect(() => {
-    loadFavorites();
-  }, []);
-
-  const loadFavorites = async () => {
-    setLoading(true);
-    try {
-      // Get favorite track IDs from AsyncStorage (local device storage)
-      const favoritesJson = await AsyncStorage.getItem('favorite_tracks');
-      const favoriteIds: string[] = favoritesJson ? JSON.parse(favoritesJson) : [];
-
-      if (favoriteIds.length === 0) {
-        setFavoriteTracks([]);
-        setLoading(false);
-        return;
-      }
-
-      // Filter hardcoded tracks to only favorited ones
-      const favorites = HARDCODED_TRACKS.filter(track => favoriteIds.includes(track.id));
-      setFavoriteTracks(favorites);
-    } catch (error) {
-      console.error('Error loading favorites:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const removeFavorite = async (trackId: string) => {
-    try {
-      const favoritesJson = await AsyncStorage.getItem('favorite_tracks');
-      const favoriteIds: string[] = favoritesJson ? JSON.parse(favoritesJson) : [];
-      const updatedIds = favoriteIds.filter(id => id !== trackId);
-      await AsyncStorage.setItem('favorite_tracks', JSON.stringify(updatedIds));
-      
-      // Update local state
-      setFavoriteTracks(prev => prev.filter(track => track.id !== trackId));
-    } catch (error) {
-      console.error('Error removing favorite:', error);
-    }
-  };
-
-  const formatDuration = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Favorites</Text>
-        </View>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#5BA3D9" />
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // Favorites live in the audio context (same list the mini-player heart writes to)
+  const favoriteTracks = useMemo(
+    () => HARDCODED_TRACKS.filter((track) => favoriteIds.includes(track.id)),
+    [favoriteIds]
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Favorites</Text>
-        <TouchableOpacity onPress={loadFavorites}>
-          <Ionicons name="refresh" size={24} color="#5BA3D9" />
-        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -151,7 +91,6 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 24, fontWeight: '700', color: '#FFFFFF' },
   scrollView: { flex: 1 },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   statsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
