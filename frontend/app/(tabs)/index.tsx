@@ -7,7 +7,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { HERO_BACKGROUND } from '../constants/heroBackground';
 import { HARDCODED_FOLDERS, HARDCODED_TRACKS, Folder, Track, FOLDER_ICON } from '../constants/musicData';
 import { CARD_GRADIENTS } from '../components/CardGradient';
-import { WhatsNewModal } from '../components/WhatsNewModal';
 
 const GRID_PADDING = 20;
 const GRID_GAP = 16;
@@ -118,7 +117,6 @@ export default function HomeScreen() {
           )}
         </View>
       </ScrollView>
-      <WhatsNewModal />
     </SafeAreaView>
   );
 }

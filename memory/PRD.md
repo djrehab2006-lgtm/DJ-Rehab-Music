@@ -15,7 +15,7 @@ Standalone Android music streaming app (Expo / React Native) for Google Play. No
 
 - Crossfade (June 2026): fixed 4s fade-out of outgoing track (last 4s, only if a next track exists) → 4s fade-in of the next track on AUTOMATIC transitions; manual taps/skips start at full volume. Toggle in Profile → Playback (AsyncStorage `crossfade_enabled`, default ON). Native uses TrackPlayer.setVolume, web uses Sound.setVolumeAsync; 100ms fade ticks. Constants in `app/utils/crossfadeSettings.ts`. True overlapping crossfade NOT possible with single-player RNTP.
 
-- What's New card (June 2026): `app/components/WhatsNewModal.tsx` shown on Home once per build (AsyncStorage `whats_new_seen_build` vs Constants.expoConfig.android.versionCode, falls back to version on web). Release notes hardcoded in `app/constants/whatsNew.ts` — UPDATE THEM whenever versionCode is bumped for a release.
+- What's New pop-up: built then REMOVED at user request (June 2026). Files deleted (WhatsNewModal.tsx, whatsNew.ts). Do not re-add unless asked.
 
 ## Build Info
 - `app.json` → `expo.android.versionCode`: **5000** (bumped June 2026)
