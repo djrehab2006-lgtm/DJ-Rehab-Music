@@ -1,0 +1,45 @@
+{
+  "summary": "Frontend-only test of the NEW expo-audio createAudioPlaylist engine on Expo web preview (390x844). Audio playback was checked at the HTMLMediaElement level (currentTime, paused, volume), not just the UI labels. 12 of 13 requested flows PASS. Passing: home tiles open the folder; tapping a row plays it (time 0:02 -> 0:07, audio.currentTime advancing); pause/resume (time stops, then continues); Next/Prev (title changes, row highlight moves, Prev disabled on track 1, Next disabled on track 18); seek by tap and by drag (0:03 -> 1:41 and 1:18); shuffle (current track keeps playing with no restart, t 103.2 -> 104.8; Next follows the shuffled queue; un-shuffle restores the original order and Next follows it); playing from another folder replaces the queue (44 Halloween ids); Search, Library playlist and Favorites rows all play; resume after reload (restored PAUSED at the same track and position, 0:10, does not advance, play resumes at 11s, Next works right away); Crossfade switch persists across reload. Extra checks passed: auto-advance at track end with crossfade (volume ramps 1 -> 0.05 -> 1), crossfade OFF keeps volume at 1, queue end pauses and Play restarts the last track, 5 rapid Next taps land on the right track with only 1 audio playing, and only the current and next mp3 are preloaded. FAIL (pre-existing, not caused by the migration): the mini-player heart writes AsyncStorage key 'favorites' but the Favorites tab reads 'favorite_tracks', so favorited tracks never show in the Favorites tab. No 'Playback error', unhandled rejection or red screen seen. No deprecated packages: expo-av and react-native-track-player are fully removed.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Favorites tab", "issue": "AsyncStorage key mismatch: AudioPlayerContext saves favorites under 'favorites' (AudioPlayerContext.tsx:494,505), but (tabs)/favorites.tsx:23,44,47 reads and writes 'favorite_tracks'. A track hearted in the mini player (LS favorites=['nov26-track-3']) leaves the Favorites tab at '0 favorite tracks'. Pre-existing: the pre-SDK58 snapshot d0ed52b7 has the same mismatch. Removing a track from the Favorites tab also does not update the mini-player heart.", "testID": "n/a", "priority": "HIGH"},
+      {"component": "Favorites tab refresh", "issue": "favorites.tsx:15-17 loads only on mount (useEffect []). Even after the key is fixed, newly hearted tracks will not appear until the user taps the refresh icon. Use useFocusEffect, or better read the favorites Set from AudioPlayerContext.", "testID": "n/a", "priority": "MEDIUM"},
+      {"component": "MiniPlayer slider", "issue": "When durationMillis is 0 (track failed to load, or briefly during a track change), maximumValue becomes 1 but slideValue keeps the old position, because the useEffect at MiniPlayer.tsx:47-51 skips updates when duration is 0. The thumb jumps to 100% while the time shows 0:00. Reproduced by blocking a track's CDN request.", "testID": "n/a", "priority": "LOW"},
+      {"component": "Load failure feedback", "issue": "If a track's CDN request fails, the UI silently shows a Play icon at 0:00. There is no error message and no auto-skip, and the expo-audio web status carried no error, so the 'Playback error' log never fires.", "testID": "n/a", "priority": "LOW"},
+      {"component": "Shuffle before play", "issue": "Tapping shuffle in a folder before anything is playing just sets isShuffled=true on an empty queue. The next row tap then rebuilds the queue unshuffled (playTrack needsRebuild because isShuffledRef is true), so 'shuffle then pick' never shuffles. Also, the shuffle button in folder A shuffles whatever queue is active, even if it came from folder B.", "testID": "n/a", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Collection / Playlist header", "issues": ["Shuffle icon active color #2E7BBF vs inactive #5BA3D9 is nearly indistinguishable; users can't tell shuffle is on (collection/[id].tsx:158)"]},
+      {"screen": "MiniPlayer", "issues": ["Touch targets below 44pt: heart 30x32, prev/next 36x40 (padding:4)", "Time text 11px #64748B on #1E293B has low contrast (~3.3:1)", "Track title truncated to ~2 words ('Fast Car (Rehab …') because the controls take most of the width"]}
+    ],
+    "react_native_issues": [
+      {"component": "testIDs missing", "issue": "No testID on any interactive element: MiniPlayer controls/slider, collection track rows, shuffle button, tab items, search input, Crossfade Switch. Tests had to use DOM structure and coordinates. Reference: /app/frontend/app/components/MiniPlayer.tsx:132-186, /app/frontend/app/collection/[id].tsx:90,157"},
+      {"component": "Non-route files under app/", "issue": "utils/, constants/, contexts/ and components/ live inside app/, so Expo Router logs 'missing the required default export' warnings. Leftover dead file app/collection/[id].tsx.backup. Move these out of app/ (e.g. /app/frontend/src)."}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_9.json"],
+  "action_items": [
+    "HIGH: Unify favorites storage. Make (tabs)/favorites.tsx read the favorites Set from AudioPlayerContext (expose favorites, plus a removeFavorite or toggleFavoriteById), or use the same 'favorites' key. Consider migrating any legacy 'favorite_tracks' data. Refresh on focus.",
+    "Make the shuffle on/off state clearly visible (e.g. a white or accent background when active).",
+    "Handle the shuffle-before-play case: start playback of a shuffled queue, or disable the button when nothing is playing.",
+    "MiniPlayer: reset slideValue when durationMillis is 0 (or set max to 1 and value to 0); show a toast or auto-skip on load failure.",
+    "Increase MiniPlayer touch targets to at least 44x44 and raise the time-text contrast.",
+    "Add testIDs to MiniPlayer controls, track rows, the shuffle button, the search input and the Crossfade switch.",
+    "Delete app/collection/[id].tsx.backup; optionally move non-route modules out of app/."
+  ],
+  "critical_code_review_comments": [
+    "AudioPlayerContext.tsx (746 lines) is above the 700-line guideline; consider extracting crossfade and session-restore into hooks.",
+    "reorderQueue relies on synchronous remove/insert and an immediately updated player.currentIndex. This works on web, but native (ExoPlayer) behaviour of the shuffle reorder and resume could not be verified in web preview and needs a device build.",
+    "app.json expo-audio plugin has enableBackgroundPlayback:true, with FOREGROUND_SERVICE_MEDIA_PLAYBACK and UIBackgroundModes audio present. OK.",
+    "Lock-screen controls and background playback cannot be tested in web preview or Expo Go."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (no backend)", "frontend": "92% (12/13 requested flows; Favorites tab display fails due to the pre-existing key mismatch)"},
+  "seed_data_creation": "Per-test browser localStorage only: favorite_tracks, user_playlists (TEST_Playlist pl_test1), crossfade_enabled. Isolated browser contexts; nothing persisted.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "No testIDs exist (/app was read-only to the tester). Mini-player controls row = parent of the leaf div matching /^\\d+:\\d\\d$/ with exactly 5 children [heart, prev, play/pause, next, time]; slider = [role=slider] (4px tall, y~757). Click with page.mouse.click at element centers. Shuffle icon is at about (349,37). Track rows: page.locator(\"text='N' >> visible=true\"). Hooking HTMLMediaElement.prototype.play via add_init_script lets you inspect the real audio's currentTime/volume. Play glyph 62612 means the pause icon is showing (playing); 62669 means the play icon. LS keys: last_playback_state, favorites (context), favorite_tracks (favorites tab), user_playlists, crossfade_enabled. Reloading keeps the current route.",
+  "rca_of_issue": "Favorites tab empty: the context persists favorites to AsyncStorage key 'favorites', while (tabs)/favorites.tsx only reads 'favorite_tracks'. Repro: play any track -> tap the heart -> Favorites tab shows 0 tracks, though localStorage.favorites contains the id. Fix: one source of truth (context)."
+}
