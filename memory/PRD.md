@@ -23,6 +23,7 @@ Standalone Android music streaming app (Expo / React Native) for Google Play. No
 
 ## Backlog
 - Yacht Rock x Hip-Hop Mashups folder removed (June 2026) — re-add when tracks are ready
+- "November 2026 Releases" folder (id `november-2026-releases`, position 0 / top) created June 2026 — EMPTY, awaiting tracks
 - "Halloween" folder (id `halloween`, position 0 / top, fixed orange gradient via new optional `Folder.gradient` field — fixed-gradient tiles do not consume a palette slot) created June 2026 — 38 tracks (ids `hal-track-1..38`; tracks 19-38 have artist "DJ Kelly Lynn")
 - "October 2026 New Releases" folder (id `october-2026-new-releases`, position 0 / top, NEW badge) created June 2026 — 22 tracks (ids `oct26-track-1..23`; oct26-track-10 removed; 17-23 added from "October 2nd Update")
 - "Rock x Hip-Hop" folder (id `rock-x-hiphop`, position 3, between Country X Hip-Hop and August Releases) created June 2026 — 39 tracks added (ids `rxh-track-1..39`)
