@@ -26,6 +26,9 @@ import {
   saveCrossfadeEnabled,
 } from '../utils/crossfadeSettings';
 import { promptLockScreenPermissionOnPlay } from '../utils/lockScreenPermission';
+import { installConsoleCapture, logDiag, getDiagnosticsReport } from '../utils/diagnosticsLog';
+
+installConsoleCapture();
 
 interface Track {
   id: string;
@@ -66,6 +69,8 @@ interface AudioPlayerContextType {
   setCrossfadeEnabled: (enabled: boolean) => void;
   /** Re-posts the lock screen / notification controls for the current track (e.g. after permission granted). */
   refreshLockScreen: () => void;
+  /** Text report for troubleshooting lock screen controls on a device. */
+  getLockScreenReport: () => string;
 }
 
 const AudioPlayerContext = createContext<AudioPlayerContextType | undefined>(undefined);
@@ -112,6 +117,11 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const endedRef = useRef(false); // whole queue finished
   const pendingSeekSecRef = useRef<number | null>(null); // restore position once loaded
   const artworkUrlRef = useRef<string | undefined>(undefined);
+  const lockScreenInfoRef = useRef<{ attempts: number; lastError: string | null; artworkUrl: string | null }>({
+    attempts: 0,
+    lastError: null,
+    artworkUrl: null,
+  });
 
   // Crossfade (fade-out → fade-in) state
   const crossfadeEnabledRef = useRef(true);
@@ -246,10 +256,31 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   });
 
   const activateLockScreen = (track: Track) => {
+    const player = playerRef.current;
+    if (!player) {
+      logDiag('lockscreen: no player instance');
+      return;
+    }
+    const metadata = metadataFor(track);
     try {
-      playerRef.current?.setActiveForLockScreen(true, metadataFor(track), LOCK_SCREEN_OPTIONS);
-    } catch (error) {
-      console.warn('Lock screen controls unavailable:', error);
+      player.setActiveForLockScreen(true, metadata, LOCK_SCREEN_OPTIONS);
+      lockScreenInfoRef.current = {
+        attempts: lockScreenInfoRef.current.attempts + 1,
+        lastError: null,
+        artworkUrl: metadata.artworkUrl ?? null,
+      };
+      logDiag(`lockscreen: activated for "${track.title}" (artwork: ${metadata.artworkUrl ? 'yes' : 'none'})`);
+    } catch (error: any) {
+      const message = error?.message ?? String(error);
+      logDiag(`lockscreen: setActiveForLockScreen threw: ${message}`);
+      lockScreenInfoRef.current = { ...lockScreenInfoRef.current, attempts: lockScreenInfoRef.current.attempts + 1, lastError: message };
+      // Retry without artwork in case the artwork URL is what the native side rejected
+      try {
+        player.setActiveForLockScreen(true, { ...metadata, artworkUrl: undefined }, LOCK_SCREEN_OPTIONS);
+        logDiag('lockscreen: activated without artwork');
+      } catch (retryError: any) {
+        logDiag(`lockscreen: retry without artwork threw: ${retryError?.message ?? String(retryError)}`);
+      }
     }
   };
 
@@ -264,6 +295,20 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const refreshLockScreen = useCallback(() => {
     const track = currentTrackRef.current;
     if (track) activateLockScreen(track);
+  }, []);
+
+  const getLockScreenReport = useCallback(() => {
+    const player = playerRef.current;
+    const info = lockScreenInfoRef.current;
+    return getDiagnosticsReport({
+      'Current track': currentTrackRef.current?.title ?? '(none)',
+      'Queue length': queueRef.current.length,
+      'Native tracks': player ? player.trackCount : 'no player',
+      Playing: player ? player.playing : false,
+      'Lock screen activations': info.attempts,
+      'Last activation error': info.lastError ?? 'none',
+      'Artwork URL': info.artworkUrl ?? artworkUrlRef.current ?? 'none',
+    });
   }, []);
 
   // ---- Native playlist -------------------------------------------------------------
@@ -359,6 +404,9 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const ensurePlayer = (): AudioPlaylist => {
     if (playerRef.current) return playerRef.current;
     const player = createAudioPlaylist({ loop: 'none', updateInterval: 500 });
+    logDiag(
+      `playlist created (setActiveForLockScreen: ${typeof (player as any).setActiveForLockScreen}, updateLockScreenMetadata: ${typeof (player as any).updateLockScreenMetadata})`
+    );
     statusSubRef.current = player.addListener('playlistStatusUpdate', onStatus);
     trackSubRef.current = player.addListener('trackChanged', onTrackChanged);
     playerRef.current = player;
@@ -448,14 +496,17 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
           shouldPlayInBackground: true,
           interruptionMode: 'doNotMix',
         });
-      } catch (error) {
+        logDiag('audio mode set (background + doNotMix)');
+      } catch (error: any) {
         console.error('Error configuring audio session:', error);
+        logDiag(`audio mode FAILED: ${error?.message ?? String(error)}`);
       }
       try {
         const asset = await Asset.fromModule(TRACK_ICON).downloadAsync();
         artworkUrlRef.current = asset.localUri ?? asset.uri;
-      } catch {
-        // artwork is optional
+        logDiag(`artwork resolved: ${artworkUrlRef.current}`);
+      } catch (error: any) {
+        logDiag(`artwork unavailable: ${error?.message ?? String(error)}`);
       }
       await restoreSession();
     };
@@ -752,6 +803,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         crossfadeEnabled,
         setCrossfadeEnabled,
         refreshLockScreen,
+        getLockScreenReport,
       }}
     >
       {children}

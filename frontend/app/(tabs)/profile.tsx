@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Linking, Alert, Share, Switch, AppState } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Linking, Alert, Share, Switch, AppState, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
@@ -13,8 +13,25 @@ import {
 
 export default function ProfileScreen() {
   const [showContactModal, setShowContactModal] = useState(false);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const [report, setReport] = useState('');
   const [lockScreenAllowed, setLockScreenAllowed] = useState(true);
-  const { crossfadeEnabled, setCrossfadeEnabled, refreshLockScreen } = useAudioPlayer();
+  const { crossfadeEnabled, setCrossfadeEnabled, refreshLockScreen, getLockScreenReport } = useAudioPlayer();
+
+  const openDiagnostics = () => {
+    setReport(
+      `Notifications allowed: ${lockScreenAllowed ? 'yes' : 'no'}\n${getLockScreenReport()}`
+    );
+    setShowDiagnostics(true);
+  };
+
+  const shareReport = async () => {
+    try {
+      await Share.share({ message: report, title: 'DJ Rehab Music – lock screen report' });
+    } catch {
+      // user dismissed
+    }
+  };
 
   const checkLockScreenPermission = useCallback(() => {
     hasLockScreenPermission().then(setLockScreenAllowed);
@@ -134,7 +151,7 @@ export default function ProfileScreen() {
             />
           </View>
           {needsLockScreenPermission && (
-            <View style={styles.settingRow}>
+            <TouchableOpacity style={styles.settingRow} onPress={openDiagnostics} activeOpacity={0.8}>
               <View style={styles.settingIcon}>
                 <Ionicons name="phone-portrait-outline" size={22} color="#5BA3D9" />
               </View>
@@ -142,12 +159,12 @@ export default function ProfileScreen() {
                 <Text style={styles.settingTitle}>Lock screen controls</Text>
                 <Text style={styles.settingSubtitle}>
                   {lockScreenAllowed
-                    ? 'Play, pause and skip from your lock screen'
+                    ? 'Tap for a troubleshooting report'
                     : 'Allow notifications to show player controls'}
                 </Text>
               </View>
               {lockScreenAllowed ? (
-                <Ionicons name="checkmark-circle" size={24} color="#5BA3D9" />
+                <Ionicons name="chevron-forward" size={22} color="#64748B" />
               ) : (
                 <TouchableOpacity
                   style={styles.enableButton}
@@ -157,9 +174,31 @@ export default function ProfileScreen() {
                   <Text style={styles.enableButtonText}>Enable</Text>
                 </TouchableOpacity>
               )}
-            </View>
+            </TouchableOpacity>
           )}
         </View>
+
+        <Modal visible={showDiagnostics} animationType="slide" transparent onRequestClose={() => setShowDiagnostics(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, styles.reportModal]}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Lock screen report</Text>
+                <TouchableOpacity onPress={() => setShowDiagnostics(false)}>
+                  <Ionicons name="close" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+              <ScrollView style={styles.reportScroll}>
+                <Text style={styles.reportText} selectable>
+                  {report}
+                </Text>
+              </ScrollView>
+              <TouchableOpacity style={styles.shareReportButton} onPress={shareReport}>
+                <Ionicons name="share-outline" size={20} color="#FFFFFF" />
+                <Text style={styles.shareReportText}>Share report</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
 
         <View style={styles.infoSection}>
           <Text style={styles.sectionTitle}>About</Text>
@@ -337,6 +376,20 @@ const styles = StyleSheet.create({
   modalIcon: {
     marginBottom: 16,
   },
+  reportModal: { alignItems: 'stretch', padding: 20, maxHeight: '80%' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  reportScroll: { flexGrow: 0, marginBottom: 16 },
+  reportText: { color: '#CBD5E1', fontSize: 12, lineHeight: 18, fontFamily: Platform.select({ android: 'monospace', ios: 'Menlo', default: 'monospace' }) },
+  shareReportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#5BA3D9',
+    borderRadius: 12,
+    minHeight: 48,
+  },
+  shareReportText: { color: '#FFFFFF', fontWeight: '600', fontSize: 15 },
   modalTitle: {
     fontSize: 24,
     fontWeight: 'bold',

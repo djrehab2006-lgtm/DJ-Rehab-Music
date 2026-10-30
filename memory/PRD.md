@@ -18,7 +18,7 @@ Standalone Android music streaming app (Expo / React Native) for Google Play. No
 - What's New pop-up: built then REMOVED at user request (June 2026). Files deleted (WhatsNewModal.tsx, whatsNew.ts). Do not re-add unless asked.
 
 ## Build Info
-- `app.json` → `expo.android.versionCode`: **5002** (bumped June 2026: lock-screen permission flow)
+- `app.json` → `expo.android.versionCode`: **5003** (June 2026: lock-screen diagnostics report)
 - Lock-screen controls on Android 13+ need the POST_NOTIFICATIONS runtime permission (expo-audio docs: required for media controls). Declared in app.json; `app/utils/lockScreenPermission.ts` asks contextually on first play (benefit alert → system prompt, max 2 auto-prompts), Profile → Playback → "Lock screen controls" row shows status with Enable / Open Settings fallback; `refreshLockScreen()` in context re-posts the notification after grant.
 - `expo-build-properties` must NOT pin compileSdk/targetSdk/buildTools on SDK 58 (defaults: compileSdk 37, targetSdk 36, buildTools 37.0.0). Pinning 36 caused `checkReleaseAarMetadata` build failure (fixed June 2026).
 - User builds locally with EAS on Mac. **Must download latest code from Emergent before building.**
@@ -33,3 +33,9 @@ Standalone Android music streaming app (Expo / React Native) for Google Play. No
 - Optional: sleep timer, repeat modes
 - Optional polish (from iteration_9 test): auto-skip / message when a track URL fails to load; shuffle tapped before any playback is a no-op
 - ⚠️ expo-audio lock-screen controls + sustained background playback can only be verified on a real Android build (not web / Expo Go)
+
+
+## Open issue (June 2026): Android lock-screen controls not appearing
+- User reports: permission prompt shows, but no notification/lock-screen controls; car stereo shows "Track 1" (= no metadata => expo-audio lock-screen MediaSession apparently never established; only the basic session is active).
+- Static review of expo-audio 58.0.10 native service found no obvious bug; Media3 confirms POST_NOTIFICATIONS is NOT required for media notifications.
+- Added diagnostics: `app/utils/diagnosticsLog.ts` captures console.warn/error (expo-audio jsLogger messages) + app log lines; Profile → "Lock screen controls" row opens a report modal with Share. `activateLockScreen` logs attempts/errors and retries without artwork. Waiting for the user's report (versionCode 5003).
