@@ -18,7 +18,8 @@ Standalone Android music streaming app (Expo / React Native) for Google Play. No
 - What's New pop-up: built then REMOVED at user request (June 2026). Files deleted (WhatsNewModal.tsx, whatsNew.ts). Do not re-add unless asked.
 
 ## Build Info
-- `app.json` → `expo.android.versionCode`: **5001** (bumped June 2026 after expo-audio migration)
+- `app.json` → `expo.android.versionCode`: **5002** (bumped June 2026: lock-screen permission flow)
+- Lock-screen controls on Android 13+ need the POST_NOTIFICATIONS runtime permission (expo-audio docs: required for media controls). Declared in app.json; `app/utils/lockScreenPermission.ts` asks contextually on first play (benefit alert → system prompt, max 2 auto-prompts), Profile → Playback → "Lock screen controls" row shows status with Enable / Open Settings fallback; `refreshLockScreen()` in context re-posts the notification after grant.
 - `expo-build-properties` must NOT pin compileSdk/targetSdk/buildTools on SDK 58 (defaults: compileSdk 37, targetSdk 36, buildTools 37.0.0). Pinning 36 caused `checkReleaseAarMetadata` build failure (fixed June 2026).
 - User builds locally with EAS on Mac. **Must download latest code from Emergent before building.**
 

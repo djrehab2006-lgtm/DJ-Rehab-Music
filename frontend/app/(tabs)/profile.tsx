@@ -1,12 +1,52 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Linking, Alert, Share, Switch } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Linking, Alert, Share, Switch, AppState } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from 'expo-router';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
+import {
+  needsLockScreenPermission,
+  hasLockScreenPermission,
+  requestLockScreenPermission,
+  openLockScreenSettings,
+} from '../utils/lockScreenPermission';
 
 export default function ProfileScreen() {
   const [showContactModal, setShowContactModal] = useState(false);
-  const { crossfadeEnabled, setCrossfadeEnabled } = useAudioPlayer();
+  const [lockScreenAllowed, setLockScreenAllowed] = useState(true);
+  const { crossfadeEnabled, setCrossfadeEnabled, refreshLockScreen } = useAudioPlayer();
+
+  const checkLockScreenPermission = useCallback(() => {
+    hasLockScreenPermission().then(setLockScreenAllowed);
+  }, []);
+
+  // Re-check when the tab is opened and when returning from system settings
+  useFocusEffect(checkLockScreenPermission);
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') checkLockScreenPermission();
+    });
+    return () => sub.remove();
+  }, [checkLockScreenPermission]);
+
+  const handleEnableLockScreen = async () => {
+    const status = await requestLockScreenPermission();
+    if (status === 'granted') {
+      setLockScreenAllowed(true);
+      refreshLockScreen();
+      return;
+    }
+    if (status === 'blocked') {
+      Alert.alert(
+        'Notifications are turned off',
+        'To show play, pause and skip controls on your lock screen, allow notifications for DJ Rehab Music in Settings.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Open Settings', onPress: openLockScreenSettings },
+        ]
+      );
+    }
+  };
 
   const handleShare = async () => {
     try {
@@ -93,6 +133,32 @@ export default function ProfileScreen() {
               ios_backgroundColor="#334155"
             />
           </View>
+          {needsLockScreenPermission && (
+            <View style={styles.settingRow}>
+              <View style={styles.settingIcon}>
+                <Ionicons name="phone-portrait-outline" size={22} color="#5BA3D9" />
+              </View>
+              <View style={styles.settingText}>
+                <Text style={styles.settingTitle}>Lock screen controls</Text>
+                <Text style={styles.settingSubtitle}>
+                  {lockScreenAllowed
+                    ? 'Play, pause and skip from your lock screen'
+                    : 'Allow notifications to show player controls'}
+                </Text>
+              </View>
+              {lockScreenAllowed ? (
+                <Ionicons name="checkmark-circle" size={24} color="#5BA3D9" />
+              ) : (
+                <TouchableOpacity
+                  style={styles.enableButton}
+                  onPress={handleEnableLockScreen}
+                  testID="enable-lock-screen-button"
+                >
+                  <Text style={styles.enableButtonText}>Enable</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </View>
 
         <View style={styles.infoSection}>
@@ -207,7 +273,16 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: '#334155',
+    marginBottom: 10,
   },
+  enableButton: {
+    backgroundColor: '#5BA3D9',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  enableButtonText: { color: '#FFFFFF', fontWeight: '600', fontSize: 14 },
   settingIcon: {
     width: 40,
     height: 40,

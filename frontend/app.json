@@ -22,13 +22,14 @@
     },
     "android": {
       "package": "com.djrehab2006.djrehabmusic",
-      "versionCode": 5001,
+      "versionCode": 5002,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
       },
       "permissions": [
         "INTERNET",
+        "POST_NOTIFICATIONS",
         "FOREGROUND_SERVICE",
         "FOREGROUND_SERVICE_MEDIA_PLAYBACK",
         "WAKE_LOCK"

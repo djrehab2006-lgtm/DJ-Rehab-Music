@@ -25,6 +25,7 @@ import {
   loadCrossfadeEnabled,
   saveCrossfadeEnabled,
 } from '../utils/crossfadeSettings';
+import { promptLockScreenPermissionOnPlay } from '../utils/lockScreenPermission';
 
 interface Track {
   id: string;
@@ -63,6 +64,8 @@ interface AudioPlayerContextType {
   hasPrevious: boolean;
   crossfadeEnabled: boolean;
   setCrossfadeEnabled: (enabled: boolean) => void;
+  /** Re-posts the lock screen / notification controls for the current track (e.g. after permission granted). */
+  refreshLockScreen: () => void;
 }
 
 const AudioPlayerContext = createContext<AudioPlayerContextType | undefined>(undefined);
@@ -257,6 +260,11 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       // not active
     }
   };
+
+  const refreshLockScreen = useCallback(() => {
+    const track = currentTrackRef.current;
+    if (track) activateLockScreen(track);
+  }, []);
 
   // ---- Native playlist -------------------------------------------------------------
 
@@ -550,11 +558,13 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       activateLockScreen(queue[index]);
       player.play();
       persistState(0, queue[index]);
+      // Android 13+: controls only appear once notifications are allowed — ask contextually on first play
+      promptLockScreenPermissionOnPlay(refreshLockScreen);
     } catch (error) {
       console.error('Error playing track:', error);
       setIsLoading(false);
     }
-  }, [persistState, cancelFade]);
+  }, [persistState, cancelFade, refreshLockScreen]);
 
   const pauseTrack = useCallback(async () => {
     const player = playerRef.current;
@@ -659,7 +669,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     endedRef.current = false;
     setActiveTrack(index);
     player.skipTo(index);
-    activateLockScreen(track);
+    updateLockScreen(track);
     player.play();
     persistState(0, track);
   };
@@ -741,6 +751,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         hasPrevious,
         crossfadeEnabled,
         setCrossfadeEnabled,
+        refreshLockScreen,
       }}
     >
       {children}
