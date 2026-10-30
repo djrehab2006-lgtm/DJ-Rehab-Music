@@ -19,6 +19,7 @@ Standalone Android music streaming app (Expo / React Native) for Google Play. No
 
 ## Build Info
 - `app.json` → `expo.android.versionCode`: **5001** (bumped June 2026 after expo-audio migration)
+- `expo-build-properties` must NOT pin compileSdk/targetSdk/buildTools on SDK 58 (defaults: compileSdk 37, targetSdk 36, buildTools 37.0.0). Pinning 36 caused `checkReleaseAarMetadata` build failure (fixed June 2026).
 - User builds locally with EAS on Mac. **Must download latest code from Emergent before building.**
 
 ## Backlog
