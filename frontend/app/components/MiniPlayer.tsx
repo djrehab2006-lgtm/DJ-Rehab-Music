@@ -142,6 +142,7 @@ export function MiniPlayer() {
             onPress={playPrevious} 
             disabled={!hasPrevious}
             style={styles.controlButton}
+            testID="mini-player-previous"
           >
             <Ionicons
               name="play-back"
@@ -155,6 +156,7 @@ export function MiniPlayer() {
             onPress={handlePlayPause}
             disabled={isLoading}
             style={styles.playButton}
+            testID="mini-player-play-pause"
           >
             {isLoading ? (
               <Ionicons name="hourglass-outline" size={36} color="#5BA3D9" />
@@ -172,6 +174,7 @@ export function MiniPlayer() {
             onPress={playNext} 
             disabled={!hasNext}
             style={styles.controlButton}
+            testID="mini-player-next"
           >
             <Ionicons
               name="play-forward"

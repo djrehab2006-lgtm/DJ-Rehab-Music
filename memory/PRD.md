@@ -13,12 +13,16 @@ Standalone Android music streaming app (Expo / React Native) for Google Play. No
 - Share button (native share sheet → Google Play URL)
 - Target/compile SDK 36
 
-- Crossfade (June 2026): fixed 4s fade-out of outgoing track (last 4s, only if a next track exists) → 4s fade-in of the next track on AUTOMATIC transitions; manual taps/skips start at full volume. Toggle in Profile → Playback (AsyncStorage `crossfade_enabled`, default ON). Volume via `playlist.volume`; 100ms fade ticks. Constants in `app/utils/crossfadeSettings.ts`. True overlapping crossfade NOT possible with a single playlist player.
+- Crossfade (rebuilt June 2026, versionCode 5004 — TRUE OVERLAP): two native `AudioPlaylist` "decks" hold the same queue. `playerRef` = deck that owns the current track (UI + lock screen), `idleRef` = the other one (created lazily on first use, so crossfade OFF = old single-deck engine). ~20s before a track ends the idle deck is parked silently on the next track (`cueIdleDeck`); 4.3s before the end it starts playing at volume 0 (`startCrossfade`); once it is REALLY playing (`commitCrossfade`) it becomes the current deck (UI + `setActiveForLockScreen` move to it) and the two overlap for the rest of the outgoing track with equal-power curves; the outgoing deck is paused 0.25s before its end (`settleCrossfade`). Manual tap/next/prev/seek/pause/shuffle call `settleCrossfade()` first (hard cut, full volume). Toggle in Profile → Playback (AsyncStorage `crossfade_enabled`, default ON). Constants in `app/utils/crossfadeSettings.ts`.
+  - **NO JS TIMERS in the audio engine.** Root cause of the listener bug (Galaxy S25 Ultra: volume ramps down, next track plays 1s then silence until phone is woken): fades were driven by `setInterval`, and React Native pauses JS timers on Android when the activity is paused / screen off (`JavaTimerManager.onHostPause`). Native → JS events still arrive in the background (expo-modules `emit` → `jsInvoker.invokeAsync`). Every fade step now runs inside `onStatus(deck, status)` from the native `playlistStatusUpdate` event (`updateInterval: 100ms`; React state is throttled to ~2/s via `publishStatus`).
+  - Fail-safes: nothing is faded until the incoming deck reports real playback, so if it never starts the current deck just rolls into the next track natively at full volume (logged in diagnostics as "next track was not ready in time"); a parked deck that ever reports `playing` is paused again; solo deck volume is self-healed to 1.
+  - Trade-offs to remember: while crossfade is ON the current deck still natively pre-buffers its own next track (~45s of audio downloaded twice per track); the lock-screen/Bluetooth session is re-created on the other deck at every crossfade.
+  - Idle deck's native queue is rebuilt lazily (`queueVersionRef` / `deckVersionRef`) the next time it is cued after the queue changed.
 
 - What's New pop-up: built then REMOVED at user request (June 2026). Files deleted (WhatsNewModal.tsx, whatsNew.ts). Do not re-add unless asked.
 
 ## Build Info
-- `app.json` → `expo.android.versionCode`: **5003** (June 2026: lock-screen diagnostics report)
+- `app.json` → `expo.android.versionCode`: **5004** (June 2026: overlapping crossfade that keeps working with the screen off; 5003 = lock-screen diagnostics report)
 - Lock-screen controls on Android 13+ need the POST_NOTIFICATIONS runtime permission (expo-audio docs: required for media controls). Declared in app.json; `app/utils/lockScreenPermission.ts` asks contextually on first play (benefit alert → system prompt, max 2 auto-prompts), Profile → Playback → "Lock screen controls" row shows status with Enable / Open Settings fallback; `refreshLockScreen()` in context re-posts the notification after grant.
 - `expo-build-properties` must NOT pin compileSdk/targetSdk/buildTools on SDK 58 (defaults: compileSdk 37, targetSdk 36, buildTools 37.0.0). Pinning 36 caused `checkReleaseAarMetadata` build failure (fixed June 2026).
 - User builds locally with EAS on Mac. **Must download latest code from Emergent before building.**
@@ -33,6 +37,8 @@ Standalone Android music streaming app (Expo / React Native) for Google Play. No
 - Optional: sleep timer, repeat modes
 - Optional polish (from iteration_9 test): auto-skip / message when a track URL fails to load; shuffle tapped before any playback is a no-op
 - ⚠️ expo-audio lock-screen controls + sustained background playback can only be verified on a real Android build (not web / Expo Go)
+- ⚠️ Overlapping crossfade (5004) is verified on web only (HTMLMediaElement volumes: equal-power overlap, deck alternation, pause/next/previous mid-overlap, shuffle, crossfade OFF, incoming deck failing to start). Screen-off behaviour on Android still needs the user's device test; the Profile → Lock screen controls report logs one `crossfade: mixing into "…" (app background)` line per transition.
+- testIDs added: `mini-player-previous`, `mini-player-play-pause`, `mini-player-next`, `collection-shuffle`
 
 
 ## Open issue (June 2026): Android lock-screen controls not appearing

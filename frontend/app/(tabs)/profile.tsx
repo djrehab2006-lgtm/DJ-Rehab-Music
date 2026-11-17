@@ -140,11 +140,12 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.settingText}>
               <Text style={styles.settingTitle}>Crossfade</Text>
-              <Text style={styles.settingSubtitle}>Smooth 4-second fade between tracks</Text>
+              <Text style={styles.settingSubtitle}>Tracks blend into each other for 4 seconds</Text>
             </View>
             <Switch
               value={crossfadeEnabled}
               onValueChange={setCrossfadeEnabled}
+              testID="crossfade-switch"
               trackColor={{ false: '#334155', true: '#5BA3D9' }}
               thumbColor="#FFFFFF"
               ios_backgroundColor="#334155"

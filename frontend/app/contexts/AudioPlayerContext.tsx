@@ -19,9 +19,14 @@ import {
   SAVE_INTERVAL_MS,
 } from '../utils/playbackStateStorage';
 import {
-  CROSSFADE_MS,
   CROSSFADE_SEC,
-  FADE_TICK_MS,
+  CROSSFADE_START_SEC,
+  CUE_AHEAD_SEC,
+  MIN_CROSSFADE_SEC,
+  FADE_END_GUARD_SEC,
+  STATUS_INTERVAL_MS,
+  fadeInGain,
+  fadeOutGain,
   loadCrossfadeEnabled,
   saveCrossfadeEnabled,
 } from '../utils/crossfadeSettings';
@@ -87,6 +92,19 @@ const toSource = (t: Track) => ({ uri: t.cdn_url, name: t.title });
 const sameQueue = (a: Track[], b: Track[]) =>
   a.length === b.length && a.every((t, i) => t.id === b[i].id);
 
+// Status events arrive every STATUS_INTERVAL_MS to keep fades smooth; the UI only needs ~2 per second
+const UI_STATUS_INTERVAL_MS = 450;
+
+// An overlap between two decks: `from` is playing out the end of its track while `to` plays the next one
+interface Crossfade {
+  from: AudioPlaylist;
+  to: AudioPlaylist;
+  fromIndex: number;
+  toIndex: number;
+  /** Overlap length in seconds; null until the incoming deck is really playing. */
+  length: number | null;
+}
+
 export function AudioPlayerProvider({ children }: { children: React.ReactNode }) {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [playlist, setPlaylist] = useState<Track[]>([]);
@@ -103,8 +121,18 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [crossfadeEnabled, setCrossfadeEnabledState] = useState(true);
 
-  // Single long-lived native playlist (ExoPlayer on Android, <audio> on web)
+  // Two native playlists ("decks": ExoPlayer on Android, <audio> on web) hold the same queue so the
+  // next track can start underneath the ending one. playerRef is always the deck that owns the
+  // current track (UI + lock screen); idleRef is the other one, created the first time it is needed.
   const playerRef = useRef<AudioPlaylist | null>(null);
+  const idleRef = useRef<AudioPlaylist | null>(null);
+  const deckSubsRef = useRef<{ remove: () => void }[]>([]);
+  const queueVersionRef = useRef(0); // bumped whenever the queue content/order changes
+  const deckVersionRef = useRef(new Map<AudioPlaylist, number>()); // queue version loaded into each deck
+  const cuedIndexRef = useRef<number | null>(null); // queue index the idle deck is parked on
+  const skipFadeIndexRef = useRef<number | null>(null); // next track that could not be prepared
+  const fadeRef = useRef<Crossfade | null>(null);
+  const uiStatusRef = useRef({ at: 0, isPlaying: false, isLoaded: false, durationMillis: 0 });
   const queueRef = useRef<Track[]>([]); // mirrors the native playlist order
   const originalPlaylistRef = useRef<Track[]>([]);
   const currentIndexRef = useRef(-1);
@@ -123,83 +151,55 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     artworkUrl: null,
   });
 
-  // Crossfade (fade-out → fade-in) state
   const crossfadeEnabledRef = useRef(true);
-  const fadeModeRef = useRef<'out' | 'in' | null>(null);
-  const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     favoritesRef.current = favorites;
   }, [favorites]);
 
-  const setVolume = (volume: number) => {
-    const player = playerRef.current;
-    if (!player) return;
+  const setDeckVolume = (deck: AudioPlaylist | null, volume: number) => {
+    if (!deck) return;
     try {
-      player.volume = volume;
+      deck.volume = Math.min(1, Math.max(0, volume));
     } catch {
-      // player released
+      // deck released
     }
   };
 
-  const cancelFade = useCallback((restoreVolume: boolean) => {
-    if (fadeIntervalRef.current) {
-      clearInterval(fadeIntervalRef.current);
-      fadeIntervalRef.current = null;
+  // Silence a deck that must not be heard (finished fading out, or never got to fade in)
+  const parkDeck = (deck: AudioPlaylist | null) => {
+    if (!deck) return;
+    try {
+      deck.pause();
+      deck.volume = 0;
+    } catch {
+      // deck released
     }
-    fadeModeRef.current = null;
-    if (restoreVolume) {
-      setVolume(1);
+  };
+
+  // End any overlap right now. If the incoming track is already audible it carries on alone at
+  // full volume, otherwise the current deck simply keeps playing.
+  const settleCrossfade = () => {
+    const fade = fadeRef.current;
+    if (!fade) return;
+    fadeRef.current = null;
+    cuedIndexRef.current = null;
+    if (fade.length === null) {
+      parkDeck(fade.to);
+    } else {
+      parkDeck(fade.from);
+      setDeckVolume(fade.to, 1);
     }
-  }, []);
-
-  // Fade the outgoing track to silence over its last CROSSFADE_SEC seconds
-  const startFadeOut = useCallback(() => {
-    cancelFade(false);
-    fadeModeRef.current = 'out';
-    fadeIntervalRef.current = setInterval(() => {
-      const player = playerRef.current;
-      if (!player) {
-        cancelFade(false);
-        return;
-      }
-      try {
-        const remaining = player.duration - player.currentTime;
-        if (remaining > CROSSFADE_SEC + 0.5) {
-          // Listener seeked back out of the fade window
-          cancelFade(true);
-          return;
-        }
-        player.volume = Math.min(1, Math.max(0, remaining / CROSSFADE_SEC));
-      } catch {
-        // player not ready
-      }
-    }, FADE_TICK_MS);
-  }, [cancelFade]);
-
-  // Bring the incoming track up from silence over CROSSFADE_MS
-  const startFadeIn = useCallback(() => {
-    cancelFade(false);
-    fadeModeRef.current = 'in';
-    const startedAt = Date.now();
-    setVolume(0);
-    fadeIntervalRef.current = setInterval(() => {
-      const volume = Math.min(1, (Date.now() - startedAt) / CROSSFADE_MS);
-      setVolume(volume);
-      if (volume >= 1) {
-        cancelFade(false);
-      }
-    }, FADE_TICK_MS);
-  }, [cancelFade]);
+  };
 
   const setCrossfadeEnabled = useCallback((enabled: boolean) => {
     setCrossfadeEnabledState(enabled);
     crossfadeEnabledRef.current = enabled;
     saveCrossfadeEnabled(enabled);
     if (!enabled) {
-      cancelFade(true);
+      settleCrossfade();
     }
-  }, [cancelFade]);
+  }, []);
 
   useEffect(() => {
     loadCrossfadeEnabled().then((enabled) => {
@@ -305,6 +305,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       'Queue length': queueRef.current.length,
       'Native tracks': player ? player.trackCount : 'no player',
       Playing: player ? player.playing : false,
+      Crossfade: crossfadeEnabledRef.current ? (idleRef.current ? 'on (2 decks)' : 'on') : 'off',
       'Lock screen activations': info.attempts,
       'Last activation error': info.lastError ?? 'none',
       'Artwork URL': info.artworkUrl ?? artworkUrlRef.current ?? 'none',
@@ -313,13 +314,69 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
   // ---- Native playlist -------------------------------------------------------------
 
-  const onStatus = useCallback((status: AudioPlaylistStatus) => {
+  // The UI only needs a couple of updates per second (and every play/pause/load change)
+  const publishStatus = (next: PlaybackStatus) => {
+    const last = uiStatusRef.current;
+    const now = Date.now();
+    if (
+      now - last.at < UI_STATUS_INTERVAL_MS &&
+      last.isPlaying === next.isPlaying &&
+      last.isLoaded === next.isLoaded &&
+      last.durationMillis === next.durationMillis
+    ) {
+      return;
+    }
+    uiStatusRef.current = {
+      at: now,
+      isPlaying: next.isPlaying,
+      isLoaded: next.isLoaded,
+      durationMillis: next.durationMillis,
+    };
+    setPlaybackStatus(next);
+  };
+
+  // Every fade step happens here, in response to a native status event from one of the decks
+  const onStatus = (deck: AudioPlaylist, status: AudioPlaylistStatus) => {
     if (rebuildingRef.current) return;
-    const player = playerRef.current;
+    const fade = fadeRef.current;
+
+    // Incoming deck still starting up: the overlap begins once it is really playing
+    if (fade && deck === fade.to && fade.length === null) {
+      const loadError = (status as any).error;
+      if (loadError) {
+        console.error('Next track failed to load:', loadError);
+      }
+      if (!(status.playing && status.currentIndex === fade.toIndex && status.currentTime > 0)) return;
+      commitCrossfade(fade);
+    }
+
+    if (deck !== playerRef.current) {
+      if (fade && deck === fade.from && fade.length !== null) {
+        // Outgoing deck: fade out over what is left of its track, then stop it before it rolls over
+        const remaining = status.duration - status.currentTime;
+        if (
+          !status.playing ||
+          status.currentIndex !== fade.fromIndex ||
+          remaining <= FADE_END_GUARD_SEC ||
+          remaining > fade.length + 1
+        ) {
+          settleCrossfade();
+        } else {
+          setDeckVolume(deck, fadeOutGain(1 - remaining / fade.length));
+        }
+      } else if (status.playing) {
+        // A parked deck must never be heard (e.g. resumed by the system after an interruption)
+        parkDeck(deck);
+      }
+      return;
+    }
+
+    // ---- Current deck ----
+    const player = deck;
     const positionMillis = Math.floor(status.currentTime * 1000);
     const durationMillis = Math.floor(status.duration * 1000);
 
-    setPlaybackStatus({
+    publishStatus({
       isPlaying: status.playing,
       positionMillis,
       durationMillis,
@@ -349,79 +406,203 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
 
     // Periodically remember the position while playing
+    // eslint-disable-next-line react-hooks/purity -- native event handler, never runs during render
     if (status.playing && Date.now() - lastSaveRef.current > SAVE_INTERVAL_MS) {
       persistState(positionMillis);
     }
 
-    // Start fading out when the track enters its last few seconds (and another track follows)
-    const hasNextTrack = currentIndexRef.current < queueRef.current.length - 1;
-    if (
-      crossfadeEnabledRef.current &&
-      status.playing &&
-      fadeModeRef.current === null &&
-      hasNextTrack &&
-      status.duration > 0 &&
-      status.duration - status.currentTime <= CROSSFADE_SEC
-    ) {
-      startFadeOut();
+    if (fade && fadeRef.current === fade) {
+      if (!status.playing) {
+        // Paused from outside the app (lock screen, headset, phone call) in the middle of an overlap
+        settleCrossfade();
+      } else if (deck === fade.to && fade.length !== null) {
+        setDeckVolume(deck, fadeInGain(status.currentTime / fade.length));
+      }
+    } else if (!fadeRef.current) {
+      // Playing alone: always at full volume
+      if (status.volume < 1) {
+        setDeckVolume(deck, 1);
+      }
+      // Near the end of the track (and another one follows): get the other deck ready, then start it
+      const index = currentIndexRef.current;
+      if (
+        crossfadeEnabledRef.current &&
+        status.playing &&
+        status.currentIndex === index &&
+        index < queueRef.current.length - 1 &&
+        skipFadeIndexRef.current !== index + 1 &&
+        status.duration > 0
+      ) {
+        const remaining = status.duration - status.currentTime;
+        if (remaining <= CROSSFADE_START_SEC) {
+          startCrossfade(index + 1);
+        } else if (remaining <= CUE_AHEAD_SEC) {
+          cueIdleDeck(index + 1);
+        }
+      }
     }
 
     // Whole queue finished: next launch should start the last track from the top
     if (status.didJustFinish && status.trackCount > 0) {
       endedRef.current = true;
-      cancelFade(true);
+      settleCrossfade();
       persistState(0);
       setPlaybackStatus((prev) => ({ ...prev, isPlaying: false }));
     }
-  }, [persistState, startFadeOut, cancelFade]);
+  };
 
-  const onTrackChanged = useCallback(() => {
+  const onTrackChanged = (deck: AudioPlaylist) => {
     if (rebuildingRef.current) return;
-    const player = playerRef.current;
-    if (!player) return;
+    const fade = fadeRef.current;
+    if (fade) {
+      const liveIndex = deck.currentIndex;
+      // Echo of parking the incoming deck on its track
+      if (deck === fade.to && liveIndex === fade.toIndex) return;
+      if (deck === fade.from && liveIndex === fade.fromIndex) return;
+      // One of the two decks moved on by itself: the outgoing track ran out before the next one was
+      // ready, or next/previous was pressed on the lock screen. Stop overlapping.
+      if (fade.length === null && deck === fade.from) {
+        logDiag('crossfade: next track was not ready in time, continued without overlap');
+      }
+      settleCrossfade();
+    }
+    if (deck !== playerRef.current) return; // the other deck being parked on its track
+
     // Read the live index: stale events from a queue rebuild then resolve correctly
-    const index = player.currentIndex;
+    const index = deck.currentIndex;
     const track = queueRef.current[index];
     if (!track) return;
 
-    // Volume handling for the incoming track
-    if (fadeModeRef.current === 'out' && crossfadeEnabledRef.current) {
-      startFadeIn();
-    } else {
-      cancelFade(true);
-    }
+    // The deck moved to this track on its own: it plays alone, at full volume
+    setDeckVolume(deck, 1);
 
     if (currentTrackRef.current?.id !== track.id) {
       setActiveTrack(index);
       updateLockScreen(track);
       persistState(0, track);
     }
-  }, [startFadeIn, cancelFade, persistState]);
+  };
 
-  const statusSubRef = useRef<{ remove: () => void } | null>(null);
-  const trackSubRef = useRef<{ remove: () => void } | null>(null);
+  const createDeck = (): AudioPlaylist => {
+    const deck = createAudioPlaylist({ loop: 'none', updateInterval: STATUS_INTERVAL_MS });
+    deckSubsRef.current.push(
+      deck.addListener('playlistStatusUpdate', (status) => onStatus(deck, status)),
+      deck.addListener('trackChanged', () => onTrackChanged(deck))
+    );
+    return deck;
+  };
 
   const ensurePlayer = (): AudioPlaylist => {
     if (playerRef.current) return playerRef.current;
-    const player = createAudioPlaylist({ loop: 'none', updateInterval: 500 });
+    const player = createDeck();
     logDiag(
       `playlist created (setActiveForLockScreen: ${typeof (player as any).setActiveForLockScreen}, updateLockScreenMetadata: ${typeof (player as any).updateLockScreenMetadata})`
     );
-    statusSubRef.current = player.addListener('playlistStatusUpdate', onStatus);
-    trackSubRef.current = player.addListener('trackChanged', onTrackChanged);
     playerRef.current = player;
     return player;
   };
 
-  // Replace the whole native queue (stops whatever is playing)
-  const loadQueue = (player: AudioPlaylist, tracks: Track[]) => {
+  // The queue changed: the idle deck is rebuilt from it the next time it is needed
+  const markQueueChanged = () => {
+    queueVersionRef.current += 1;
+    cuedIndexRef.current = null;
+    skipFadeIndexRef.current = null;
+  };
+
+  // Replace a deck's whole native queue (stops whatever it is playing)
+  const loadQueue = (deck: AudioPlaylist, tracks: Track[]) => {
     rebuildingRef.current = true;
     try {
-      player.clear();
-      tracks.forEach((t) => player.add(toSource(t)));
+      deck.clear();
+      tracks.forEach((t) => deck.add(toSource(t)));
     } finally {
       rebuildingRef.current = false;
     }
+    deckVersionRef.current.set(deck, queueVersionRef.current);
+  };
+
+  // ---- Crossfade (two decks overlapping) -------------------------------------------
+
+  // Park the other deck, silent, on the upcoming track so it has buffered by the time it is needed
+  const cueIdleDeck = (index: number) => {
+    if (cuedIndexRef.current === index) return;
+    try {
+      let deck = idleRef.current;
+      if (!deck) {
+        deck = createDeck();
+        idleRef.current = deck;
+        logDiag('crossfade: second deck created');
+      }
+      deck.pause();
+      setDeckVolume(deck, 0);
+      if (deckVersionRef.current.get(deck) !== queueVersionRef.current) {
+        loadQueue(deck, queueRef.current);
+      }
+      if (deck.currentIndex !== index) {
+        deck.skipTo(index);
+      } else {
+        deck.seekTo(0).catch(() => {});
+      }
+      cuedIndexRef.current = index;
+    } catch (error: any) {
+      skipFadeIndexRef.current = index;
+      logDiag(`crossfade: could not prepare the next track: ${error?.message ?? String(error)}`);
+    }
+  };
+
+  // Start the next track, silent, on the other deck. Nothing is faded until it is really playing,
+  // so if it never starts the current deck just moves on to the next track by itself.
+  const startCrossfade = (nextIndex: number) => {
+    const from = playerRef.current;
+    if (!from || fadeRef.current) return;
+    try {
+      // Status events can be stale right after a manual skip: confirm with the live player first
+      if (!from.playing || from.currentIndex !== currentIndexRef.current) return;
+      const duration = from.duration;
+      if (!(duration > 0) || duration - from.currentTime > CROSSFADE_START_SEC) return;
+      cueIdleDeck(nextIndex);
+      const to = idleRef.current;
+      if (!to || cuedIndexRef.current !== nextIndex) return;
+      to.volume = 0;
+      to.play();
+      fadeRef.current = { from, to, fromIndex: currentIndexRef.current, toIndex: nextIndex, length: null };
+    } catch (error: any) {
+      skipFadeIndexRef.current = nextIndex;
+      logDiag(`crossfade: could not start the next track: ${error?.message ?? String(error)}`);
+    }
+  };
+
+  // The incoming deck is really playing: it becomes the current deck and the two tracks overlap
+  // for whatever is left of the outgoing one.
+  const commitCrossfade = (fade: Crossfade) => {
+    const track = queueRef.current[fade.toIndex];
+    if (!track) {
+      settleCrossfade();
+      return;
+    }
+    let remaining = CROSSFADE_SEC;
+    try {
+      remaining = fade.from.duration - fade.from.currentTime;
+    } catch {
+      // deck released
+    }
+    if (remaining > CROSSFADE_START_SEC + 1) {
+      // The outgoing track was seeked away from its end in the meantime: nothing to blend into
+      settleCrossfade();
+      return;
+    }
+    fade.length = Math.min(CROSSFADE_SEC, Math.max(MIN_CROSSFADE_SEC, remaining));
+    playerRef.current = fade.to;
+    idleRef.current = fade.from;
+    cuedIndexRef.current = null;
+    setIsLoading(false);
+    setActiveTrack(fade.toIndex);
+    // Moves the lock screen / Bluetooth controls over to the deck that is now current
+    activateLockScreen(track);
+    persistState(0, track);
+    logDiag(
+      `crossfade: mixing into "${track.title}" over ${fade.length.toFixed(1)}s (app ${AppState.currentState})`
+    );
   };
 
   // Reorder the native queue around the current track without interrupting playback
@@ -468,6 +649,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       setIsFavorite(favoritesRef.current.has(tracks[index].id));
 
       const player = ensurePlayer();
+      markQueueChanged();
       loadQueue(player, tracks);
       player.skipTo(index);
       if (positionSec > 0) {
@@ -513,20 +695,22 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     init();
 
     return () => {
-      cancelFade(false);
-      statusSubRef.current?.remove();
-      trackSubRef.current?.remove();
-      const player = playerRef.current;
+      fadeRef.current = null;
+      deckSubsRef.current.forEach((sub) => sub.remove());
+      deckSubsRef.current = [];
+      const decks = [playerRef.current, idleRef.current];
       playerRef.current = null;
-      if (player) {
+      idleRef.current = null;
+      decks.forEach((deck) => {
+        if (!deck) return;
         try {
-          player.clearLockScreenControls();
-          player.destroy();
-          player.release();
+          deck.clearLockScreenControls();
+          deck.destroy();
+          deck.release();
         } catch {
           // already released
         }
-      }
+      });
     };
   }, []);
 
@@ -581,6 +765,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const playTrack = useCallback(async (track: Track, newPlaylist?: Track[]) => {
     try {
       setIsLoading(true);
+      settleCrossfade();
       const player = ensurePlayer();
 
       let queue = queueRef.current;
@@ -592,6 +777,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         queue = newPlaylist;
         const index = Math.max(0, queue.findIndex((t) => t.id === track.id));
         applyQueueState(queue, queue, false, index);
+        markQueueChanged();
         loadQueue(player, queue);
       } else if (needsRebuild) {
         loadQueue(player, queue);
@@ -601,7 +787,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       setActiveTrack(index);
 
       // Manual selection always starts at full volume
-      cancelFade(true);
+      setDeckVolume(player, 1);
       endedRef.current = false;
       pendingSeekSecRef.current = null;
 
@@ -615,9 +801,10 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       console.error('Error playing track:', error);
       setIsLoading(false);
     }
-  }, [persistState, cancelFade, refreshLockScreen]);
+  }, [persistState, refreshLockScreen]);
 
   const pauseTrack = useCallback(async () => {
+    settleCrossfade();
     const player = playerRef.current;
     if (!player) return;
     try {
@@ -646,19 +833,20 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   }, []);
 
   const stopTrack = useCallback(async () => {
-    const player = playerRef.current;
     try {
-      cancelFade(true);
-      if (player) {
-        rebuildingRef.current = true;
-        try {
-          player.pause();
-          player.clearLockScreenControls();
-          player.clear();
-        } finally {
-          rebuildingRef.current = false;
-        }
+      settleCrossfade();
+      rebuildingRef.current = true;
+      try {
+        [playerRef.current, idleRef.current].forEach((deck) => {
+          if (!deck) return;
+          deck.pause();
+          deck.clearLockScreenControls();
+          deck.clear();
+        });
+      } finally {
+        rebuildingRef.current = false;
       }
+      markQueueChanged();
       queueRef.current = [];
       setPlaylist([]);
       setCurrentIndex(-1);
@@ -675,9 +863,10 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     } catch (error) {
       console.error('Error stopping track:', error);
     }
-  }, [cancelFade]);
+  }, []);
 
   const seekTo = useCallback(async (positionMillis: number) => {
+    settleCrossfade();
     const player = playerRef.current;
     if (!player) return;
     try {
@@ -712,11 +901,13 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   }, [favorites]);
 
   const skipTo = (index: number) => {
+    settleCrossfade();
     const player = playerRef.current;
     const track = queueRef.current[index];
     if (!player || !track) return;
     setIsLoading(true);
-    cancelFade(true);
+    // Manual skips always start at full volume
+    setDeckVolume(player, 1);
     endedRef.current = false;
     setActiveTrack(index);
     player.skipTo(index);
@@ -729,15 +920,16 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     if (currentIndexRef.current < queueRef.current.length - 1) {
       skipTo(currentIndexRef.current + 1);
     }
-  }, [persistState, cancelFade]);
+  }, [persistState]);
 
   const playPrevious = useCallback(async () => {
     if (currentIndexRef.current > 0) {
       skipTo(currentIndexRef.current - 1);
     }
-  }, [persistState, cancelFade]);
+  }, [persistState]);
 
   const shufflePlaylist = useCallback(() => {
+    settleCrossfade();
     const player = playerRef.current;
     const current = currentTrackRef.current;
     const queue = queueRef.current;
@@ -767,9 +959,11 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     setCurrentIndex(newIndex);
     currentIndexRef.current = newIndex;
 
+    markQueueChanged();
     if (player) {
       try {
         reorderQueue(player, newQueue, current);
+        deckVersionRef.current.set(player, queueVersionRef.current);
       } catch (error) {
         console.error('Error reordering queue:', error);
       }
