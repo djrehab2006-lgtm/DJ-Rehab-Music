@@ -6128,16 +6128,6 @@ export const HARDCODED_TRACKS: Track[] = [
     position: 7,
   },
   {
-    id: 'xmas-track-9',
-    title: "Pure Water (Rehab Last Christmas Flip)",
-    artist: "DJ Rehab",
-    cdn_url: "https://DJ-Rehab-App.b-cdn.net/Christmas%202026/Pure%20Water%20(Rehab%20Last%20Christmas%20Flip).mp3",
-    duration: 180,
-    folder_id: "christmas-house-party",
-    cover_art: null,
-    position: 8,
-  },
-  {
     id: 'xmas-track-10',
     title: "Wonderful Christmas Time (Rehab Ms. New Booty Flip)",
     artist: "DJ Rehab",
@@ -6145,7 +6135,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "christmas-house-party",
     cover_art: null,
-    position: 9,
+    position: 8,
   },
   {
     id: 'xmas-track-11',
@@ -6155,7 +6145,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "christmas-house-party",
     cover_art: null,
-    position: 10,
+    position: 9,
   },
   {
     id: 'xmas-track-12',
@@ -6165,7 +6155,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "christmas-house-party",
     cover_art: null,
-    position: 11,
+    position: 10,
   },
   {
     id: 'xmas-track-13',
@@ -6175,7 +6165,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "christmas-house-party",
     cover_art: null,
-    position: 12,
+    position: 11,
   },
   {
     id: 'xmas-track-14',
@@ -6185,7 +6175,7 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "christmas-house-party",
     cover_art: null,
-    position: 13,
+    position: 12,
   },
   {
     id: 'xmas-track-15',
@@ -6195,6 +6185,6 @@ export const HARDCODED_TRACKS: Track[] = [
     duration: 180,
     folder_id: "christmas-house-party",
     cover_art: null,
-    position: 14,
+    position: 13,
   },
 ];
