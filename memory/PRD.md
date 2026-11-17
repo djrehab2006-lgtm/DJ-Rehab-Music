@@ -22,7 +22,7 @@ Standalone Android music streaming app (Expo / React Native) for Google Play. No
 - What's New pop-up: built then REMOVED at user request (June 2026). Files deleted (WhatsNewModal.tsx, whatsNew.ts). Do not re-add unless asked.
 
 ## Build Info
-- `app.json` → `expo.android.versionCode`: **5004** (June 2026: overlapping crossfade that keeps working with the screen off; 5003 = lock-screen diagnostics report)
+- `app.json` → `expo.android.versionCode`: **5005** (Nov 2026: Christmas House Party folder; 5004 = June 2026: overlapping crossfade that keeps working with the screen off; 5003 = lock-screen diagnostics report)
 - Lock-screen controls on Android 13+ need the POST_NOTIFICATIONS runtime permission (expo-audio docs: required for media controls). Declared in app.json; `app/utils/lockScreenPermission.ts` asks contextually on first play (benefit alert → system prompt, max 2 auto-prompts), Profile → Playback → "Lock screen controls" row shows status with Enable / Open Settings fallback; `refreshLockScreen()` in context re-posts the notification after grant.
 - `expo-build-properties` must NOT pin compileSdk/targetSdk/buildTools on SDK 58 (defaults: compileSdk 37, targetSdk 36, buildTools 37.0.0). Pinning 36 caused `checkReleaseAarMetadata` build failure (fixed June 2026).
 - User builds locally with EAS on Mac. **Must download latest code from Emergent before building.**
@@ -30,6 +30,7 @@ Standalone Android music streaming app (Expo / React Native) for Google Play. No
 ## Backlog
 - Yacht Rock x Hip-Hop Mashups folder removed (June 2026) — re-add when tracks are ready
 - "November 2026 Releases" folder (id `november-2026-releases`, position 0 / top) created June 2026 — 18 tracks (ids `nov26-track-1..18`)
+- "Christmas House Party" folder (id `christmas-house-party`, position 0 / top, fixed bright Christmas red gradient `['#FF1010', '#D80016']` + new optional `Folder.watermarkOpacity: 0.14` — the blue logo watermark at its default 0.28 turned the red into raspberry; renders ≈ #E42431 → #D41D33) created Nov 2026 — EMPTY (0 tracks) until the user supplies the track list; use ids `xmas-track-N`. All other folder positions were shifted +1 (Halloween is now position 2).
 - "Halloween" folder (id `halloween`, position 0 / top, fixed orange gradient via new optional `Folder.gradient` field — fixed-gradient tiles do not consume a palette slot) created June 2026 — 44 tracks (ids `hal-track-1..44`; DJ Kelly Lynn tracks credited to "DJ Kelly Lynn")
 - "October 2026 New Releases" folder (id `october-2026-new-releases`, position 0 / top, NEW badge) created June 2026 — 22 tracks (ids `oct26-track-1..23`; oct26-track-10 removed; 17-23 added from "October 2nd Update")
 - "Rock x Hip-Hop" folder (id `rock-x-hiphop`, position 3, between Country X Hip-Hop and August Releases) created June 2026 — 39 tracks added (ids `rxh-track-1..39`)

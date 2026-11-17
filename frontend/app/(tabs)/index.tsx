@@ -56,7 +56,11 @@ export default function HomeScreen() {
         end={{ x: 0.8, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
-      <Image source={FOLDER_ICON} style={styles.tileWatermark} resizeMode="cover" />
+      <Image
+        source={FOLDER_ICON}
+        style={[styles.tileWatermark, item.watermarkOpacity !== undefined && { opacity: item.watermarkOpacity }]}
+        resizeMode="cover"
+      />
 
       {index === 0 && (
         <View style={styles.newBadge}>
