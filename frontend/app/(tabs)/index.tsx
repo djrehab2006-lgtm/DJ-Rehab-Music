@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { HERO_BACKGROUND } from '../constants/heroBackground';
 import { HARDCODED_FOLDERS, HARDCODED_TRACKS, Folder, Track, FOLDER_ICON } from '../constants/musicData';
 import { CARD_GRADIENTS } from '../components/CardGradient';
+import { SeasonalBanner, SEASONAL_FOLDER_ID } from '../components/SeasonalBanner';
 
 const GRID_PADDING = 20;
 const GRID_GAP = 16;
@@ -78,6 +79,8 @@ export default function HomeScreen() {
     );
   };
 
+  const bannerFolder = folders.find((f) => f.id === SEASONAL_FOLDER_ID);
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -102,6 +105,14 @@ export default function HomeScreen() {
         </ImageBackground>
 
         <View style={styles.section}>
+          {bannerFolder && (
+            <SeasonalBanner
+              folder={bannerFolder}
+              trackCount={getTrackCount(bannerFolder.id)}
+              onPress={() => router.push({ pathname: '/collection/[id]', params: { id: bannerFolder.id } })}
+            />
+          )}
+
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Your Collections</Text>
             <View style={styles.sectionCount}>
