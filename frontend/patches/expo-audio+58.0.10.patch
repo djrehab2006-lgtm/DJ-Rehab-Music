@@ -75,6 +75,140 @@ index b6b3b73..027ff7c 100644
  ) : Record
  
  enum class LoopMode(val value: String) : Enumerable {
+diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
+index 53c36f7..98a3976 100644
+--- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
++++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
+@@ -51,8 +51,10 @@ class AudioControlsService : MediaSessionService() {
+   private var currentArtworkUrl: URL? = null
+   private var currentArtwork: Bitmap? = null
+   private var artworkLoadJob: Job? = null
++  // One notification for the whole service: handing the session over to another player must not
++  // remove it and post a new one.
+   private val notificationId: Int
+-    get() = currentPlayable?.hashCode() ?: CHANNEL_ID.hashCode()
++    get() = CHANNEL_ID.hashCode()
+ 
+   private var weakContext: WeakReference<AppContext>? = null
+   var appContext: AppContext?
+@@ -435,8 +437,10 @@ class AudioControlsService : MediaSessionService() {
+     options: AudioLockScreenOptions? = null
+   ) {
+     removePlayerListener()
+-    currentPlayable?.isActiveForLockScreen = false
+-    hideNotification()
++    val previousPlayable = currentPlayable
++    if (previousPlayable !== playable) {
++      previousPlayable?.isActiveForLockScreen = false
++    }
+ 
+     currentPlayable = playable
+     currentMetadata = metadata
+@@ -446,27 +450,44 @@ class AudioControlsService : MediaSessionService() {
+     playable?.isActiveForLockScreen = true
+ 
+     if (playable != null) {
+-      mediaSession?.release()
+-      sessionMetadataPlayer = null
+-
+       appContext?.mainQueue?.launch {
+         val context = appContext?.reactContext ?: return@launch
++        if (currentPlayable !== playable) {
++          // Another player took over before this ran.
++          return@launch
++        }
+         val sessionPlayer = MetadataInjectingPlayer(resolveSessionPlayer(playable, options)).apply {
+           updateMetadata(metadata)
+         }
+-        // Distinguish this lock-screen session from the basic session built in
+-        // `buildBasicMediaSession` (and from sessions for other players); two
+-        // MediaSession instances with the empty default ID throw on construction.
+-        val session = MediaSession.Builder(context, sessionPlayer)
+-          .setId("ExpoAudioLockScreenSession_${playable.player.hashCode()}")
+-          .setCallback(AudioMediaSessionCallback(this@AudioControlsService))
+-          .build()
+ 
+-        // Replace the basic media session with a session connected to our playback service.
+-        playable.mediaSession.release()
+-        playable.mediaSession = session
++        // The session is kept when another player (or the same one, with new options) takes over:
++        // only its player is swapped. Releasing it and building a new one makes the lock screen,
++        // the notification and Bluetooth devices drop the controls and load them again.
++        val existingSession = mediaSession
++        val session = if (existingSession != null) {
++          existingSession.player = sessionPlayer
++          existingSession
++        } else {
++          val newSession = MediaSession.Builder(context, sessionPlayer)
++            .setId("ExpoAudioLockScreenSession_${playable.player.hashCode()}")
++            .setCallback(AudioMediaSessionCallback(this@AudioControlsService))
++            .build()
++          addSession(newSession)
++          newSession
++        }
++
++        val ownSession = playable.mediaSession
++        if (ownSession !== session) {
++          // Replace the playable's own (basic) session with the session connected to our playback service.
++          ownSession.release()
++          playable.mediaSession = session
++          // The previous playable hands the session over. It keeps a released one instead, so
++          // releasing that playable later can't close the session that is still in use.
++          if (previousPlayable != null && previousPlayable !== playable && previousPlayable.mediaSession === session) {
++            previousPlayable.mediaSession = ownSession
++          }
++        }
+ 
+-        addSession(session)
+         mediaSession = session
+         sessionMetadataPlayer = sessionPlayer
+ 
+@@ -480,6 +501,7 @@ class AudioControlsService : MediaSessionService() {
+         postOrStartForegroundNotification(startInForeground = false)
+       }
+     } else {
++      hideNotification()
+       clearSessionInternal()
+     }
+   }
+@@ -525,36 +547,7 @@ class AudioControlsService : MediaSessionService() {
+     metadata: Metadata?,
+     options: AudioLockScreenOptions?
+   ) {
+-    if (playable == currentPlayable) {
+-      currentMetadata = metadata
+-      currentOptions = options
+-      updateArtwork(metadata, postUpdate = false)
+-
+-      mediaSession?.release()
+-      sessionMetadataPlayer = null
+-      appContext?.mainQueue?.launch {
+-        val context = appContext?.reactContext ?: return@launch
+-        val sessionPlayer = MetadataInjectingPlayer(resolveSessionPlayer(playable, options)).apply {
+-          updateMetadata(metadata)
+-        }
+-        val session = MediaSession.Builder(context, sessionPlayer)
+-          .setId("ExpoAudioLockScreenSession_${playable.player.hashCode()}")
+-          .setCallback(AudioMediaSessionCallback(this@AudioControlsService))
+-          .build()
+-
+-        playable.mediaSession.release()
+-        playable.mediaSession = session
+-
+-        addSession(session)
+-        mediaSession = session
+-        sessionMetadataPlayer = sessionPlayer
+-
+-        updateSessionCustomLayout(playable.player.isPlaying)
+-        postOrStartForegroundNotification(startInForeground = false)
+-      }
+-    } else {
+-      setActivePlayableInternal(playable, metadata, options)
+-    }
++    setActivePlayableInternal(playable, metadata, options)
+   }
+ 
+   fun unregisterPlayable() {
 diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/MetadataInjectingPlayer.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/MetadataInjectingPlayer.kt
 index 18203a3..af714be 100644
 --- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/MetadataInjectingPlayer.kt
