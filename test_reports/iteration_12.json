@@ -1,0 +1,23 @@
+{
+  "summary": "Iteration 12 frontend-only verification on web preview (390x844 + 360x640). Tested the new Now Playing full-screen view, three-dots menu (Go to album / Add to playlist / Share), Skip-Broken-Songs engine behaviour (dev hook `window.__audioEngineDebug.failCurrentDeck`), and regression of existing play/pause/seek/next/prev/favorite/shuffle/mini-player flows. Everything in the review request works: tapping the track-info area of the mini player opens `now-playing-screen`, header shows 'PLAYING FROM Christmas House Party', duration shows 2:58 (not --:--), position advances, artwork is 342x342 square centered inside the 390 wide screen (and 266x266 inside 360 wide - not cropped). Menu opens, backdrop closes only the menu, Go-to-album navigates to /collection/christmas-house-party while music keeps playing and mini player stays in sync. Add-to-playlist modal opens on top. Share does not crash. Mini player tap targets for prev/play/next/heart do NOT open Now Playing - only the track info area does. failCurrentDeck(2004) and (3003) skip to next song and append to the 'Songs skipped' report. 6 rapid failures stop playback with log 'several songs in a row could not be played, waiting for Play' and pressing play then works. failCurrentDeck(2001) leaves the same track in place (does not skip) as expected. Playing a track from Search produces the correct album name in Now Playing and Go-to-album routes to the right folder. No uncaught console errors beyond the known useNativeDriver warning and the expo-router 'missing default export' warnings excluded by the request.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "NowPlaying.tsx: artwork size uses onLayout which runs after first render, so on the very first open the Image renders with width/height = 0 before snapping to size. Visually imperceptible on web but could be replaced with a flex child + aspectRatio=1 to avoid the double layout pass.",
+    "NowPlaying share button in the controls row (testID now-playing-share) is not in the review spec (spec puts share only in the 3-dot menu). It is harmless but is a duplicate control - consider removing to match the spec exactly."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100%"},
+  "seed_data_creation": "none",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Dev hook is `window.__audioEngineDebug` with methods failCurrentDeck(code) and report(). Codes 2003/2004/2005/2006/2008/3001-3004/4001-4005 skip the song; other codes restart the SAME song. MAX_BROKEN_SKIPS=5 (6th in a row within 5s pauses playback). Album name is derived from HARDCODED_FOLDERS mapping of track.folder_id via albumName() helper in /app/frontend/app/utils/audioEngine.ts. Now Playing is a React Native <Modal> rendered on top via portal on web. Mini player track-info area has testID `mini-player-open`; control buttons have testIDs `mini-player-play-pause`, `mini-player-next`, `mini-player-previous` and must not open Now Playing (verified).",
+  "rca_of_issue": "N/A - no bugs found."
+}

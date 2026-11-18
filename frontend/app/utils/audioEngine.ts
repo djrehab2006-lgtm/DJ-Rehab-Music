@@ -1,4 +1,4 @@
-import { AppState, type AppStateStatus } from 'react-native';
+import { AppState, Platform, type AppStateStatus } from 'react-native';
 import { create } from 'zustand';
 import {
   createAudioPlaylist,
@@ -9,7 +9,7 @@ import {
   type AudioLockScreenOptions,
 } from 'expo-audio';
 import { Asset } from 'expo-asset';
-import { TRACK_ICON } from '../constants/musicData';
+import { TRACK_ICON, HARDCODED_FOLDERS } from '../constants/musicData';
 import {
   savePlaybackState,
   loadPlaybackState,
@@ -93,7 +93,26 @@ const UI_STATUS_INTERVAL_MS = 450;
 // Each failed attempt takes the native player a few seconds, so this rides out a short loss of signal.
 const MAX_RESTARTS = 20;
 
-const toSource = (t: Track) => ({ uri: t.cdn_url, name: t.title });
+// Native error codes (ExoPlayer) that mean the song itself cannot be played (missing or damaged
+// file), as opposed to a lost connection. These songs are skipped instead of retried.
+const BROKEN_SONG_CODES = [2003, 2004, 2005, 2006, 2008, 3001, 3002, 3003, 3004, 4001, 4002, 4003, 4004, 4005];
+
+// Broken songs skipped in a row before waiting for the listener (protects against the whole
+// music server being down)
+const MAX_BROKEN_SKIPS = 5;
+
+/** The folder a track belongs to, shown as its album. */
+export const albumName = (t: Track) =>
+  HARDCODED_FOLDERS.find((f) => f.id === t.folder_id)?.name ?? 'DJ Rehab Music';
+
+// `artist` and `albumTitle` are read by the patched Android player (patches/expo-audio+*.patch) so
+// every item of the native queue carries its own details for Bluetooth / car displays.
+const toSource = (t: Track) => ({
+  uri: t.cdn_url,
+  name: t.title,
+  artist: t.artist,
+  albumTitle: albumName(t),
+});
 
 const sameQueue = (a: Track[], b: Track[]) =>
   a.length === b.length && a.every((t, i) => t.id === b[i].id);
@@ -137,7 +156,9 @@ let lockScreenInfo: { attempts: number; lastError: string | null; artworkUrl: st
 let wantsToPlay = false; // the listener's intent, used to decide whether to restart after an error
 let restarts = 0; // automatic restarts in a row without the music moving forward
 let restartedAtSec = 0;
+let brokenSkips = 0; // broken songs skipped in a row
 let totalRestarts = 0;
+const skippedSongs: string[] = []; // titles of the broken songs skipped since the app started
 let initPromise: Promise<void> | null = null;
 
 const setLoading = (isLoading: boolean) => {
@@ -229,7 +250,7 @@ const setActiveTrack = (index: number) => {
 const metadataFor = (track: Track): AudioMetadata => ({
   title: track.title,
   artist: track.artist,
-  albumTitle: 'DJ Rehab Music',
+  albumTitle: albumName(track),
   artworkUrl: track.cover_art || artworkUrl,
 });
 
@@ -298,6 +319,7 @@ export const getLockScreenReport = () => {
     'Last activation error': lockScreenInfo.lastError ?? 'none',
     'Artwork URL': lockScreenInfo.artworkUrl ?? artworkUrl ?? 'none',
     'Playback restarts': totalRestarts,
+    'Songs skipped': skippedSongs.length > 0 ? skippedSongs.join(' | ') : 'none',
   });
 };
 
@@ -399,6 +421,35 @@ const restartOnOtherDeck = (positionSec: number) => {
   }
 };
 
+// The current song cannot be played at all: move on to the next one
+const skipBrokenTrack = () => {
+  const { currentIndex, playlist, currentTrack } = getState();
+  const nextIndex = currentIndex + 1;
+  if (currentTrack && !skippedSongs.includes(currentTrack.title)) {
+    skippedSongs.push(currentTrack.title);
+  }
+  if (nextIndex >= playlist.length || brokenSkips >= MAX_BROKEN_SKIPS) {
+    logDiag(
+      nextIndex >= playlist.length
+        ? 'the last song could not be played, stopped'
+        : 'several songs in a row could not be played, waiting for Play'
+    );
+    wantsToPlay = false;
+    markNotPlaying();
+    return;
+  }
+  brokenSkips += 1;
+  logDiag(`skipped "${currentTrack?.title ?? '?'}", moving to the next song`);
+  try {
+    setActiveTrack(nextIndex);
+    restartOnOtherDeck(0);
+    persistState(0, playlist[nextIndex]);
+  } catch (skipError: any) {
+    logDiag(`skip failed: ${skipError?.message ?? String(skipError)}`);
+    markNotPlaying();
+  }
+};
+
 const onDeckError = (deck: AudioPlaylist, positionSec: number, error: any) => {
   if (deadDecks.has(deck)) return;
   deadDecks.add(deck);
@@ -423,6 +474,10 @@ const onDeckError = (deck: AudioPlaylist, positionSec: number, error: any) => {
   logDiag(`playback error at ${Math.floor(resumeAt)}s of "${getState().currentTrack?.title ?? '?'}": ${reason}`);
   if (!wantsToPlay) {
     markNotPlaying();
+    return;
+  }
+  if (BROKEN_SONG_CODES.includes(error?.code)) {
+    skipBrokenTrack();
     return;
   }
   if (restarts >= MAX_RESTARTS) {
@@ -473,6 +528,29 @@ function onStatus(deck: AudioPlaylist, status: AudioPlaylistStatus) {
   const error = (status as any).error;
   if (error) {
     onDeckError(deck, status.currentTime, error);
+    return;
+  }
+  // Android only: the native player was stopped without an error (a Stop command from a car
+  // stereo, a headset or the system). It cannot simply be resumed, so Play restarts it on the other deck.
+  if (
+    Platform.OS === 'android' &&
+    !status.playing &&
+    !status.isLoaded &&
+    !status.isBuffering &&
+    status.trackCount > 0 &&
+    !deadDecks.has(deck)
+  ) {
+    deadDecks.add(deck);
+    if (fade && (deck === fade.from || deck === fade.to)) {
+      settleCrossfade();
+    }
+    if (deck === player) {
+      logDiag(`playback was stopped from outside the app at ${Math.floor(status.currentTime)}s`);
+      wantsToPlay = false;
+      markNotPlaying();
+    } else {
+      cuedIndex = null;
+    }
     return;
   }
   // Restarted from outside the app (Play on the lock screen prepares the native player again)
@@ -528,6 +606,9 @@ function onStatus(deck: AudioPlaylist, status: AudioPlaylistStatus) {
     wantsToPlay = true;
     if (restarts > 0 && status.currentTime > restartedAtSec + 5) {
       restarts = 0;
+    }
+    if (brokenSkips > 0 && status.currentTime > 5) {
+      brokenSkips = 0;
     }
   } else if (status.isLoaded && !status.isBuffering && status.currentTime > 0.5) {
     // Really paused, from inside or outside the app (lock screen, headset, phone call)
@@ -828,10 +909,12 @@ export const playTrack = async (track: Track, newPlaylist?: Track[]) => {
     settleCrossfade();
     wantsToPlay = true;
     restarts = 0;
+    brokenSkips = 0;
     if (player && deadDecks.has(player)) {
       replaceDeadPlayer();
     }
     const deck = ensurePlayer();
+    let rebuilt = false;
 
     let queue = getState().playlist;
     const needsRebuild =
@@ -845,8 +928,10 @@ export const playTrack = async (track: Track, newPlaylist?: Track[]) => {
       applyQueueState(queue, queue, false, index);
       markQueueChanged();
       loadQueue(deck, queue);
+      rebuilt = true;
     } else if (needsRebuild) {
       loadQueue(deck, queue);
+      rebuilt = true;
     }
 
     const index = Math.max(0, queue.findIndex((t) => t.id === track.id));
@@ -858,7 +943,13 @@ export const playTrack = async (track: Track, newPlaylist?: Track[]) => {
     pendingSeekSec = null;
 
     deck.skipTo(index);
-    activateLockScreen(queue[index]);
+    // The media session is only rebuilt when the queue itself changed; rebuilding it on every tap
+    // makes the lock screen and car display drop out for a moment.
+    if (rebuilt) {
+      activateLockScreen(queue[index]);
+    } else {
+      showOnLockScreen(queue[index]);
+    }
     deck.play();
     persistState(0, queue[index]);
     // Android 13+: controls only appear once notifications are allowed — ask contextually on first play
@@ -896,7 +987,7 @@ export const resumeTrack = async () => {
       ended = false;
       player.skipTo(Math.max(0, currentIndex));
     }
-    activateLockScreen(track);
+    showOnLockScreen(track);
     player.play();
   } catch (error) {
     console.error('Error resuming track:', error);
@@ -952,6 +1043,7 @@ const skipTo = (index: number) => {
     setLoading(true);
     wantsToPlay = true;
     ended = false;
+    brokenSkips = 0;
     setActiveTrack(index);
     if (deadDecks.has(player)) {
       restartOnOtherDeck(0);
@@ -1025,8 +1117,11 @@ export const shufflePlaylist = () => {
 if (__DEV__) {
   // Development only: lets the recovery path be exercised without a real network failure
   (globalThis as any).__audioEngineDebug = {
-    failCurrentDeck: () => {
-      if (player) onDeckError(player, player.currentTime, { message: 'simulated failure', code: 0 });
+    failCurrentDeck: (code = 0) => {
+      if (player) {
+        deadDecks.delete(player);
+        onDeckError(player, player.currentTime, { message: 'simulated failure', code });
+      }
     },
     report: getLockScreenReport,
   };

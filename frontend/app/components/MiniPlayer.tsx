@@ -12,6 +12,7 @@ import Slider from '@react-native-community/slider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { TRACK_ICON } from '../constants/musicData';
+import { NowPlaying } from './NowPlaying';
 
 export function MiniPlayer() {
   const insets = useSafeAreaInsets();
@@ -32,6 +33,7 @@ export function MiniPlayer() {
 
   const [slideValue, setSlideValue] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
+  const [nowPlayingVisible, setNowPlayingVisible] = useState(false);
   const slideAnimation = useState(new Animated.Value(0))[0];
 
   // Show/hide animation
@@ -111,8 +113,13 @@ export function MiniPlayer() {
 
       {/* Player Content */}
       <View style={styles.content}>
-        {/* Track Info */}
-        <View style={styles.trackInfo}>
+        {/* Track Info: opens the full-screen player */}
+        <TouchableOpacity
+          style={styles.trackInfo}
+          onPress={() => setNowPlayingVisible(true)}
+          activeOpacity={0.7}
+          testID="mini-player-open"
+        >
           <View style={styles.trackIcon}>
             <Image source={TRACK_ICON} style={styles.trackIconImage} />
           </View>
@@ -124,7 +131,7 @@ export function MiniPlayer() {
               {currentTrack.artist}
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Controls */}
         <View style={styles.controls}>
@@ -189,6 +196,8 @@ export function MiniPlayer() {
           </Text>
         </View>
       </View>
+
+      <NowPlaying visible={nowPlayingVisible} onClose={() => setNowPlayingVisible(false)} />
     </Animated.View>
   );
 }
