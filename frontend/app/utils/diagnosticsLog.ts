@@ -1,14 +1,45 @@
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const MAX_ENTRIES = 60;
+const MAX_ENTRIES = 120;
+const STORAGE_KEY = 'diagnostics_log';
 const entries: string[] = [];
+let previousEntries: string[] = [];
+let previousLoaded: Promise<void> | null = null;
+let saveQueued = false;
 let captureInstalled = false;
 
-const stamp = () => new Date().toISOString().substring(11, 19);
+// Month-day and time (UTC)
+const stamp = () => new Date().toISOString().substring(5, 19).replace('T', ' ');
+
+// The log is kept on the device so it survives the app being closed by the system: the report then
+// shows what happened right before playback stopped. The previous run is read before it is overwritten.
+const loadPrevious = (): Promise<void> => {
+  if (!previousLoaded) {
+    previousLoaded = AsyncStorage.getItem(STORAGE_KEY)
+      .then((raw) => {
+        previousEntries = raw ? JSON.parse(raw) : [];
+      })
+      .catch(() => {});
+  }
+  return previousLoaded;
+};
+
+const save = () => {
+  if (saveQueued) return;
+  saveQueued = true;
+  loadPrevious()
+    .then(() => {
+      saveQueued = false;
+      return AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    })
+    .catch(() => {});
+};
 
 const push = (line: string) => {
   entries.push(`${stamp()} ${line}`);
   if (entries.length > MAX_ENTRIES) entries.shift();
+  save();
 };
 
 /** App-level diagnostic line (always kept). */
@@ -54,6 +85,9 @@ export function getDiagnosticsReport(extra: Record<string, string | number | boo
     '',
     '--- recent log ---',
     ...(entries.length > 0 ? entries : ['(nothing captured)']),
+    '',
+    '--- previous run (before the app was last closed) ---',
+    ...(previousEntries.length > 0 ? previousEntries.slice(-60) : ['(none)']),
   ];
   return lines.join('\n');
 }
