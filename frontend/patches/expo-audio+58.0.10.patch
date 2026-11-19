@@ -98,7 +98,7 @@ index b6b3b73..027ff7c 100644
  
  enum class LoopMode(val value: String) : Enumerable {
 diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
-index 53c36f7..5cfeddd 100644
+index 53c36f7..9cdb586 100644
 --- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
 +++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
 @@ -12,7 +12,9 @@ import android.graphics.Bitmap
@@ -111,18 +111,39 @@ index 53c36f7..5cfeddd 100644
  import androidx.annotation.OptIn
  import androidx.core.app.NotificationCompat
  import androidx.media3.common.ForwardingPlayer
-@@ -51,8 +53,19 @@ class AudioControlsService : MediaSessionService() {
+@@ -44,6 +46,7 @@ class AudioControlsService : MediaSessionService() {
+   private val binder = AudioPlaybackServiceBinder(this)
+   private var mediaSession: MediaSession? = null
+   private var sessionMetadataPlayer: MetadataInjectingPlayer? = null
++  private var sessionDecks: DeckSwitchingPlayer? = null
+   private var currentMetadata: Metadata? = null
+   private var currentPlayable: LockScreenPlayable? = null
+   private var currentOptions: AudioLockScreenOptions? = null
+@@ -51,8 +54,32 @@ class AudioControlsService : MediaSessionService() {
    private var currentArtworkUrl: URL? = null
    private var currentArtwork: Bitmap? = null
    private var artworkLoadJob: Job? = null
 +  private val mainHandler = Handler(Looper.getMainLooper())
-+  // Publishes the session's playback state (track, position, playing) once more. Nothing changes
-+  // on the lock screen or in the notification.
-+  private val announceSessionState = Runnable {
-+    val playable = currentPlayable
-+    if (playable != null && mediaSession != null) {
-+      updateSessionCustomLayout(playable.player.isPlaying)
++  // Troubleshooting: reads the session back the way the lock screen and Bluetooth do and writes
++  // what they can see to the JS log (shown in the app's troubleshooting report).
++  private val reportSessionState = Runnable {
++    val session = mediaSession ?: return@Runnable
++    try {
++      val controller = android.media.session.MediaController(this, session.platformToken)
++      val state = controller.playbackState
++      val title = controller.metadata?.getString(android.media.MediaMetadata.METADATA_KEY_TITLE)
++      appContext?.jsLogger?.warn(
++        "[media session] shows \"$title\" (expected \"${currentMetadata?.title}\"), state ${state?.state}, " +
++          "item ${state?.activeQueueItemId} of ${controller.queue?.size}"
++      )
++    } catch (e: Exception) {
++      appContext?.jsLogger?.warn("[media session] could not be read: ${e.message}")
 +    }
++  }
++
++  private fun reportSessionStateSoon() {
++    mainHandler.removeCallbacks(reportSessionState)
++    mainHandler.postDelayed(reportSessionState, 1500L)
 +  }
 +  // One notification for the whole service: handing the session over to another player must not
 +  // remove it and post a new one.
@@ -132,7 +153,7 @@ index 53c36f7..5cfeddd 100644
  
    private var weakContext: WeakReference<AppContext>? = null
    var appContext: AppContext?
-@@ -435,8 +448,10 @@ class AudioControlsService : MediaSessionService() {
+@@ -435,8 +462,10 @@ class AudioControlsService : MediaSessionService() {
      options: AudioLockScreenOptions? = null
    ) {
      removePlayerListener()
@@ -145,7 +166,7 @@ index 53c36f7..5cfeddd 100644
  
      currentPlayable = playable
      currentMetadata = metadata
-@@ -446,27 +461,44 @@ class AudioControlsService : MediaSessionService() {
+@@ -446,29 +475,53 @@ class AudioControlsService : MediaSessionService() {
      playable?.isActiveForLockScreen = true
  
      if (playable != null) {
@@ -154,12 +175,38 @@ index 53c36f7..5cfeddd 100644
 -
        appContext?.mainQueue?.launch {
          val context = appContext?.reactContext ?: return@launch
+-        val sessionPlayer = MetadataInjectingPlayer(resolveSessionPlayer(playable, options)).apply {
+-          updateMetadata(metadata)
 +        if (currentPlayable !== playable) {
 +          // Another player took over before this ran.
 +          return@launch
 +        }
-         val sessionPlayer = MetadataInjectingPlayer(resolveSessionPlayer(playable, options)).apply {
-           updateMetadata(metadata)
++        val deckPlayer = resolveSessionPlayer(playable, options)
++
++        // One session with one player for the life of the service. When another player (a
++        // crossfade) or the same one with new options takes over, it is put behind the session's
++        // player and reported as a normal move to another track. Releasing the session, or
++        // replacing its player, makes the lock screen and Bluetooth devices lose track of it.
++        val existingSession = mediaSession
++        val existingDecks = sessionDecks
++        val existingMetadataPlayer = sessionMetadataPlayer
++        val session = if (existingSession != null && existingDecks != null && existingMetadataPlayer != null) {
++          existingDecks.switchTo(deckPlayer, trackChanged = previousPlayable !== playable)
++          existingMetadataPlayer.updateMetadata(metadata)
++          existingSession
++        } else {
++          val decks = DeckSwitchingPlayer(deckPlayer)
++          val metadataPlayer = MetadataInjectingPlayer(decks.player).apply {
++            updateMetadata(metadata)
++          }
++          val newSession = MediaSession.Builder(context, metadataPlayer)
++            .setId("ExpoAudioLockScreenSession_${playable.player.hashCode()}")
++            .setCallback(AudioMediaSessionCallback(this@AudioControlsService))
++            .build()
++          addSession(newSession)
++          sessionDecks = decks
++          sessionMetadataPlayer = metadataPlayer
++          newSession
          }
 -        // Distinguish this lock-screen session from the basic session built in
 -        // `buildBasicMediaSession` (and from sessions for other players); two
@@ -172,22 +219,6 @@ index 53c36f7..5cfeddd 100644
 -        // Replace the basic media session with a session connected to our playback service.
 -        playable.mediaSession.release()
 -        playable.mediaSession = session
-+        // The session is kept when another player (or the same one, with new options) takes over:
-+        // only its player is swapped. Releasing it and building a new one makes the lock screen,
-+        // the notification and Bluetooth devices drop the controls and load them again.
-+        val existingSession = mediaSession
-+        val session = if (existingSession != null) {
-+          existingSession.player = sessionPlayer
-+          existingSession
-+        } else {
-+          val newSession = MediaSession.Builder(context, sessionPlayer)
-+            .setId("ExpoAudioLockScreenSession_${playable.player.hashCode()}")
-+            .setCallback(AudioMediaSessionCallback(this@AudioControlsService))
-+            .build()
-+          addSession(newSession)
-+          newSession
-+        }
-+
 +        val ownSession = playable.mediaSession
 +        if (ownSession !== session) {
 +          // Replace the playable's own (basic) session with the session connected to our playback service.
@@ -202,34 +233,43 @@ index 53c36f7..5cfeddd 100644
  
 -        addSession(session)
          mediaSession = session
-         sessionMetadataPlayer = sessionPlayer
+-        sessionMetadataPlayer = sessionPlayer
  
-@@ -478,8 +510,16 @@ class AudioControlsService : MediaSessionService() {
+         updateSessionCustomLayout(playable.player.isPlaying)
+ 
+@@ -478,8 +531,10 @@ class AudioControlsService : MediaSessionService() {
  
          // Initial update now that session exists
          postOrStartForegroundNotification(startInForeground = false)
-+
-+        // A Bluetooth device (car display) that was still catching up while the session changed
-+        // its player keeps showing the previous track until the session reports something new.
-+        // The state is announced again shortly after, which makes it read the current track.
-+        mainHandler.removeCallbacks(announceSessionState)
-+        mainHandler.postDelayed(announceSessionState, 1000L)
-+        mainHandler.postDelayed(announceSessionState, 3000L)
++        reportSessionStateSoon()
        }
      } else {
 +      hideNotification()
        clearSessionInternal()
      }
    }
-@@ -497,6 +537,7 @@ class AudioControlsService : MediaSessionService() {
+@@ -491,16 +546,20 @@ class AudioControlsService : MediaSessionService() {
+     currentMetadata = metadata
+     sessionMetadataPlayer?.updateMetadata(metadata)
+     updateArtwork(metadata)
++    reportSessionStateSoon()
+   }
+ 
+   private fun clearSessionInternal() {
      val playable = currentPlayable
      playable?.isActiveForLockScreen = false
      removePlayerListener()
-+    mainHandler.removeCallbacks(announceSessionState)
++    mainHandler.removeCallbacks(reportSessionState)
      currentMetadata = null
      mediaSession?.release()
      mediaSession = null
-@@ -525,36 +566,7 @@ class AudioControlsService : MediaSessionService() {
+     sessionMetadataPlayer = null
++    sessionDecks?.detach()
++    sessionDecks = null
+     clearArtwork()
+     playable?.assignBasicMediaSession()
+     currentPlayable = null
+@@ -525,36 +584,7 @@ class AudioControlsService : MediaSessionService() {
      metadata: Metadata?,
      options: AudioLockScreenOptions?
    ) {
@@ -267,14 +307,163 @@ index 53c36f7..5cfeddd 100644
    }
  
    fun unregisterPlayable() {
-@@ -647,6 +659,7 @@ class AudioControlsService : MediaSessionService() {
+@@ -647,11 +677,14 @@ class AudioControlsService : MediaSessionService() {
      super.onDestroy()
  
      removePlayerListener()
-+    mainHandler.removeCallbacks(announceSessionState)
++    mainHandler.removeCallbacks(reportSessionState)
      clearArtwork()
      scope.cancel()
      mediaSession?.release()
+     mediaSession = null
+     sessionMetadataPlayer = null
++    sessionDecks?.detach()
++    sessionDecks = null
+     currentPlayable = null
+     currentMetadata = null
+     currentOptions = null
+diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/DeckSwitchingPlayer.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/DeckSwitchingPlayer.kt
+new file mode 100644
+index 0000000..b01316e
+--- /dev/null
++++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/DeckSwitchingPlayer.kt
+@@ -0,0 +1,136 @@
++package expo.modules.audio.service
++
++import androidx.media3.common.FlagSet
++import androidx.media3.common.Player
++import androidx.media3.common.Timeline
++import androidx.media3.common.util.UnstableApi
++import java.lang.reflect.InvocationTargetException
++import java.lang.reflect.Method
++import java.lang.reflect.Proxy
++import java.util.concurrent.CopyOnWriteArrayList
++
++// The media session keeps ONE player for its whole life: `player`. Which real player ("deck") it
++// stands for can change. Moving to another deck is reported to the session as an ordinary move to
++// another track of the same player (position jump + media item transition), which is what the lock
++// screen and Bluetooth devices (car displays) already handle when a track is skipped by hand.
++// Replacing the session's player (`MediaSession.setPlayer`) or the session itself is avoided.
++@UnstableApi
++internal class DeckSwitchingPlayer(initial: Player) {
++  private var target: Player = initial
++  private val listeners = CopyOnWriteArrayList<Player.Listener>()
++
++  // Receives every event of the current deck and passes it on to the session's listeners.
++  private val relay = Proxy.newProxyInstance(
++    Player.Listener::class.java.classLoader,
++    arrayOf(Player.Listener::class.java)
++  ) { proxy, method, args ->
++    when (method.name) {
++      "equals" -> proxy === args?.get(0)
++      "hashCode" -> System.identityHashCode(proxy)
++      "toString" -> "DeckSwitchingPlayer.relay"
++      else -> {
++        val forwarded = if (method.name == "onEvents" && args != null) arrayOf(player, args[1]) else args
++        listeners.forEach { call(method, it, forwarded) }
++        null
++      }
++    }
++  } as Player.Listener
++
++  val player: Player = Proxy.newProxyInstance(
++    Player::class.java.classLoader,
++    arrayOf(Player::class.java)
++  ) { proxy, method, args ->
++    when (method.name) {
++      "addListener" -> {
++        listeners.addIfAbsent(args!![0] as Player.Listener)
++        null
++      }
++      "removeListener" -> {
++        listeners.remove(args!![0])
++        null
++      }
++      "equals" -> proxy === args?.get(0)
++      "hashCode" -> System.identityHashCode(proxy)
++      "toString" -> "DeckSwitchingPlayer($target)"
++      else -> call(method, target, args)
++    }
++  } as Player
++
++  init {
++    target.addListener(relay)
++  }
++
++  /** Stops listening to the current deck. Called when the session is closed. */
++  fun detach() {
++    target.removeListener(relay)
++  }
++
++  private fun call(method: Method, receiver: Any, args: Array<out Any?>?): Any? = try {
++    method.invoke(receiver, *(args ?: emptyArray()))
++  } catch (e: InvocationTargetException) {
++    throw e.targetException
++  }
++
++  private fun positionOf(player: Player): Player.PositionInfo {
++    val timeline = player.currentTimeline
++    val index = player.currentMediaItemIndex
++    val periodIndex = player.currentPeriodIndex
++    val hasWindow = !timeline.isEmpty && index < timeline.windowCount
++    return Player.PositionInfo(
++      if (hasWindow) timeline.getWindow(index, Timeline.Window()).uid else null,
++      index,
++      player.currentMediaItem,
++      if (hasWindow && periodIndex < timeline.periodCount) timeline.getUidOfPeriod(periodIndex) else null,
++      periodIndex,
++      player.currentPosition,
++      player.contentPosition,
++      -1,
++      -1
++    )
++  }
++
++  /**
++   * Makes [next] the player behind the session. With [trackChanged] the session is told that the
++   * player moved to another track; without it only the differences in play state are reported.
++   */
++  fun switchTo(next: Player, trackChanged: Boolean) {
++    val previous = target
++    val oldPosition = positionOf(previous)
++    val wasPlayWhenReady = previous.playWhenReady
++    val oldState = previous.playbackState
++    val wasPlaying = previous.isPlaying
++
++    previous.removeListener(relay)
++    target = next
++    next.addListener(relay)
++
++    val flags = FlagSet.Builder()
++    if (trackChanged) {
++      val newPosition = positionOf(next)
++      val item = next.currentMediaItem
++      listeners.forEach {
++        it.onPositionDiscontinuity(oldPosition, newPosition, Player.DISCONTINUITY_REASON_AUTO_TRANSITION)
++      }
++      listeners.forEach { it.onMediaItemTransition(item, Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) }
++      flags.add(Player.EVENT_POSITION_DISCONTINUITY).add(Player.EVENT_MEDIA_ITEM_TRANSITION)
++    }
++    if (wasPlayWhenReady != next.playWhenReady) {
++      listeners.forEach {
++        it.onPlayWhenReadyChanged(next.playWhenReady, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
++      }
++      flags.add(Player.EVENT_PLAY_WHEN_READY_CHANGED)
++    }
++    if (oldState != next.playbackState) {
++      listeners.forEach { it.onPlaybackStateChanged(next.playbackState) }
++      flags.add(Player.EVENT_PLAYBACK_STATE_CHANGED)
++    }
++    if (wasPlaying != next.isPlaying) {
++      listeners.forEach { it.onIsPlayingChanged(next.isPlaying) }
++      flags.add(Player.EVENT_IS_PLAYING_CHANGED)
++    }
++    val events = Player.Events(flags.build())
++    if (events.size() > 0) {
++      listeners.forEach { it.onEvents(player, events) }
++    }
++  }
++}
 diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/MetadataInjectingPlayer.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/MetadataInjectingPlayer.kt
 index 18203a3..af714be 100644
 --- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/MetadataInjectingPlayer.kt
