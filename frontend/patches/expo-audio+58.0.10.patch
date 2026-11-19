@@ -40,7 +40,7 @@ index 6c81fce..f6c27f0 100644
            }
            playlist.loadInitialPlaylist()
 diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlaylist.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlaylist.kt
-index bf3f9c5..dec5c7d 100644
+index bf3f9c5..d286be9 100644
 --- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlaylist.kt
 +++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlaylist.kt
 @@ -2,6 +2,7 @@ package expo.modules.audio
@@ -60,6 +60,28 @@ index bf3f9c5..dec5c7d 100644
      .setMediaSourceFactory(DefaultMediaSourceFactory(context).setDataSourceFactory(dataSourceFactory))
      .build(),
    appContext = appContext,
+@@ -43,7 +46,11 @@ class AudioPlaylist(
+   override var isActiveForLockScreen = false
+   override var metadata: Metadata? = null
+   override var lockScreenOptions: AudioLockScreenOptions? = null
+-  override var mediaSession: MediaSession = buildBasicMediaSession(context, ref) { requestPlay() }
++  // A playlist only appears as a media session while it is the lock screen player (the session of
++  // the playback service). Its own basic session is closed straight away: a second playlist that
++  // starts playing would otherwise show up as another playing session of the app, and Bluetooth
++  // devices (car displays) switch to it and miss the track change on the lock screen session.
++  override var mediaSession: MediaSession = buildBasicMediaSession(context, ref) { requestPlay() }.also { it.release() }
+   override val serviceConnection = AudioPlaybackServiceConnection(WeakReference(this), appContext)
+   override val supportsNextTrack = true
+   override val supportsPreviousTrack = true
+@@ -198,7 +205,7 @@ class AudioPlaylist(
+ 
+   override fun assignBasicMediaSession() {
+     mediaSession.release()
+-    mediaSession = buildBasicMediaSession(appContext?.reactContext ?: return, ref) { requestPlay() }
++    mediaSession = buildBasicMediaSession(appContext?.reactContext ?: return, ref) { requestPlay() }.also { it.release() }
+   }
+ 
+   override fun currentStatus(): Map<String, Any?> {
 diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioRecords.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioRecords.kt
 index b6b3b73..027ff7c 100644
 --- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioRecords.kt
@@ -76,13 +98,32 @@ index b6b3b73..027ff7c 100644
  
  enum class LoopMode(val value: String) : Enumerable {
 diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
-index 53c36f7..98a3976 100644
+index 53c36f7..5cfeddd 100644
 --- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
 +++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
-@@ -51,8 +51,10 @@ class AudioControlsService : MediaSessionService() {
+@@ -12,7 +12,9 @@ import android.graphics.Bitmap
+ import android.graphics.BitmapFactory
+ import android.os.Build
+ import android.os.Bundle
++import android.os.Handler
+ import android.os.IBinder
++import android.os.Looper
+ import androidx.annotation.OptIn
+ import androidx.core.app.NotificationCompat
+ import androidx.media3.common.ForwardingPlayer
+@@ -51,8 +53,19 @@ class AudioControlsService : MediaSessionService() {
    private var currentArtworkUrl: URL? = null
    private var currentArtwork: Bitmap? = null
    private var artworkLoadJob: Job? = null
++  private val mainHandler = Handler(Looper.getMainLooper())
++  // Publishes the session's playback state (track, position, playing) once more. Nothing changes
++  // on the lock screen or in the notification.
++  private val announceSessionState = Runnable {
++    val playable = currentPlayable
++    if (playable != null && mediaSession != null) {
++      updateSessionCustomLayout(playable.player.isPlaying)
++    }
++  }
 +  // One notification for the whole service: handing the session over to another player must not
 +  // remove it and post a new one.
    private val notificationId: Int
@@ -91,7 +132,7 @@ index 53c36f7..98a3976 100644
  
    private var weakContext: WeakReference<AppContext>? = null
    var appContext: AppContext?
-@@ -435,8 +437,10 @@ class AudioControlsService : MediaSessionService() {
+@@ -435,8 +448,10 @@ class AudioControlsService : MediaSessionService() {
      options: AudioLockScreenOptions? = null
    ) {
      removePlayerListener()
@@ -104,7 +145,7 @@ index 53c36f7..98a3976 100644
  
      currentPlayable = playable
      currentMetadata = metadata
-@@ -446,27 +450,44 @@ class AudioControlsService : MediaSessionService() {
+@@ -446,27 +461,44 @@ class AudioControlsService : MediaSessionService() {
      playable?.isActiveForLockScreen = true
  
      if (playable != null) {
@@ -163,15 +204,32 @@ index 53c36f7..98a3976 100644
          mediaSession = session
          sessionMetadataPlayer = sessionPlayer
  
-@@ -480,6 +501,7 @@ class AudioControlsService : MediaSessionService() {
+@@ -478,8 +510,16 @@ class AudioControlsService : MediaSessionService() {
+ 
+         // Initial update now that session exists
          postOrStartForegroundNotification(startInForeground = false)
++
++        // A Bluetooth device (car display) that was still catching up while the session changed
++        // its player keeps showing the previous track until the session reports something new.
++        // The state is announced again shortly after, which makes it read the current track.
++        mainHandler.removeCallbacks(announceSessionState)
++        mainHandler.postDelayed(announceSessionState, 1000L)
++        mainHandler.postDelayed(announceSessionState, 3000L)
        }
      } else {
 +      hideNotification()
        clearSessionInternal()
      }
    }
-@@ -525,36 +547,7 @@ class AudioControlsService : MediaSessionService() {
+@@ -497,6 +537,7 @@ class AudioControlsService : MediaSessionService() {
+     val playable = currentPlayable
+     playable?.isActiveForLockScreen = false
+     removePlayerListener()
++    mainHandler.removeCallbacks(announceSessionState)
+     currentMetadata = null
+     mediaSession?.release()
+     mediaSession = null
+@@ -525,36 +566,7 @@ class AudioControlsService : MediaSessionService() {
      metadata: Metadata?,
      options: AudioLockScreenOptions?
    ) {
@@ -209,6 +267,14 @@ index 53c36f7..98a3976 100644
    }
  
    fun unregisterPlayable() {
+@@ -647,6 +659,7 @@ class AudioControlsService : MediaSessionService() {
+     super.onDestroy()
+ 
+     removePlayerListener()
++    mainHandler.removeCallbacks(announceSessionState)
+     clearArtwork()
+     scope.cancel()
+     mediaSession?.release()
 diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/MetadataInjectingPlayer.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/MetadataInjectingPlayer.kt
 index 18203a3..af714be 100644
 --- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/MetadataInjectingPlayer.kt
