@@ -22,7 +22,7 @@
     },
     "android": {
       "package": "com.djrehab2006.djrehabmusic",
-      "versionCode": 5015,
+      "versionCode": 5016,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
@@ -71,7 +71,8 @@
           "recordAudioAndroid": false,
           "microphonePermission": false
         }
-      ]
+      ],
+      "./plugins/withOptionalPortrait"
     ],
     "experiments": {
       "typedRoutes": true
