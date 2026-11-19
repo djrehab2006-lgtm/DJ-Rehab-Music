@@ -9,6 +9,7 @@ import {
   type AudioLockScreenOptions,
 } from 'expo-audio';
 import { Asset } from 'expo-asset';
+import Constants from 'expo-constants';
 import { TRACK_ICON, HARDCODED_FOLDERS } from '../constants/musicData';
 import {
   savePlaybackState,
@@ -148,10 +149,10 @@ let ended = false; // whole queue finished
 let pendingSeekSec: number | null = null; // position to apply once the track is loaded
 let artworkUrl: string | undefined;
 let lockScreenDeck: AudioPlaylist | null = null; // deck Android's media session / foreground service is attached to
-let lockScreenInfo: { attempts: number; lastError: string | null; artworkUrl: string | null } = {
+let lockScreenInfo: { attempts: number; updates: number; lastError: string | null } = {
   attempts: 0,
+  updates: 0,
   lastError: null,
-  artworkUrl: null,
 };
 let wantsToPlay = false; // the listener's intent, used to decide whether to restart after an error
 let restarts = 0; // automatic restarts in a row without the music moving forward
@@ -247,11 +248,16 @@ const setActiveTrack = (index: number) => {
 
 // ---- Lock screen / notification -------------------------------------------------
 
+// Android turns the artwork address into a URL before it does anything else, and refuses the whole
+// call (title and artist included) when it cannot. In an installed build (APK/AAB) a bundled image
+// resolves to a resource name such as "assets_trackicon", not an address, so it is left out.
+const usableArtwork = (url?: string | null) => (url && /^(https?|file):\/\//i.test(url) ? url : undefined);
+
 const metadataFor = (track: Track): AudioMetadata => ({
   title: track.title,
   artist: track.artist,
   albumTitle: albumName(track),
-  artworkUrl: track.cover_art || artworkUrl,
+  artworkUrl: usableArtwork(track.cover_art) ?? usableArtwork(artworkUrl),
 });
 
 // Attaches Android's media session (lock screen, notification, Bluetooth) to the current deck.
@@ -265,11 +271,7 @@ const activateLockScreen = (track: Track) => {
   try {
     player.setActiveForLockScreen(true, metadata, LOCK_SCREEN_OPTIONS);
     lockScreenDeck = player;
-    lockScreenInfo = {
-      attempts: lockScreenInfo.attempts + 1,
-      lastError: null,
-      artworkUrl: metadata.artworkUrl ?? null,
-    };
+    lockScreenInfo = { ...lockScreenInfo, attempts: lockScreenInfo.attempts + 1, lastError: null };
     logDiag(`lockscreen: activated for "${track.title}" (artwork: ${metadata.artworkUrl ? 'yes' : 'none'})`);
   } catch (error: any) {
     const message = error?.message ?? String(error);
@@ -295,8 +297,13 @@ const showOnLockScreen = (track: Track) => {
   }
   try {
     player?.updateLockScreenMetadata(metadataFor(track));
-  } catch {
-    // not active
+    lockScreenInfo = { ...lockScreenInfo, updates: lockScreenInfo.updates + 1 };
+  } catch (error: any) {
+    // The new title did not reach the lock screen: attach the controls again, which sends it too
+    const message = error?.message ?? String(error);
+    logDiag(`lockscreen: update for "${track.title}" was refused: ${message}`);
+    activateLockScreen(track);
+    lockScreenInfo = { ...lockScreenInfo, lastError: message };
   }
 };
 
@@ -310,14 +317,16 @@ export const refreshLockScreen = () => {
 export const getLockScreenReport = () => {
   const { currentTrack, playlist, crossfadeEnabled } = getState();
   return getDiagnosticsReport({
+    Build: `${Constants.expoConfig?.version ?? '?'} (${Constants.expoConfig?.android?.versionCode ?? '?'})`,
     'Current track': currentTrack?.title ?? '(none)',
     'Queue length': playlist.length,
     'Native tracks': player ? player.trackCount : 'no player',
     Playing: player ? player.playing : false,
     Crossfade: crossfadeEnabled ? (idle ? 'on (2 decks)' : 'on') : 'off',
     'Lock screen activations': lockScreenInfo.attempts,
-    'Last activation error': lockScreenInfo.lastError ?? 'none',
-    'Artwork URL': lockScreenInfo.artworkUrl ?? artworkUrl ?? 'none',
+    'Lock screen title updates': lockScreenInfo.updates,
+    'Last lock screen error': lockScreenInfo.lastError ?? 'none',
+    'Lock screen artwork': usableArtwork(artworkUrl) ?? `none (bundled image is "${artworkUrl ?? 'missing'}", not an address)`,
     'Playback restarts': totalRestarts,
     'Songs skipped': skippedSongs.length > 0 ? skippedSongs.join(' | ') : 'none',
   });
@@ -886,7 +895,7 @@ const init = async () => {
   try {
     const asset = await Asset.fromModule(TRACK_ICON).downloadAsync();
     artworkUrl = asset.localUri ?? asset.uri;
-    logDiag(`artwork resolved: ${artworkUrl}`);
+    logDiag(`artwork resolved: ${artworkUrl}${usableArtwork(artworkUrl) ? '' : ' (not an address: lock screen shows no artwork)'}`);
   } catch (error: any) {
     logDiag(`artwork unavailable: ${error?.message ?? String(error)}`);
   }
